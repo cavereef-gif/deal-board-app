@@ -86,6 +86,15 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .keybox{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--muted);font-size:14px}
 .keybox summary{cursor:pointer;min-height:36px;display:flex;align-items:center}
 .keybox input{margin-top:8px;font-size:15px}
+.brief{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.brief .t{display:flex;align-items:center;gap:10px}
+.brief .t .n{flex:1;font-size:16px;font-weight:500}
+.brief .t button{padding:7px 11px;min-height:36px;font-size:14px}
+.brief .b{white-space:pre-wrap;font-size:15px;margin-top:8px;line-height:1.45}
+.brief .s{color:var(--muted);font-size:13px;margin-top:6px}
+.sugg{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;align-self:stretch;white-space:pre-wrap}
+.sugg .acts{margin:8px 0 0}
+.fab2{position:fixed;left:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
 </style>
@@ -142,10 +151,11 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 </section>
 
 <button class="fab hidden" id="addBtn">+ Add</button>
+<button class="fab2 hidden" id="botFab">Bot</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "6";
+const APP_VERSION = "7";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -195,7 +205,14 @@ async function load(){
     const [r1, r2] = await Promise.all([sb.from("items").select("*").neq("state","Done"), sb.from("projects").select("*")]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
     items = r1.data; window._projects = r2.data || [];
-    sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render(); });
+    sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
+      return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
+      const b = r && r.data && r.data[0];
+      const today = new Date(Date.now() + 2*3600e3).toISOString().slice(0,10);
+      window._brief = (b && b.for_date === today) ? b : null;
+      if (view === "worklist") render();
+      if (!window._brief && window._keyStatus && window._keyStatus !== "not set" && window._keyStatus !== "unknown" && !window._autoBriefed) { window._autoBriefed = true; askBot("", "brief", "", true); }
+    });
   }
   for (const it of items) {
     it._days = daysSince(it.last_chased || it.created_at);
@@ -226,6 +243,7 @@ function rowHtml(it, n){
       ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
       ${it.priority === 1 ? `<button data-a="priority" data-v="2">Normal</button>` : `<button data-a="priority" data-v="1">High</button>`}
       <button data-a="assign" data-v="${other}">→ ${other}</button>
+      <button data-botitem="${it.id}">Bot</button>
       ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
     </div></div>`;
 }
@@ -245,7 +263,7 @@ function render(){
       arr.sort(byPrioThenAge);
       const oldest = Math.max(...arr.map(i => i._days));
       const anyStale = arr.some(i => i._stale);
-      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest}d</span></div><button data-wa="${esc(name)}">WhatsApp list</button></div>`;
+      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest}d</span></div><button data-botperson="${esc(name)}">Bot</button><button data-wa="${esc(name)}">WhatsApp list</button></div>`;
       arr.forEach((it, i) => html += rowHtml(it, i+1));
       html += `</div>`;
     }
@@ -254,6 +272,10 @@ function render(){
     const target = who || me || "Chris";
     const list = items.filter(i => who === "All" || (i.owner || "Chris") === target).sort(byPrioThenAge);
     const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
+    const br = window._brief;
+    const todayStr = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
+    html += `<div class="brief"><div class="t"><div class="n">Today's brief</div><button data-bot="brief-here">${botBusy ? "Working…" : br ? "Refresh" : "Get brief"}</button></div>
+      ${br ? `<div class="b">${esc(br.text)}</div><div class="s">${new Date(br.created_at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · for ${esc(br.actor)}</div>` : `<div class="s">No brief yet for ${todayStr}. Tap Get brief.</div>`}</div>`;
     html += `<div class="chips">${chips}</div>`;
     const bands = [[1,"High priority"],[2,"Normal"],[3,"Low"]];
     let n = 0;
@@ -266,7 +288,7 @@ function render(){
     }
     if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map(m => `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.project)} · ${esc(m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
       <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
       <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
@@ -282,7 +304,7 @@ function render(){
     for (const proj of names) {
       const arr = (byProj[proj] || []).sort(byPrioThenAge);
       const p = pinfo.find(x => x.name === proj) || {name: proj, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:""};
-      html += `<div class="pinfo" data-p="${esc(proj)}"><div class="t"><div class="n">${esc(proj)}</div><button data-edit="${esc(proj)}">Edit info</button></div>
+      html += `<div class="pinfo" data-p="${esc(proj)}"><div class="t"><div class="n">${esc(proj)}</div><button data-botproj="${esc(proj)}">Bot</button><button data-edit="${esc(proj)}">Edit info</button></div>
         <div class="s">${esc(p.stage) || "Stage not set"}</div>
         <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
         ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
@@ -346,25 +368,50 @@ $("list").addEventListener("click", e => {
   who = c.dataset.who; try{ localStorage.setItem("who", who) }catch(e){} render();
 });
 
-async function askBot(question, mode){
+async function askBot(question, mode, focus, silent){
   if (botBusy) return;
   if (question) chat.push({ role: "user", text: question });
-  botBusy = true; render();
+  botBusy = true; if (!silent) { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} } render();
   try {
     if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
     const history = chat.filter(m => m.role !== "sys").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
-    const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history } });
+    const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history, focus: focus || "" } });
     if (error) { let msg = error.message || String(error); try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){} throw new Error(msg); }
     chat.push({ role: "assistant", text: data.answer || "(no answer)" });
     if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
+    for (const s of (data.suggestions || [])) chat.push({ role: "sugg", s, text: "" });
+    if (mode === "brief") window._brief = { text: data.answer || "", created_at: new Date().toISOString(), actor: me, for_date: "" };
     botBusy = false; render();
-    if (data.reload) load(); else if (view === "bot") { const el = $("list"); el.scrollTop = el.scrollHeight; window.scrollTo(0, document.body.scrollHeight); }
+    if (data.reload || mode === "brief") load(); else if (view === "bot") { window.scrollTo(0, document.body.scrollHeight); }
   } catch (err) {
     botBusy = false; chat.push({ role: "sys", text: "Bot error: " + (err.message || err) }); render();
   }
 }
+$("list").addEventListener("click", async e => {
+  const bi = e.target.closest("button[data-botitem]"), bp = e.target.closest("button[data-botperson]"), bj = e.target.closest("button[data-botproj]");
+  const ap = e.target.closest("button[data-apply]"), dm = e.target.closest("button[data-dismiss]");
+  if (bi) { const it = (window._items || []).find(x => x.id === bi.dataset.botitem); if (!it) return;
+    askBot(`About "${it.waiting_for}" (waiting on ${it.waiting_on}, ${it._days} days): what should I do next, what exactly do I ask, and draft the WhatsApp message. Set the next step if it is missing.`, "ask", it.id); return; }
+  if (bp) { askBot(`Prep my chase with ${bp.dataset.botperson}: everything open with them in priority order, what to ask, what not to give away, and one WhatsApp message covering it all.`, "ask"); return; }
+  if (bj) { askBot(`Review the ${bj.dataset.botproj} project: what is missing or contradictory, the top risks, the next 3 moves, and suggest any project-info updates.`, "ask"); return; }
+  if (dm) { chat.splice(Number(dm.dataset.dismiss), 1); render(); return; }
+  if (ap) {
+    const m = chat[Number(ap.dataset.apply)]; if (!m || !m.s) return;
+    const p = (window._projects || []).find(x => x.name === m.s.project) || { name: m.s.project, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:"" };
+    const cur = p[m.s.field] || "";
+    const next = (m.s.mode === "append" && (m.s.field === "key_facts" || m.s.field === "contacts")) ? (cur ? cur + "\n" + m.s.text : m.s.text) : m.s.text;
+    const body = { p_name: p.name, p_summary: p.summary || "", p_stage: p.stage || "", p_key_facts: p.key_facts || "", p_contacts: p.contacts || "", p_next_milestone: p.next_milestone || "" };
+    body["p_" + m.s.field] = next;
+    ap.disabled = true; ap.textContent = "…";
+    const { error } = await sb.rpc("set_project", body);
+    if (error) { ap.textContent = "Failed"; return; }
+    chat.splice(Number(ap.dataset.apply), 1, { role: "sys", text: `Applied to ${p.name} · ${m.s.field}.` }); render(); load(); return;
+  }
+});
+$("botFab").onclick = () => { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, document.body.scrollHeight); };
 $("list").addEventListener("click", e => {
   const b = e.target.closest("button[data-bot]"); if (!b) return;
+  if (b.dataset.bot === "brief-here") { askBot("", "brief", "", true); return; }
   if (b.dataset.bot === "clear") { chat = []; render(); return; }
   if (b.dataset.bot === "savekey") {
     const k = ($("botKey").value || "").trim(); if (k.length < 20) { $("keyMsg").textContent = "That does not look like a key."; return; }
@@ -419,6 +466,7 @@ async function show(){
   $("addBtn").classList.toggle("hidden", !signedIn);
   $("refreshBtn").classList.toggle("hidden", !signedIn);
   $("outBtn").classList.toggle("hidden", !signedIn);
+  $("botFab").classList.toggle("hidden", !signedIn);
   if (signedIn) load();
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
