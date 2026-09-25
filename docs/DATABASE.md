@@ -13,7 +13,7 @@ Claude Code normally has NO access to this database. Database changes are writte
 
 ## Tables (columns)
 - allowed_users: email, display_name
-- items (tasks/waits): id, project, waiting_on ("Me" = our own job), waiting_for (the task text), blocks, next_action, last_chased, nudge_after_days, state (Proposed / Confirmed / Done), evidence, created_at, updated_at, priority (1 high, 2 normal, 3 low), owner (Chris / Annemarie), deal_id
+- items (tasks/waits): id, project, waiting_on ("Me" = our own job), waiting_for (the task text), blocks, next_action, last_chased, nudge_after_days, state (Proposed / Confirmed / Done), evidence, created_at, updated_at, priority (1 high, 2 normal, 3 low), owner (Chris / Annemarie), deal_id, due_on (date or empty)
 - events: id, item_id, field, old_value, new_value, changed_by, changed_at, source, deal_id, lead_id, contact_id
 - projects: name, summary, stage, key_facts, contacts, next_milestone, sort, updated_at, updated_by
 - contacts: id, name, phone, whatsapp, email, company, role, project, notes, created_by, created_at, updated_at
@@ -30,8 +30,8 @@ Claude Code normally has NO access to this database. Database changes are writte
 - posts (notice board): id, author, kind (post / check / claude), body, deal_id, lead_id, pinned, done, created_at, updated_at
 
 ## Functions the app calls
-add_item(p_project, p_waiting_on, p_waiting_for, p_blocks, p_next, p_priority, p_owner, p_deal) ·
-item_action(p_id, p_action [confirm, done, drop, chased, priority, assign, note, deal], p_value) ·
+add_item(p_project, p_waiting_on, p_waiting_for, p_blocks, p_next, p_priority, p_owner, p_deal, p_due) ·
+item_action(p_id, p_action [confirm, done, drop, chased, priority, assign, note, deal, due], p_value) ·
 add_post(p_body, p_deal, p_kind) · post_action(p_id, p_action [pin, unpin, done, open]) ·
 add_step(p_deal, p_stage, p_title) · set_step(p_id, p_status, p_evidence) · seed_deal_steps(p_deal, p_kind, p_route) · upgrade_deal_kit(p_deal, p_route) ·
 save_deal(p_id, p_name, p_kind, p_area, p_status, p_summary, p_stage, p_key_facts, p_contacts, p_next_milestone, p_params, p_route) ·
@@ -95,5 +95,5 @@ Grants on both: execute for authenticated and service_role only.
 ## Migrations applied so far (25 Sep 2026)
 batch1_items_events · batch2_owner_access · batch2_add_item · harden_search_path · v2_priority_owner_users · v3_projects_info · v4_bot_key_in_vault · fix_is_owner_recursion · v7_briefs · auto_activate_allowed_logins · v8_contacts_attachments_storage · v8_note_stamp · v10_deals_checklists · v10_harden_function_grants · v11_directory · v11_revoke_trigger_fn_exec · v13_deal_kit_schema · v13_library_kind_kit · v13_deal_kit_library · v16_notice_board
 
-## Proposed changes (not applied)
-- docs/db/001-due-dates.sql – due date on tasks (plan batch 3).
+## Applied since the handover
+- v17_due_dates (26 Sep 2026): items.due_on; add_item gains p_due (optional); item_action gains 'due' (p_value = YYYY-MM-DD or empty). Same as docs/db/001-due-dates.sql.

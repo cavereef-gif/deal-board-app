@@ -1,4 +1,4 @@
--- 001 – due dates on tasks (PROPOSED for plan batch 3; NOT applied).
+-- 001 – due dates on tasks. APPLIED 26 Sep 2026 as migration v17_due_dates (item_action got the 'due' branch in the same migration).
 -- Apply from the Claude project (Supabase connector, project egirxhjfgkwqjgxfxzea) after Chris OKs batch 3.
 -- Safe to run once. Keeps every existing call working: p_due is optional.
 

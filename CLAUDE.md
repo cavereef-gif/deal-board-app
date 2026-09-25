@@ -4,7 +4,7 @@
 A phone web app (PWA) for two business partners in Durban, South Africa: Chris and Annemarie. They broker transport loads and chrome/manganese ore deals. The app holds their tasks ("waiting on X for Y" or their own jobs), deals with step-by-step checklists and terms, a buyer/supplier directory, a notice board, a deal calculator, an archive search and an AI helper (the "bot", Claude Haiku). Plain static files on GitHub Pages; data in Supabase behind a login.
 - Live: https://cavereef-gif.github.io/deal-board-app/ (root files on `main`) – currently v14.
 - Preview: https://cavereef-gif.github.io/deal-board-app/preview/ (the `preview/` folder on `main`) – currently v16.
-- Work branch: `v16` (v16 app in the root files, plus these notes). It is not live.
+- Work branch: `prototype` (v17: plan batches 0–6 built; not live). Prototype link: https://cavereef-gif.github.io/deal-board-app/prototype/ (add ?demo for sample data). `v16` holds batches 0–1 only.
 
 ## Start here
 1. Read docs/PLAN.md (what to build, in order, with "done when" checks and the default decisions).

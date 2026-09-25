@@ -123,5 +123,12 @@ $("pickSheet").addEventListener("click", e => {
 
 // ---------- Typing mode: hide the bottom bar while typing so the box sits above the keyboard ----------
 const typingEl = el => el && el.matches && el.matches("input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=date]), textarea");
-document.addEventListener("focusin", e => { if (typingEl(e.target)) document.body.classList.add("typing"); });
-document.addEventListener("focusout", () => setTimeout(() => { if (!typingEl(document.activeElement)) document.body.classList.remove("typing"); }, 120));
+// Only while the on-screen keyboard is actually open (the visible area shrinks), so closing the keyboard always brings the bar back.
+function updTyping() {
+  const focused = typingEl(document.activeElement);
+  const vv = window.visualViewport, kb = vv ? (window.innerHeight - vv.height) > 120 : false;
+  document.body.classList.toggle("typing", !!(focused && kb));
+}
+document.addEventListener("focusin", () => setTimeout(updTyping, 250));
+document.addEventListener("focusout", () => setTimeout(updTyping, 150));
+if (window.visualViewport) visualViewport.addEventListener("resize", updTyping);

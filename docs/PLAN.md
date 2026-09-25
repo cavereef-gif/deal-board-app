@@ -1,5 +1,7 @@
 # Deal Board – build plan for Claude Code
 
+Status 26 Sep 2026: batches 0–1 done on `v16` (preview PR #1). Batches 2–6 built as a v17 prototype on branch `prototype` (see docs/BUILD-LOG.md) – continue from `prototype`, not `v16`.
+
 Source: docs/AUDIT-2026-09-25.md (usability audit, 25 Sep 2026). Starting point: branch `v16` (app v16 in the root files; on the preview link, not live).
 Work one batch at a time. Each batch: build → test at 360x780 and 375x667, dark and light → preview PR → Chris checks on the preview link → next batch. Record every batch in docs/BUILD-LOG.md.
 
