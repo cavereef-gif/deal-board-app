@@ -261,6 +261,40 @@ header h1{white-space:nowrap;font-size:19px}
   #list .llist .lead{margin:0}
   #list .llist .lead.open{grid-column:1 / -1}
 }
+
+/* ---------- v12: Today page ---------- */
+.thead{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.tdate{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.tsum{font-size:16px;line-height:1.45;margin-top:6px}
+.tsec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.tsh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 14px;min-height:60px}
+.tsh .tn{flex:none;width:28px;height:28px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:14px;font-weight:600}
+.th{flex:1;min-width:0;display:flex;flex-direction:column}
+.tht{font-size:17px;font-weight:500}
+.ths{font-size:13px;color:var(--muted);margin-top:2px}
+.tc{flex:none;min-width:30px;height:26px;padding:0 8px;border-radius:999px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:14px}
+.tlist{border-top:1px solid var(--line)}
+.trow{border-bottom:1px solid var(--line);border-left:5px solid transparent}
+.trow:last-child{border-bottom:0}
+.trow.p1{border-left-color:var(--dot-high)} .trow.p2{border-left-color:var(--rail-normal)} .trow.p3{border-left-color:var(--dot-low)}
+.tgo{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 12px 12px 10px;min-height:56px}
+.tgo:active{background:var(--card2)}
+.tgo .dot{margin-top:5px}
+.tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.tt1{font-size:16px;line-height:1.35;font-weight:400}
+.ts{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.35}
+.tr{flex:none;font-size:15px;font-weight:500;padding-top:1px}
+.tgo .chev{font-size:20px;line-height:1;padding-top:1px}
+.trow.open .tgo{background:var(--card2)}
+.tbody{padding:0 0 4px}
+.tbody .row{border-left:0;padding-top:4px}
+.tbody .row .l1,.tbody .row .l2{display:none}
+.tbody .pills,.tbody .acts,.tbody .npanel,.tbody .draft{margin-left:0}
+.tline{padding:9px 14px;border-bottom:1px solid var(--line);font-size:15px;white-space:pre-wrap}
+.draft{margin:9px 0 0 29px;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--dot-ok);border-radius:12px;padding:10px 12px}
+.dl{font-size:13px;color:var(--muted)}
+.dt{font-size:15px;white-space:pre-wrap;margin-top:4px}
+.sec-b .draft,.lc .draft{margin-left:0}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
@@ -326,7 +360,7 @@ header h1{white-space:nowrap;font-size:19px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "11";
+const APP_VERSION = "12";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -475,7 +509,7 @@ async function load(){
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
   if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
-    const [r1, r2, r3, r4, r5, r6, r7, r8] = await Promise.all([
+    const [r1, r2, r3, r4, r5, r6, r7, r8, r9] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
       sb.from("projects").select("*"),
       sb.from("contacts").select("*").order("name"),
@@ -483,11 +517,12 @@ async function load(){
       sb.from("attachments").select("*").order("created_at", { ascending: false }),
       sb.from("deals").select("*").order("sort").order("created_at"),
       sb.from("deal_steps").select("*").order("sort"),
-      sb.from("events").select("id,item_id,deal_id,field,old_value,new_value,changed_by,changed_at").not("deal_id", "is", null).neq("field", "note").order("changed_at", { ascending: false }).limit(400)
+      sb.from("events").select("id,item_id,deal_id,field,old_value,new_value,changed_by,changed_at").not("deal_id", "is", null).not("field", "in", "(note,draft)").order("changed_at", { ascending: false }).limit(400),
+      sb.from("events").select("id,item_id,deal_id,lead_id,contact_id,old_value,new_value,changed_by,changed_at").eq("field", "draft").order("changed_at", { ascending: false }).limit(300)
     ]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
     items = r1.data; window._projects = r2.data || []; window._contacts = r3.data || []; window._notes = r4.data || []; window._atts = r5.data || [];
-    window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || [];
+    window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || []; window._drafts = r9.data || [];
     window._urls = window._urls || {};
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
@@ -496,8 +531,9 @@ async function load(){
       const b = r && r.data && r.data[0];
       const today = new Date(Date.now() + 2*3600e3).toISOString().slice(0,10);
       window._brief = (b && b.for_date === today) ? b : null;
+      const isV2 = window._brief && /^\{"v":2/.test(window._brief.text || "");
       if (view === "worklist") render();
-      if (!window._brief && window._keyStatus && window._keyStatus !== "not set" && window._keyStatus !== "unknown" && !window._autoBriefed) { window._autoBriefed = true; askBot("", "brief", "", true); }
+      if ((!window._brief || !isV2) && window._keyStatus && window._keyStatus !== "not set" && window._keyStatus !== "unknown" && !window._autoBriefed) { window._autoBriefed = true; askBot("", "brief", "", true); }
     });
   }
   for (const it of items) {
@@ -547,6 +583,7 @@ function rowHtml(it, n){
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
     <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}${own}<span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
+    ${window.draftHtml ? (() => { const cs = contactsFor(it.waiting_on).filter(c => c.phone || c.whatsapp); return draftHtml("item", it.id, cs.length ? (cs[0].whatsapp || toWa(cs[0].phone)) : ""); })() : ""}
     <div class="acts">
       ${it.state === "Proposed" ? `<button class="primary" data-a="confirm">OK, keep</button><button data-a="drop">Drop</button>` : ""}
       ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
@@ -583,6 +620,7 @@ function contactHtml(c){
     <div class="s">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div>
     <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
     ${c.notes ? `<div class="k">${esc(c.notes)}</div>` : ""}
+    ${window.draftHtml ? draftHtml("contact", c.id, wa) : ""}
     <div class="acts" style="margin:9px 0 0"><button data-panel="contact:${c.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes ${contactNotes(c.id).length} · Files ${fN}</button><button data-dchat="contact:${c.id}">Import WhatsApp chat</button><button data-emailcontact="${c.id}">Email me</button><button data-cedit="${c.id}"${edit ? ' style="background:var(--tab-on)"' : ""}>Edit</button><button data-botcontact="${esc(c.name)}">Bot</button></div>
     ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
     ${edit ? contactFormHtml(c) : ""}
@@ -671,6 +709,8 @@ function dealHtml(d){
     if (defs.length) h += secHtml(d, "terms", "Deal terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`, false, () => termsHtml(d, defs));
     h += secHtml(d, "info", "Background", "", false, () => infoHtml(d));
     const ns = dealNotes(d.id);
+    const dds = window.draftsFor ? draftsFor("deal", d.id) : [];
+    if (dds.length) h += secHtml(d, "drafts", "WhatsApp drafts", dds.length, true, () => draftHtml("deal", d.id, ""));
     h += secHtml(d, "notes", "Notes", ns.length, false, () => notesBlock(ns, "deal", d.id));
     h += secHtml(d, "files", "Files", attsFor("deal", d.id).length, false, () => filesHtml("deal", d.id));
     const hs = histOf(d.id);
@@ -736,7 +776,6 @@ function render(){
     $("addBtn").classList.add("hidden");
     return;
   }
-  if (!items.length && view === "worklist") { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
   let html = "";
   if (view === "people") {
     const groups = {};
@@ -760,26 +799,7 @@ function render(){
     contacts.forEach(c => html += contactHtml(c));
     if (!contacts.length) html += `<div class="quiet">No contacts saved yet. Tap + Contact, or tell the bot someone's number.</div>`;
   } else if (view === "worklist") {
-    const target = who || me || "Chris";
-    const list = items.filter(i => who === "All" || (i.owner || "Chris") === target).sort(byPrioThenAge);
-    const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
-    const br = window._brief;
-    const todayStr = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
-    html += `<div class="brief"><div class="t"><div class="n">Today's brief</div>${br ? `<button data-emailbrief="1">Email me</button>` : ""}<button data-bot="brief-here">${botBusy ? "Working…" : br ? "Refresh" : "Get brief"}</button></div>
-      ${br ? `<div class="b">${esc(br.text)}</div><div class="s">${new Date(br.created_at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · for ${esc(br.actor)}</div>` : `<div class="s">No brief yet for ${todayStr}. Tap Get brief.</div>`}</div>`;
-    const q = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(k => ((window._gates || []).find(g => g.key === k) || {}).status === "open") && (!t.not_before || t.not_before <= new Date(Date.now() + 2*3600e3).toISOString().slice(0,10))).sort((a, b) => b.score - a.score || a.rank - b.rank);
-    if (q.length) html += `<div class="qteaser"><div class="t"><div class="n">Buyer search — next up</div><button data-v2="leads">Open</button></div>${q.slice(0, 3).map((t, i) => `<div class="b">${i + 1}. ${esc(t.task)}</div>`).join("")}</div>`;
-    html += `<div class="chips">${chips}<button data-emaillist="1">Email me this list</button></div>`;
-    const bands = [[1,"High priority"],[2,"Normal"],[3,"Low"]];
-    let n = 0;
-    for (const [pr, label] of bands) {
-      const arr = list.filter(i => (i.priority || 2) === pr);
-      if (!arr.length) continue;
-      html += `<h2>${label} — ${arr.length}</h2><div class="card">`;
-      arr.forEach(it => html += rowHtml(it, ++n).replace('<div class="txt">', it._me ? '<div class="txt">' : `<div class="txt"><span style="color:var(--muted)">${esc(it.waiting_on)}:</span> `));
-      html += `</div>`;
-    }
-    if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
+    html = todayHtml(items);
   } else if (view === "bot") {
     html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="e.g. What is still missing on the chrome deal? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
@@ -1026,7 +1046,7 @@ $("list").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
   if (d.v2) { view = d.v2; try { localStorage.setItem("view", view); } catch (x) {} render(); window.scrollTo(0, 0); return; }
-  if (d.emailbrief && window._brief) { emailMe("Deal Board brief " + new Date().toLocaleDateString("en-ZA"), window._brief.text); return; }
+  if (d.emailbrief) { emailMe("Deal Board – today " + new Date().toLocaleDateString("en-ZA"), briefAsText()); return; }
   if (d.emaillist) {
     const its = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === (who || me || "Chris")).sort(byPrioThenAge);
     emailMe("Deal Board – open list " + new Date().toLocaleDateString("en-ZA"), its.map((i, n) => `${n + 1}. ${i._me ? "" : i.waiting_on + ": "}${i.waiting_for} (${i._days}d${i.next_action ? ", next: " + i.next_action : ""}${i.state === "Proposed" ? ", proposed" : ""})`).join("\n")); return; }
@@ -1051,7 +1071,7 @@ async function askBot(question, mode, focus, silent){
     chat.push({ role: "assistant", text: data.answer || "(no answer)" });
     if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
     for (const s of (data.suggestions || [])) chat.push({ role: "sugg", s, text: "" });
-    if (mode === "brief") window._brief = { text: data.answer || "", created_at: new Date().toISOString(), actor: me, for_date: "" };
+    if (mode === "brief") window._brief = { text: data.brief ? JSON.stringify(data.brief) : (data.answer || ""), created_at: new Date().toISOString(), actor: me, for_date: "" };
     botBusy = false; render();
     if (data.reload || mode === "brief" || (data.actions || []).length) load(); else if (view === "bot") { window.scrollTo(0, document.body.scrollHeight); }
   } catch (err) {
@@ -1156,6 +1176,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 </script>
 <script src="directory.js"></script>
 <script src="directory2.js"></script>
+<script src="today.js"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>
