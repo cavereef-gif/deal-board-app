@@ -7,6 +7,13 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 25 Sep 2026 – v16 batch 0: privacy (not live yet)
+- Demo data (index.html and directory2.js) now uses made-up people, companies, deal names, 555-style phone numbers and example.com emails. Same shapes, so demo mode still shows every feature.
+- Kept on purpose: Chris's own name in the real "Buyer opener" fallback (directory.js) and in the bot's record copy (supabase/functions/ask/index.ts) – that is the owner, not a client. Also left: the two owners' own email addresses behind "Email me" (directory.js) – changing that would change how the button works; Chris to decide.
+- Old commits still contain the real demo data. Removing it from history needs a force-push – Chris's decision only; not done.
+- Checks: `git grep` for every old name, number and email in current app files finds nothing (docs and preview/ excluded – preview/ is rebuilt from these files). `node --check` on every script. tools/screens.py: 40 screens at 360x780 and 375x667, dark and light, demo mode – no console errors; screenshots looked at.
+- Preview PR: see batch 1 entry (batches 0 and 1 shown together). Not live yet.
+
 ## 25 Sep 2026 – handover to Claude Code
 - Branch `v16` created from main + the v15/v16 root commits (not live). Added CLAUDE.md, docs/ (plan, audit, API study, database notes, this log), tools/ (preview builder, readability metrics, screen capture) and a record copy of the bot function.
 - Status at handover: live app = v14; preview link = v16; v16 held until plan batches 0–2 are done (default decision 1).
