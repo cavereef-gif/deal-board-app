@@ -39,6 +39,7 @@ set_project(...) · save_lead(p_id, p jsonb) · lead_status(p_id, p_status, p_vi
 save_task(p_id, p jsonb) · task_action(p_id, p_action, p_value) · set_gate(p_key, p_status, p_note) · save_library(p_id, p_title, p_body) ·
 bot_key_status() · set_bot_key(p_key) (key stored in Vault; get_bot_key() is for the edge function only).
 Edge function: `ask` (v9, verify_jwt on, Claude Haiku). Source copy: supabase/functions/ask/index.ts (record only – deploying needs Supabase access).
+Edge function: `read` (v1, 26 Sep 2026, verify_jwt on, owners only). Sonnet for photos/PDFs (Haiku fallback), Haiku for quotes and voice notes. Returns suggestions and saves nothing; the app saves only what a person ticks. Names only in – never terms, target or limit. Source copy: supabase/functions/read/index.ts.
 
 ## Current source of the two task functions (for change 001)
 ```sql

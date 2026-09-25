@@ -72,7 +72,7 @@ Follow "Going live" in CLAUDE.md. Promotion is its own PR; Chris merges it.
 ## Automation steps (approved by Chris 26 Sep 2026: "everything you suggested except the whatsapp")
 Built on branch `prototype`, shown on the prototype link after each step.
 1. Free, no new supplier – DONE 26 Sep (see BUILD-LOG): guides and step details as short points; "+ New deal" in every deal list; three calculators (Transport: road distance to money, Chrome and ore, Everyday with VAT); Speak buttons on text boxes; voice-note sheet; company and sanctions check links.
-2. Claude reading (Anthropic usage only, about R60 a month): photo of notes or cards → suggested tasks and contacts; PDF / photo documents → deal terms; WhatsApp quote decoder (paste a quote → a tidy card); voice note → tasks. Always a review sheet – a person ticks what to save.
+2. BUILT 26 Sep (see BUILD-LOG). Claude reading (Anthropic usage only, about R60 a month): photo of notes or cards → suggested tasks and contacts; PDF / photo documents → deal terms; WhatsApp quote decoder (paste a quote → a tidy card); voice note → tasks. Always a review sheet – a person ticks what to save.
 3. Berthing schedule: the free Transnet berth plans (Richards Bay and Durban) plus ship-tracking links. The paid live feed is NOT approved.
 4. Email in (a Gmail label) and the morning email, via Google Apps Script in Chris's own Gmail.
 5. Phone reminders (web push).

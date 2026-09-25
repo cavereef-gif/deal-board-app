@@ -167,7 +167,7 @@ function vnTargets() {
     (window._contacts || []).map(c => `<option value="contact:${c.id}">Contact: ${esc(c.name)}</option>`).join("");
 }
 function openVoiceNote() {
-  $("vnText").value = ""; vnBlob = null; $("vnAudio").innerHTML = ""; $("vnMsg").textContent = "";
+  vnSavedKey = ""; $("vnText").value = ""; vnBlob = null; $("vnAudio").innerHTML = ""; $("vnMsg").textContent = "";
   $("vnFor").innerHTML = vnTargets();
   $("vnSpeakHint").textContent = SR ? "Tap Speak and talk – the words appear below. Or record the sound to keep it as a file." : "On this phone: tap the box and use the mic on your keyboard. Or record the sound to keep it as a file.";
   $("vnSheet").classList.remove("hidden"); addMics($("vnSheet"));
@@ -185,30 +185,33 @@ async function vnRecordToggle() {
   vnRec.start(); const t0 = Date.now();
   vnTimer = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); b.innerHTML = ic("pause") + `Stop recording (${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")})`; }, 500);
 }
+let vnSavedKey = "";   // stops a second tap (e.g. after a failed read) saving the same note twice
 async function vnSave(makeTasks) {
   const text = $("vnText").value.trim(), target = $("vnFor").value;
   if (!text && !vnBlob) { $("vnMsg").textContent = "Say or type something first, or record the sound."; return; }
-  if (makeTasks && !text) { $("vnMsg").textContent = "Tap Speak (or type) first – the bot reads the words, not the recording."; return; }
+  if (makeTasks && !text) { $("vnMsg").textContent = "Tap Speak (or type) first – the reader reads the words, not the recording."; return; }
   const label = "Voice note from " + (me || "us") + (text ? ": " + text : " (recording attached)");
-  if (DEMO) { $("vnSheet").classList.add("hidden"); toast(makeTasks ? "Demo – the bot needs a real login." : "Saved (demo – not saved)."); return; }
-  $("vnMsg").textContent = "Saving…";
-  let postId = null, err = null;
-  const [type, id] = target ? target.split(":") : ["post", null];
-  if (!target) { const r = await sb.rpc("add_post", { p_body: label, p_deal: null, p_kind: "check" }); err = r.error; postId = r.data; }
-  else { const row = { field: "note", new_value: label, source: "app" }; row[type + "_id"] = id; const r = await sb.from("events").insert(row); err = r.error; }
-  if (!err && vnBlob) {
-    const ext = /mp4|m4a|aac/.test(vnBlob.type) ? "m4a" : /ogg/.test(vnBlob.type) ? "ogg" : "webm";
-    const path = `${target ? type : "post"}/${target ? id : postId}/${Date.now()}-voice-note.${ext}`;   // same folders as other files
-    const up = await sb.storage.from("files").upload(path, vnBlob, { contentType: vnBlob.type || "audio/webm", upsert: false });
-    if (up.error) err = up.error;
-    else { const r = await sb.from("attachments").insert({ target_type: target ? type : "post", target_id: String(target ? id : postId), path, name: "Voice note " + dayName(Date.now()) + "." + ext, size: vnBlob.size, mime: vnBlob.type || "" }); err = r.error; }
+  const key = target + "|" + text + "|" + (vnBlob ? vnBlob.size : 0);
+  const read = () => runReader({ kind: "voice", text, about: target }, $("vnMsg"), () => $("vnSheet").classList.add("hidden"));
+  if (DEMO) { if (makeTasks) return read(); $("vnSheet").classList.add("hidden"); toast("Saved (demo – not saved)."); return; }
+  if (vnSavedKey !== key) {
+    $("vnMsg").textContent = "Saving…";
+    let postId = null, err = null;
+    const [type, id] = target ? target.split(":") : ["post", null];
+    if (!target) { const r = await sb.rpc("add_post", { p_body: label, p_deal: null, p_kind: "check" }); err = r.error; postId = r.data; }
+    else { const row = { field: "note", new_value: label, source: "app" }; row[type + "_id"] = id; const r = await sb.from("events").insert(row); err = r.error; }
+    if (!err && vnBlob) {
+      const ext = /mp4|m4a|aac/.test(vnBlob.type) ? "m4a" : /ogg/.test(vnBlob.type) ? "ogg" : "webm";
+      const path = `${target ? type : "post"}/${target ? id : postId}/${Date.now()}-voice-note.${ext}`;   // same folders as other files
+      const up = await sb.storage.from("files").upload(path, vnBlob, { contentType: vnBlob.type || "audio/webm", upsert: false });
+      if (up.error) err = up.error;
+      else { const r = await sb.from("attachments").insert({ target_type: target ? type : "post", target_id: String(target ? id : postId), path, name: "Voice note " + dayName(Date.now()) + "." + ext, size: vnBlob.size, mime: vnBlob.type || "" }); err = r.error; }
+    }
+    if (err) { $("vnMsg").textContent = "Could not save: " + err.message; return; }
+    vnSavedKey = key;
   }
-  if (err) { $("vnMsg").textContent = "Could not save: " + err.message; return; }
-  $("vnSheet").classList.add("hidden"); toast("Voice note saved.");
-  if (makeTasks && text) {
-    const where = target ? ` It is about ${type === "deal" ? "the deal " + ((dealById(id) || {}).name || "") : "my contact " + ((((window._contacts || []).find(c => c.id === id)) || {}).name || "")}.` : "";
-    askBot(`This is a voice note I just recorded.${where} Turn it into tasks (propose them – I will accept or drop) and notes on the right deals or people. Keep each task short. Voice note: "${text}"`, "ask");
-  } else load();
+  if (makeTasks) { await read(); load(); return; }   // the review sheet opens; the note is already saved
+  $("vnSheet").classList.add("hidden"); toast("Voice note saved."); load();
 }
 document.addEventListener("click", e => {
   if (e.target.id === "vnSheet" || e.target.closest("#vnClose")) { if (vnRec) vnRec.stop(); micStop(); $("vnSheet").classList.add("hidden"); return; }

@@ -86,6 +86,8 @@
       <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
       <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
+      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Read a photo or PDF</button>
+      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>Decode a WhatsApp quote</button>
       <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Calculators</button>
       <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search the archive</button>
       <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
@@ -123,7 +125,7 @@
     <div id="vnAudio"></div>
     <label class="fld"><span>Save it on</span><select id="vnFor"></select></label>
     <div class="row2"><button id="vnSave" type="button" data-ico="note">Save as note</button><button class="primary" id="vnTasks" type="button" data-ico="bot">Make tasks from it</button></div>
-    <div class="quiet">"Make tasks from it" sends the words to the bot. It suggests tasks; you accept or drop them.</div>
+    <div class="quiet">"Make tasks from it" sends the words to Claude to read. You then tick which tasks and notes to save.</div>
     <div class="msg" id="vnMsg"></div>
   </div>
 </div>
@@ -142,6 +144,35 @@
     <button class="wide primary" id="ndsAdd" type="button" data-ico="check">Create deal</button>
     <div class="quiet">It gets the deal kit checklist (local sale by truck for minerals). Change the route on the deal's page.</div>
     <div class="msg" id="ndsMsg"></div>
+  </div>
+</div>
+<div id="rdSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="rdTitle">Read a photo or PDF</span><button id="rdClose" type="button">Close</button></div>
+    <div id="rdFileBox">
+      <div class="lbl" style="margin-top:4px">What is it?</div>
+      <div class="seg2" role="group" aria-label="What is it"><button type="button" data-rdwhat="notes">Notes or a card</button><button type="button" data-rdwhat="doc">A deal document</button></div>
+      <div class="quiet" id="rdHint"></div>
+      <div class="row2"><button class="primary" id="rdCam" type="button" data-ico="camera">Take a photo</button><button id="rdPick" type="button" data-ico="clip">Choose a photo or PDF</button></div>
+      <div id="rdPreview"></div>
+    </div>
+    <div id="rdTextBox" class="hidden">
+      <label class="fld"><span>The WhatsApp message</span><textarea id="rdText" rows="6" placeholder="Paste the message here"></textarea></label>
+      <button id="rdClip" type="button" data-ico="copy">Paste from clipboard</button>
+    </div>
+    <label class="fld"><span>About (optional)</span><select id="rdAbout"></select></label>
+    <label class="tick" id="rdKeepBox"><input type="checkbox" id="rdKeep" checked><span>Keep the photo or PDF (on the deal or contact above, or on the notice board)</span></label>
+    <button class="wide primary" id="rdGo" type="button">Read it</button>
+    <div class="quiet">Sent to Claude (Anthropic) to read. You check every line before anything is saved.</div>
+    <div class="msg" id="rdMsg"></div>
+  </div>
+</div>
+<input type="file" id="rdCamInput" class="hidden" accept="image/*" capture="environment">
+<input type="file" id="rdFileInput" class="hidden" accept="image/*,application/pdf,.pdf">
+<div id="rvSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="rvTitle">Check before saving</span><button id="rvClose" type="button">Close</button></div>
+    <div id="rvBody"></div>
   </div>
 </div>
 <div id="pickSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="pkTitle">
@@ -300,6 +331,7 @@ $("addSheet").addEventListener("click", e => {
   if (a === "calc" || a === "archive") { goView(a); return; }
   if (a === "chat") { openPickSheet(); return; }
   if (a === "voice") { if (window.openVoiceNote) openVoiceNote(); return; }
+  if (a === "read" || a === "quote") { if (window.openReader) openReader({ kind: a === "quote" ? "quote" : "photo" }); return; }
 });
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -783,7 +815,7 @@ function navSnap(){ return { view, dealPage, y: window.scrollY, keys: [...openKe
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
 // Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
 let sheetHist = false, ignorePop = false;
-const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet")].filter(x => x && !x.classList.contains("hidden"));
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet")].filter(x => x && !x.classList.contains("hidden"));
 function syncSheetHist(){
   const any = openSheets().length > 0 || !!window._sheetItem;
   if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
@@ -1188,6 +1220,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="calc.js?v=17"></script>
 <script src="archive.js?v=17"></script>
 <script src="extras.js?v=17"></script>
+<script src="reader.js?v=17"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>

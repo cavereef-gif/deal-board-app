@@ -1,5 +1,5 @@
 const CACHE = "deal-board-v17";
-const SHELL = ["./", "index.html", "app.css", "ui.js", "directory.js", "directory2.js", "today.js", "task.js", "kitdata.js", "dealkit.js", "board.js", "calc.js", "archive.js", "extras.js", "manifest.webmanifest", "icon.svg", "icon-192.png"];
+const SHELL = ["./", "index.html", "app.css", "ui.js", "directory.js", "directory2.js", "today.js", "task.js", "kitdata.js", "dealkit.js", "board.js", "calc.js", "archive.js", "extras.js", "reader.js", "manifest.webmanifest", "icon.svg", "icon-192.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== "share-inbox").map(k => caches.delete(k))))); self.clients.claim(); });
 self.addEventListener("fetch", e => {
@@ -17,7 +17,7 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (e.request.method !== "GET" || url.origin !== location.origin) return; // data always live from Supabase
-  const fresh = e.request.mode === "navigate" || /(index\.html|sw\.js|version\.txt|directory2?\.js|today\.js|task\.js|kitdata\.js|dealkit\.js|app\.css|ui\.js|board\.js|calc\.js|archive\.js|extras\.js)$/.test(url.pathname);
+  const fresh = e.request.mode === "navigate" || /(index\.html|sw\.js|version\.txt|directory2?\.js|today\.js|task\.js|kitdata\.js|dealkit\.js|app\.css|ui\.js|board\.js|calc\.js|archive\.js|extras\.js|reader\.js)$/.test(url.pathname);
   const req = fresh ? new Request(e.request, { cache: "no-store" }) : e.request;
   e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; }).catch(() => caches.match(e.request, { ignoreSearch: true })));
 });

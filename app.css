@@ -761,3 +761,32 @@ body.boardview{padding-bottom:calc(290px + env(safe-area-inset-bottom))}
 .bigmic{margin-top:12px;min-height:56px;font-size:18px}
 .bigmic .ibw{font-size:18px;color:inherit}
 .bigmic svg.i{width:24px;height:24px}
+/* ---------- v17 step 2: the reader (photo, PDF, WhatsApp quote, voice note) and its review sheet ---------- */
+#rdSheet .row2{margin-top:12px}
+#rdClip{margin-top:8px}
+.rdimg{display:block;max-width:100%;max-height:220px;margin-top:12px;border-radius:var(--r3)}
+.rdfile{display:flex;gap:8px;align-items:center;margin-top:12px;padding:12px;border-radius:var(--r3);background:var(--card2);font-size:16px;overflow-wrap:anywhere}
+.rvsum{font-size:16px;line-height:1.5;margin:4px 0 6px}
+.rvq{padding:2px 12px;border-radius:var(--r3);background:var(--card2)}
+.rvq .kv .v{text-align:right}
+.rvmiss .ez-ul{font-size:16px;line-height:1.5}
+.rvrow{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.rvtick{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-8px;cursor:pointer}
+.rvtick{position:relative}
+.rvtick input{position:absolute;inset:0;width:44px;height:44px;min-height:44px;margin:0;opacity:0;cursor:pointer}
+.rvtick .bx{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;border:2px solid var(--line2);background:var(--field)}
+.rvtick input:checked+.bx{background:var(--primary);border-color:var(--primary)}
+.rvtick input:checked+.bx:after{content:"";width:7px;height:13px;margin-top:-3px;border:solid var(--on-primary);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.rvtick input:focus-visible+.bx{outline:2px solid var(--accent);outline-offset:2px}
+.rv-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.rv-t{font-size:16px;padding-top:10px}
+.rv-s,.rv-k{font-size:14px;color:var(--muted)}
+.rv-k{padding-top:2px}
+.rv-in{margin:0;min-height:44px}
+.rv-2{display:flex;gap:8px}
+.rv-2 label,.rv-d,.rv-f{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.rv-2 label>span,.rv-d>span,.rv-f>span{font-size:14px;color:var(--muted)}
+.rv-2 select,.rv-2 input,.rv-d select,.rv-f input{margin:0;min-height:44px}
+.rvfoot{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.rv-ta{min-height:44px;resize:none;overflow:hidden;line-height:1.4;padding:10px 14px}
+.rv-t{color:var(--text)}

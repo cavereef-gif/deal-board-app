@@ -7,6 +7,13 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: automation step 2 – Claude reads for you (not live, not on the prototype link yet)
+- New edge function `read` (v1, deployed from the Claude project; record copy in supabase/functions/read/index.ts). Uses the bot key already in Vault. Photos and PDFs: Claude Sonnet (falls back to Haiku if Sonnet is not available on the key); WhatsApp quotes and voice notes: Claude Haiku. Suggestions only, saves nothing. It gets deal and contact NAMES only – never deal terms, never the private target or walk-away limit – and drops those two keys if they ever come back.
+- + › Read a photo or PDF ("Notes or a card" or "A deal document"; photo or PDF up to 6 MB; optional deal or contact; keep the file on it or on the board). + › Decode a WhatsApp quote (tidy card + what is not stated + questions to ask back). Deal › Numbers › Read terms from a document. Voice note › Make tasks from it now uses the reader (note saved once).
+- Review sheet "Check before saving": tick box per task, contact, note and term (44px); words can be fixed; Who / Due / Deal per task; a term that would replace an existing value starts unticked. Nothing is saved until "Save the ticked lines".
+- Cost: Anthropic usage on the existing key only (estimate about R60 a month at normal use).
+- Checks: node --check; function type-checks (tsc). screens.py 168 screens pass the readability rules; flows.py 31 jobs PASS (demo answers). Not yet tried with a real photo – that needs a login on the phone.
+
 ## 26 Sep 2026 – v17 prototype: automation step 1 (free parts) (not live)
 - Asked by Chris with two phone screenshots ("the explanation for the steps looks like a novel", "only ever those 2 options on the deals", voice recorder, voice for forms, route costing, separate calculators) and "plus everything you suggested except the whatsapp". Branch `prototype`; published only on the prototype link.
 - Guides and step details read as short points: numbered stages with the timing under the title, one idea per line, headings for "Counts / Does not count". Scripts stay exactly as written (they get copied and sent). The deal kit shows once on Guides (was twice). The deal Guide tab's "Full deal kit playbook" now opens Guides at the kit.

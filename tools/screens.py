@@ -71,6 +71,11 @@ async def run(p, dev, theme, results, errors):
     await js("openVoiceNote()"); await snap("voice-note"); await js("document.getElementById('vnClose').click()")
     await js("openChecks('Example Mining (Pty) Ltd', 'contact:c1')"); await snap("checks"); await js("document.getElementById('ckClose').click()")
     await js("openTaskSheet()"); await snap("new-task-mics"); await js("document.getElementById('tsClose').click()")
+    # step 2 (v17): the reader and its review sheet (demo answers)
+    await js("openReader({kind:'photo'})"); await snap("reader-photo"); await js("document.getElementById('rdClose').click()")
+    await js("openReader({kind:'quote', text:'Chrome conc 40-42% 5000t/month R2400/t FOT plant. Trucks from Monday.'})"); await snap("reader-quote")
+    await js("document.getElementById('rdGo').click()"); await pg.wait_for_timeout(600); await snap("review-quote"); await js("document.getElementById('rvClose').click()")
+    await js("runReader({kind:'photo', file:{data:'x', media_type:'image/jpeg'}, about:''})"); await pg.wait_for_timeout(600); await snap("review-photo"); await js("document.querySelector('#rvSheet .sheet-b').scrollTop = 900"); await snap("review-photo-terms"); await js("document.getElementById('rvClose').click()")
     await b.close()
 
 async def main():
