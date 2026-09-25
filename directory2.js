@@ -149,12 +149,28 @@ $("list").addEventListener("click", async e => {
 
 // ---------- WhatsApp chat import ----------
 let pendingChat = null;
+function chatTargetName(target) {
+  const [type, ...rest] = target.split(":"); const id = rest.join(":");
+  return type === "lead" ? (leadById(id) || {}).name : type === "contact" ? ((window._contacts || []).find(c => c.id === id) || {}).name : type === "deal" ? (dealById(id) || {}).name : ((window._items || []).find(i => i.id === id) || {}).waiting_for;
+}
 function startChatImport(target) {
   pendingChat = target;
   if (window._shared) { const s = window._shared; window._shared = null; handleChatText(s.text, s.name); return; }
-  $("chatInput").value = ""; $("chatInput").click();
+  $("csFor").textContent = "For: " + (chatTargetName(target) || "this record");
+  $("csText").value = "";
+  $("csClip").classList.toggle("hidden", !(navigator.clipboard && navigator.clipboard.readText));
+  $("chatSheet").classList.remove("hidden");
 }
 window.startChatImport = startChatImport;
+const closeChatSheet = () => $("chatSheet").classList.add("hidden");
+$("csClose").onclick = () => { closeChatSheet(); pendingChat = null; };
+$("chatSheet").addEventListener("click", e => { if (e.target.id === "chatSheet") { closeChatSheet(); pendingChat = null; } });
+$("csFile").onclick = () => { $("chatInput").value = ""; $("chatInput").click(); };
+$("csClip").onclick = async () => { try { const t = await navigator.clipboard.readText(); if (t) { $("csText").value = t; } else toast("The clipboard is empty – copy the messages in WhatsApp first."); } catch (er) { toast("Paste was blocked – long-press the box and tap Paste instead.", 5000); $("csText").focus(); } };
+$("csPaste").onclick = () => {
+  const t = $("csText").value.trim(); if (!t) { toast("Paste the messages into the box first."); $("csText").focus(); return; }
+  closeChatSheet(); handleChatText(t, `whatsapp-paste-${todaySA()}.txt`, true);
+};
 async function readChatFile(f) {
   if (/\.zip$/i.test(f.name) || f.type === "application/zip") {
     if (!window.JSZip) await new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
@@ -166,20 +182,25 @@ async function readChatFile(f) {
 }
 $("chatInput").addEventListener("change", async () => {
   const f = $("chatInput").files && $("chatInput").files[0]; if (!f || !pendingChat) return;
+  closeChatSheet();
   try { handleChatText(await readChatFile(f), f.name); } catch (er) { toast("Could not read that file: " + (er.message || er), 6000); }
 });
 function parseChat(text) {
-  const re = /^\[?(\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}),? (\d{1,2}:\d{2})(?::\d{2})?(?:\s?[APap][Mm])?\]?\s?[-–]?\s?([^:]{1,60}): /;
+  // Exports ("25/09/2026, 14:03 - Name: ", "[2026/09/25, 14:03:22] Name: ") and copied messages ("[25/09, 14:03] Name: ")
+  const re = /^\[?(\d{1,4}[\/.-]\d{1,2}(?:[\/.-]\d{1,4})?),? (\d{1,2}[:.]\d{2})(?:[:.]\d{2})?(?:\s?[APap]\.?\s?[Mm]\.?)?\]?\s?[-–]?\s?([^:]{1,60}): /;
   const lines = text.replace(/‎/g, "").split(/\r?\n/); let n = 0, first = "", last = ""; const who = new Set();
   for (const ln of lines) { const m = ln.match(re); if (m) { n++; if (!first) first = m[1]; last = m[1]; who.add(m[3].trim()); } }
   return { n, first, last, who: [...who].slice(0, 6) };
 }
-async function handleChatText(text, fname) {
-  const [type, ...rest] = pendingChat.split(":"); const id = rest.join(":"); pendingChat = null;
-  const info = parseChat(text || "");
-  const name = type === "lead" ? (leadById(id) || {}).name : type === "contact" ? ((window._contacts || []).find(c => c.id === id) || {}).name : type === "deal" ? (dealById(id) || {}).name : ((window._items || []).find(i => i.id === id) || {}).waiting_for;
-  if (!info.n) { toast("That does not look like a WhatsApp export. In WhatsApp: open the chat › ⋮ › More › Export chat › Without media.", 7000); return; }
-  if (!confirm(`WhatsApp chat: ${info.n} messages, ${info.first} to ${info.last}, between ${info.who.join(", ")}.\n\nSave the full chat to Files on "${name}" and ask the bot for a summary (facts, numbers, promises, open questions)? The text goes to the bot (Anthropic) to summarise.`)) return;
+async function handleChatText(text, fname, pasted) {
+  if (!pendingChat) return;
+  const [type, ...rest] = pendingChat.split(":"); const id = rest.join(":");
+  const name = chatTargetName(pendingChat); pendingChat = null;
+  let info = parseChat(text || "");
+  if (!info.n && !pasted) { toast("That does not look like a WhatsApp export. In WhatsApp: open the chat › ⋮ › More › Export chat › Without media.", 7000); return; }
+  if (!info.n) info = { n: text.split(/\r?\n/).filter(x => x.trim()).length, first: "", last: "", who: [] };
+  const what = info.first ? `${info.n} messages, ${info.first} to ${info.last}${info.who.length ? ", between " + info.who.join(", ") : ""}` : `pasted text, ${info.n} lines`;
+  if (!confirm(`WhatsApp chat: ${what}.\n\nSave it to Files on "${name}" and ask the bot for a summary (facts, numbers, promises, open questions)? The text goes to the bot (Anthropic) to summarise.`)) return;
   if (DEMO) { toast("Demo mode — nothing saved"); return; }
   toast("Saving the chat…", 0);
   const blob = new Blob([text], { type: "text/plain" });

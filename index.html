@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Deal Board</title>
-<meta name="theme-color" content="#18191C">
+<meta name="theme-color" content="#161932">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -315,6 +315,33 @@ header{gap:6px}
 .kitline button{padding:5px 10px;min-height:32px;font-size:13px}
 .kg ul,.kg ol{margin:4px 0 6px;padding-left:20px}
 .kg li{margin:3px 0}
+
+/* ---------- v14: Velvet palette (navy 313866 · violet 50409A · purple 964EC2 · pink FF7BBF) with off-white and ivory ---------- */
+:root{--bg:#161932;--card:#1F2342;--card2:#282D4F;--line:#373D67;--text:#E9E4DA;--muted:#AAA8B2;--btn:#2B3056;--btn-text:#E9E4DA;--tab:#1F2342;--tab-on:#50409A;--tab-on-text:#F1ECE2;
+  --primary:#50409A;--primary-text:#F1ECE2;--accent:#964EC2;--accent2:#FF7BBF;--navy:#313866;--rail-normal:#964EC2}
+:root[data-theme="light"]{--bg:#F5F1E8;--card:#FFFDF5;--card2:#F1ECE0;--line:#E1D9C8;--text:#24242F;--muted:#5E5C68;--btn:#ECE6DA;--btn-text:#24242F;--tab:#F1ECE0;--tab-on:#E4DDF4;--tab-on-text:#24242F;
+  --primary:#50409A;--primary-text:#FFFDF5}
+:root[data-theme="light"] .card,:root[data-theme="light"] .deal,:root[data-theme="light"] .ccard,:root[data-theme="light"] .brief,:root[data-theme="light"] .lead,:root[data-theme="light"] .tsec,:root[data-theme="light"] .thead{box-shadow:0 1px 2px rgba(49,56,102,.05),0 6px 18px rgba(49,56,102,.06)}
+button.primary,.acts button.primary,.acts0 button.primary,.fab{background:var(--primary);color:var(--primary-text);border-color:transparent}
+.tabs button.on,.seg.on{background:var(--tab-on);color:var(--tab-on-text);border-color:transparent}
+.tabs button.on{box-shadow:inset 0 3px 0 var(--accent2)}
+.seg.on span{color:var(--tab-on-text);opacity:.85}
+.bar{border-color:transparent}
+.bar i{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+h1 .logo{background:var(--primary);color:var(--primary-text);border-color:transparent}
+.tsh .tn{background:var(--primary);color:var(--primary-text);border-color:transparent}
+:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+/* WhatsApp chat sheet */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,28,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet-b{width:100%;max-width:640px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet-h{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500}
+.sheet-h span{flex:1}
+.sheet-h button{padding:6px 12px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line)}
+.sheet textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;font-size:15px;min-height:140px;margin-top:6px}
+.sheet .ks{color:var(--muted);font-size:14px;margin-top:4px}
+.sheet .row2{display:flex;gap:8px;margin-top:8px}
+.sheet .row2 button{flex:1;min-height:44px;font-size:15px}
+@media (min-width:700px){.sheet{align-items:center}.sheet-b{border-radius:20px}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
@@ -378,10 +405,25 @@ header{gap:6px}
 <input type="file" id="fileInput" class="hidden">
 <input type="file" id="chatInput" class="hidden" accept=".txt,.zip,text/plain,application/zip">
 <div id="toast" class="toast hidden"></div>
+<div id="chatSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="csTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="csTitle">Add a WhatsApp chat</span><button id="csClose" type="button">Close</button></div>
+    <div class="ks" id="csFor"></div>
+    <button class="wide primary" id="csFile" type="button">Choose an exported chat file (.txt or .zip)</button>
+    <div class="lbl">Or paste messages</div>
+    <textarea id="csText" placeholder="Paste the copied WhatsApp messages here"></textarea>
+    <div class="row2"><button id="csClip" type="button">Paste from clipboard</button><button class="primary" id="csPaste" type="button">Save and summarise</button></div>
+    <details class="libi"><summary>How to get a chat out of WhatsApp</summary><div class="about">Android, whole chat: open the chat › ⋮ › More › Export chat › Without media. Pick Deal Board if it is in the list; otherwise save it to Drive or Files and tap "Choose an exported chat file" here.
+Android, a few messages: long-press the first message, tap the others, tap Copy (the two-page icon at the top). Come back here and tap "Paste from clipboard".
+iPhone, whole chat: open the chat › tap the name at the top › Export Chat › Without Media › Save to Files. Then tap "Choose an exported chat file" here.
+iPhone, one message: long-press it › Copy, then paste here.
+What happens: the chat is saved to Files on this person, lead or deal, and the bot writes a short summary (facts, numbers, promises, open questions). The text is sent to the bot (Anthropic) to summarise.</div></details>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "13";
+const APP_VERSION = "14";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -459,7 +501,7 @@ function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openK
 function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "☾ Dark" : "☀ Light";
-  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F3F1EC" : "#18191C";
+  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F5F1E8" : "#161932";
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -855,6 +897,8 @@ function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); d
 function navPush(){ navStack.push(navSnap()); if (navStack.length > 40) navStack.shift(); try { history.pushState({ db: navStack.length }, ""); } catch(e){} updBack(); }
 window.navPush = navPush;
 window.addEventListener("popstate", () => {
+  const cs = $("chatSheet");
+  if (cs && !cs.classList.contains("hidden")) { cs.classList.add("hidden"); try { history.pushState({ db: navStack.length }, ""); } catch(e){} return; }
   const s = navStack.pop(); updBack(); if (!s) return;
   view = s.view; try{ localStorage.setItem("view", view) }catch(e){}
   openKeys = new Set(s.keys); saveOpen(); openStep = s.openStep; dealFilter = s.dealFilter;

@@ -1,4 +1,4 @@
-const CACHE = "deal-board-v13";
+const CACHE = "deal-board-v14";
 const SHELL = ["./", "index.html", "directory.js", "directory2.js", "today.js", "kitdata.js", "dealkit.js", "manifest.webmanifest", "icon.svg", "icon-192.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== "share-inbox").map(k => caches.delete(k))))); self.clients.claim(); });
