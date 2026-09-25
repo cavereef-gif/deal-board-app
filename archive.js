@@ -81,7 +81,7 @@ document.addEventListener("click", e => {
 // "Used before" hints while typing names in the add forms
 document.addEventListener("input", e => {
   const el = e.target;
-  if (!el.matches || !el.matches("#fOn, #ndName, .cform .c-name, .lf-name")) return;
+  if (!el.matches || !el.matches("#fOn, #tsFrom, #ndName, .cform .c-name, .lf-name")) return;
   clearTimeout(el._seenT); el._seenT = setTimeout(() => {
     let box = el.id === "fOn" ? $("fOnSeen") : el.parentElement.querySelector(".seenbox");
     if (!box) { box = document.createElement("div"); box.className = "seenbox"; el.insertAdjacentElement("afterend", box); }

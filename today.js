@@ -33,15 +33,10 @@ function itemRow(it, why) {
     title: who + esc(it.waiting_for), sub: sub + (hasDraft ? `${sub ? " · " : ""}WhatsApp draft ready` : ""), right: it.state === "Proposed" ? "" : dueWords(it), open, body: rowHtml(it, 0) });
 }
 
-// ---------- Home: greeting, focus cards, progress rings, deal tiles, week schedule ----------
+// ---------- Home: one to-do list (Overdue · Today · Tomorrow · This week · Later), then next steps on deals and buyer search, then an overview ----------
 const SA = () => new Date(Date.now() + 2 * 3600e3);
 const saKey = d => new Date(new Date(d).getTime() + 2 * 3600e3).toISOString().slice(0, 10);
-function dueOf(it) { const base = new Date(it.last_chased || it.created_at); return new Date(base.getTime() + (it.nudge_after_days || 3) * 864e5); }
-function fcard(it, hot) {
-  const dw = dueWords(it);
-  const tag = it.state === "Proposed" ? ["confirm", "Suggested"] : dw === "Overdue" ? ["chase", "Overdue"] : dw === "Due today" ? ["today", "Due today"] : it._me ? ["ours", "Our job"] : ["ok", "Waiting on them"];
-  return `<button class="fcard${hot ? " hot" : ""}" data-tgo="item:${it.id}"><span class="fc-top"><span>${it._me ? esc(it.owner || "Chris") : esc(it.waiting_on)}</span>${ic("more")}</span><span class="fc-t">${esc(it.waiting_for)}</span><span class="fc-b"><span class="tag ${tag[0]}">${tag[1]}</span><span class="fc-d">${it.state === "Proposed" || dw === "Overdue" || dw === "Due today" ? sinceWords(it) : dw}</span></span></button>`;
-}
+function dueOf(it) { return dueDate(it); }
 function ringsSvg(vals) {
   const R = [52, 41, 30], cols = ["url(#velvetGrad)", "#FF7BBF", "#5FD9C9"];
   return `<svg class="rings" viewBox="0 0 128 128" aria-hidden="true">${R.map((r, i) => { const c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, vals[i] || 0)); return `<circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" stroke="${cols[i]}" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"${p === 0 ? ' stroke-opacity="0"' : ""}/>`; }).join("")}</svg>`;
@@ -52,77 +47,116 @@ function dtile(d) {
   const owners = [...new Set(waits.map(i => i.owner || "Chris"))];
   const kindIc = d.kind === "transport" ? ["truck", "#72A9FF"] : d.kind === "mineral" ? ["gem", "#C7B6FF"] : ["deals", "#F0C05A"];
   const av = owners.map(o => `<span style="background:${o === "Annemarie" ? "#FF9CCB" : "#C7B6FF"}" title="${esc(o)}">${esc(o[0])}</span>`).join("");
-  return `<button class="dtile" data-tgo="deal:${d.id}${pg.next ? ":" + pg.next.id : ""}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done}/${pg.total}</span></span></button>`;
+  return `<button class="dtile" data-tgo="deal:${d.id}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done} of ${pg.total}</span></span></button>`;
 }
-function srow(it) {
-  const when = it.state === "Proposed" ? "Suggested" : dueWords(it);
-  const c = it.priority === 1 ? "var(--bad)" : it.state === "Proposed" ? "var(--prop)" : it._stale ? "var(--warn)" : "var(--accent)";
-  return `<button class="srow" data-tgo="item:${it.id}"><span class="sq" style="--c:${c}"></span><span class="sx"><span class="st1">${it._me ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="st2">${when} · ${esc(it.owner || "Chris")}</span></span>${ic("chev")}</button>`;
+// One task = one line (what) + one line of plain words (kind · due · who). Suggestions carry Accept / Drop.
+function homeRow(it, showOwner, noWho) {
+  const sugg = it.state === "Proposed", n = dayDiff(dueDate(it)), dw = dueWords(it);
+  const rail = n < 0 ? " r-warn" : sugg ? " r-prop" : it.priority === 1 ? " r-bad" : "";
+  const meta = [kindWords(it), it.priority === 1 ? "Urgent" : "", sugg ? sinceWords(it) : it._me ? dw : `${dw} · ${sinceWords(it)}`, showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
+  return `<div class="hrow${rail}"><button class="hr-main" data-tgo="item:${it.id}"><span class="hr-t">${it._me || noWho ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="hr-m">${meta}</span></button></div>`;
+}
+function linkRow(go, title, meta, rail) {
+  return `<div class="hrow${rail ? " " + rail : ""}"><button class="hr-main" data-tgo="${esc(go)}"><span class="hr-t">${title}</span><span class="hr-m">${meta}</span></button></div>`;
+}
+function hLabel(title, rows) {
+  if (!rows.length) return "";
+  return `<section class="hgrp"><div class="hg-l"><span>${title}</span><span class="hg-c">${rows.length}</span></div><div class="hg-b">${rows.join("")}</div></section>`;
+}
+function hGroup(key, title, rows, dflt) {
+  if (!rows.length) return "";
+  const k = "home:" + key, open = isOpen(k, dflt !== false);
+  return `<section class="hgrp"><button class="hg-h" data-tog="${k}" data-dflt="${dflt === false ? 0 : 1}" aria-expanded="${open}"><span class="hg-t">${title}</span><span class="hg-n">${rows.length}</span><span class="chev"></span></button>${open ? `<div class="hg-b">${rows.join("")}</div>` : ""}</section>`;
+}
+function homeGroups(items, target) {
+  const mine = items.filter(i => target === "All" || (i.owner || "Chris") === target);
+  const now = SA(), toSun = 6 - ((now.getUTCDay() + 6) % 7);
+  const g = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
+  for (const it of mine) { const n = dayDiff(dueDate(it)); (n < 0 ? g.overdue : n === 0 ? g.today : n === 1 ? g.tomorrow : n <= Math.max(toSun, 1) ? g.week : g.later).push(it); }
+  const byDue = (a, b) => dueDate(a) - dueDate(b) || byPrioThenAge(a, b);
+  g.overdue.sort(byPrioThenAge); g.today.sort(byPrioThenAge); g.tomorrow.sort(byPrioThenAge); g.week.sort(byDue); g.later.sort(byDue);
+  return { mine, g, sugg: mine.filter(i => i.state === "Proposed") };
 }
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
-  const mine = items.filter(i => target === "All" || (i.owner || "Chris") === target);
+  const { mine, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
-  const order = (br && br.chase_order) || [];
-  const rank = it => { const i = order.indexOf(it.id); return i < 0 ? 999 : i; };
-  const chase = mine.filter(i => !i._me && (order.includes(i.id) || (i._stale && i.state !== "Proposed"))).sort((a, b) => rank(a) - rank(b) || byPrioThenAge(a, b));
-  const ours = mine.filter(i => i._me).sort(byPrioThenAge);
-  const proposed = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
-  const td = saKey(Date.now());
-  const gOpen = k => ((window._gates || []).find(g => g.key === k) || {}).status === "open";
-  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 5);
   const hr = SA().getUTCHours();
-  let h = `<section class="hello"><div class="hi">${hr < 12 ? "Good morning," : hr < 17 ? "Good afternoon," : "Good evening,"}</div><div class="hn">${esc(me || "there")}</div>
-    <div class="hd">${SA().toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" })} · ${chase.length} to chase · ${ours.length} of our own</div></section>`;
+  let h = `<section class="hello"><div class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")} · ${dayName(Date.now())}</div></section>`;
   h += `<div class="chips whochips">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
-  // brief
-  h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
-    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh."}</div></div>`;
-  // focus
-  const focus = [...chase, ...ours.filter(i => !chase.includes(i))].slice(0, 10);
-  h += `<div class="sech"><h3>Focus</h3><span class="sc">${focus.length ? "swipe →" : ""}</span></div><div class="carousel">${focus.map((it, i) => fcard(it, i === 0)).join("") || `<div class="fempty">Nothing to chase – well done.</div>`}</div>`;
-  // progress rings
-  const ld = liveDeals(), st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
-  const L = window._leads || [], reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
-  const onTrack = mine.filter(i => !i._stale || i._me).length;
-  const doneWk = (window._done || []).filter(i => (target === "All" || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
-  h += `<div class="sech"><h3>Progress</h3></div><div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, mine.length ? onTrack / mine.length : 0])}
-    <div class="legend"><div class="lg"><i style="background:linear-gradient(135deg,#964EC2,#FF7BBF)"></i><div><b>Deal steps ${pct(st[0], st[1])}%</b><span>${st[0]} of ${st[1]} ticked</span></div></div>
-    <div class="lg"><i style="background:#FF7BBF"></i><div><b>Buyer list ${pct(reached, L.length)}%</b><span>${reached} of ${L.length} contacted</span></div></div>
-    <div class="lg"><i style="background:#5FD9C9"></i><div><b>On track ${pct(onTrack, mine.length)}%</b><span>${doneWk} done this week</span></div></div></div></div>`;
-  // deals
-  if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">See all</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
-  // schedule
-  const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
-  const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
-  const byDay = {}; for (const it of mine) { const k = it._stale ? td : saKey(dueOf(it)); (byDay[k] ||= []).push(it); }
-  h += `<div class="sech"><h3>Schedule</h3><span class="sc">chase dates</span></div><div class="card week"><div class="wk-m">${now.toLocaleDateString("en-ZA", { timeZone: "UTC", month: "long", year: "numeric" })}</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), arr = byDay[k] || [];
-    return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="dots">${arr.slice(0, 3).map(i => `<i style="background:${i.priority === 1 ? "var(--bad)" : i._stale ? "var(--warn)" : "var(--accent)"}"></i>`).join("")}</div></div>`; }).join("")}</div></div>`;
-  const tmr = saKey(Date.now() + 864e5), sun = saKey(days[6]);
-  const dueNow = mine.filter(i => i._stale || saKey(dueOf(i)) <= td).sort(byPrioThenAge);
-  const dueTmr = mine.filter(i => !dueNow.includes(i) && saKey(dueOf(i)) === tmr).sort(byPrioThenAge);
-  const dueWk = mine.filter(i => !dueNow.includes(i) && !dueTmr.includes(i) && saKey(dueOf(i)) <= sun).sort((a, b) => dueOf(a) - dueOf(b));
-  const later = mine.filter(i => !dueNow.includes(i) && !dueTmr.includes(i) && !dueWk.includes(i)).sort((a, b) => dueOf(a) - dueOf(b));
-  h += `<div class="sgrp">Today${dueNow.length ? " · " + dueNow.length : ""}</div>${dueNow.map(srow).join("") || `<div class="quiet" style="padding:0 4px">Nothing due today.</div>`}`;
-  if (dueTmr.length) h += `<div class="sgrp">Tomorrow · ${dueTmr.length}</div>${dueTmr.map(srow).join("")}`;
-  if (dueWk.length) h += `<div class="sgrp">Later this week · ${dueWk.length}</div>${dueWk.map(srow).join("")}`;
-  if (later.length) { const k = "home:later", o = isOpen(k, false); h += `<button class="sgrp linkb" style="padding:0;margin:16px 4px 8px" data-tog="${k}" data-dflt="0" aria-expanded="${o}">Next week and later · ${later.length} ${o ? "▴" : "▾"}</button>${o ? later.map(srow).join("") : ""}`; }
-  // confirm, risks, buyer search
-  let n = 0;
-  if (proposed.length) h += `<div style="height:14px"></div>` + tSection(++n, "confirm", "Suggested", "Suggested by the bot – accept or drop", proposed.map(it => itemRow(it, "Suggested")));
+  // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
+  if (sugg.length) h += `<div class="sbar"><span>${sugg.length} suggested by the bot</span><button class="primary" data-qa="acceptall">${ic("check")}Accept all</button></div>`;
+  const all = target === "All";
+  h += `<div class="hlist">`;
+  h += hLabel("Overdue", g.overdue.map(i => homeRow(i, all)));
+  h += hLabel("Today", g.today.map(i => homeRow(i, all)));
+  h += hLabel("Tomorrow", g.tomorrow.map(i => homeRow(i, all)));
+  h += hLabel("Later this week", g.week.map(i => homeRow(i, all)));
+  h += hGroup("later", "Next week and later", g.later.map(i => homeRow(i, all)), false);
+  // brief: one or two lines, "Read more" opens the rest
+  const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
+  const bOpen = isOpen("home:brief", false);
+  if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
+  else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
+    <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
+  if (!mine.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}. Tap + to add a task.</div>`;
+  // next steps on deals and the buyer search (open where the work is done)
+  const ld = liveDeals();
+  const dealRows = ld.map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next).map(({ d, pg }) => linkRow(`deal:${d.id}:${pg.next.id}`, esc(pg.next.title), `Next step · ${esc(d.name)}`, "r-deal"));
+  h += hGroup("deals", "Next step on each deal", dealRows);
+  const td = saKey(Date.now());
+  const gOpen = k => ((window._gates || []).find(x => x.key === k) || {}).status === "open";
+  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
+  h += hGroup("buyers", "Buyer search – next 3", queue.map(t => { const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
+    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "r-deal"); }));
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
-  if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map(r => (r.ref_type && r.ref_id && refName(r))
-    ? tRow({ go: r.ref_type + ":" + r.ref_id, dot: DOT.high, title: esc(r.text), sub: "On: " + esc(refName(r)), right: "" })
-    : `<div class="tline"><i class="dot" style="background:${DOT.high}"></i><span>${esc(r.text)}</span></div>`), false);
-  if (queue.length) h += tSection(++n, "buyers", "Buyer search – next up", "Top of the scored queue; tap to open the lead", queue.map(t => {
-    const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(kindName(t.kind)) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
-  }), false);
-  if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the new version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
-  if (!items.length) h += `<div class="empty">Nothing open. Tap + to add a task.</div>`;
+  h += hGroup("risks", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), false);
+  h += `</div>`;
+  // overview below the list: progress rings, deal tiles, this week
+  const st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
+  const L = window._leads || [], reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
+  const doneWk = (window._done || []).filter(i => (all || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
+  const oOpen = isOpen("home:overview", true);
+  h += `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
+  if (oOpen) {
+    h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, mine.length ? (mine.length - g.overdue.length) / mine.length : 0])}
+      <div class="legend"><div class="lg"><i style="background:linear-gradient(135deg,#964EC2,#FF7BBF)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
+      <div class="lg"><i style="background:#FF7BBF"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
+      <div class="lg"><i style="background:#5FD9C9"></i><div><b>Tasks: ${g.overdue.length} overdue of ${mine.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
+    if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">All deals</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
+    const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
+    const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
+    const byDay = {}; for (const it of mine) { const k = dayDiff(dueDate(it)) < 0 ? td : saKey(dueDate(it)); (byDay[k] ||= []).push(it); }
+    h += `<div class="card week"><div class="wk-m">This week · tasks due each day</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), n = (byDay[k] || []).length;
+      return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="wn">${n ? n : ""}</div></div>`; }).join("")}</div></div>`;
+  }
+  h += `</section>`;
+  if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   return h;
 }
+// Accept / Drop straight from the list, and Accept all
+async function quickItemAction(id, action) {
+  if (DEMO) { const it = (window._items || []).find(i => i.id === id); if (!it) return true; if (action === "confirm") it.state = "Confirmed"; else window._items = window._items.filter(i => i.id !== id); return true; }
+  const { error } = await sb.rpc("item_action", { p_id: id, p_action: action, p_value: null });
+  if (error) { toast("Could not save: " + error.message, 6000); return false; }
+  return true;
+}
+$("list").addEventListener("click", async e => {
+  const q = e.target.closest("button[data-qa]"); if (!q) return;
+  q.disabled = true;
+  if (q.dataset.qa === "acceptall") {
+    const target = who === "All" ? "All" : (who || me || "Chris");
+    const list = homeGroups(window._items || [], target).sugg;
+    let n = 0; for (const it of list) if (await quickItemAction(it.id, "confirm")) n++;
+    toast(`${n} suggestion${n === 1 ? "" : "s"} accepted.`);
+  } else {
+    const ok = await quickItemAction(q.dataset.qid, q.dataset.qa);
+    if (ok) toast(q.dataset.qa === "confirm" ? "Accepted – it's on the list now." : "Dropped.");
+  }
+  if (DEMO) render(); else load();
+});
+$("list").addEventListener("click", e => { const b = e.target.closest("button[data-v2]"); if (b) goView(b.dataset.v2); });
 window.todayHtml = todayHtml;
 
 function briefAsText() {
@@ -157,11 +191,9 @@ function goTo(ref) {
   }
   if (type === "deal") {
     const d = dealById(id); if (!d) { toast("That deal is not on the board."); return; }
-    navPush(); view = "deals"; try { localStorage.setItem("view", view); } catch (e) {}
-    if (dealFilter === "Closed" && (d.status === "Active" || d.status === "On hold")) dealFilter = "Active";
-    openKeys.delete("-deal:" + id); openKeys.add("+deal:" + id);
+    navPush(); view = "deal"; openDealPage(id); try { localStorage.setItem("view", view); } catch (e) {}
     if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { if (window.setDealTab) setDealTab(id, "steps"); openKeys.delete(`-stage:${id}:${st.stage}`); openKeys.add(`+stage:${id}:${st.stage}`); openStep = st.id; } }
-    saveOpen(); render(); scrollTo(extra ? `[data-step="${extra}"]` : `.deal[data-deal="${id}"]`); return;
+    saveOpen(); render(); if (extra) scrollTo(`[data-step="${extra}"]`); else window.scrollTo(0, 0); return;
   }
   if (type === "lead") {
     const l = (window._leads || []).find(x => x.id === id); if (!l) { toast("That lead is not in the directory."); return; }
@@ -175,7 +207,7 @@ function goTo(ref) {
     if (!inTop) { openKeys.add("+dq:more"); openKeys.add("+dq:gated"); openKeys.add("+dq:later"); saveOpen(); render(); }
     scrollTo("#tOut"); return;
   }
-  if (type === "contact") { navPush(); view = "people"; openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
+  if (type === "contact") { navPush(); view = "leads"; if (window.setDirSeg) setDirSeg("saved"); openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
 }
 window.goTo = goTo;
 

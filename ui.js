@@ -82,8 +82,10 @@ const dayName = d => { const x = saDate(d); return `${WDAY[x.getUTCDay()]} ${x.g
 const dayWords = d => { const n = dayDiff(d); return n === 0 ? "today" : n === 1 ? "tomorrow" : n === -1 ? "yesterday" : dayName(d); };
 // "Asked today" · "Asked yesterday" · "Asked 4 days ago"
 const agoWords = (d, verb) => { const n = -dayDiff(d); return `${verb} ${n <= 0 ? "today" : n === 1 ? "yesterday" : n + " days ago"}`; };
-// When a task is next due: last asked (or added) + the nudge days
-const dueDate = it => new Date(new Date(it.last_chased || it.created_at).getTime() + (it.nudge_after_days || 3) * 864e5);
+// When a task is due: its own due date if set, otherwise last asked (or added) + the nudge days
+const dueDate = it => it.due_on ? new Date(it.due_on + "T08:00:00+02:00") : new Date(new Date(it.last_chased || it.created_at).getTime() + (it.nudge_after_days || 3) * 864e5);
+// "YYYY-MM-DD" for today + n days (South African time)
+const saDayPlus = n => saDayKey(Date.now() + n * 864e5);
 // "Overdue" · "Due today" · "Due tomorrow" · "Due Sat 26 Sep"
 const dueWords = it => { const n = dayDiff(dueDate(it)); return n < 0 ? "Overdue" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + dayName(dueDate(it)); };
 // What kind of task, in words: "Suggested" · "Our job" · "Waiting on them"

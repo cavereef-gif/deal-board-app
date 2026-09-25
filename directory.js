@@ -5,14 +5,15 @@ const ST = {
   skip: ["Not a target", "#55555C"], dnd: ["Do not deal", "#C45C5C"],
 };
 const SEGS = [
-  ["all", "All"], ["fbuy", "Foreign buyers"], ["sabuy", "SA buyers"], ["sup", "Suppliers"], ["brok", "Brokers"], ["serv", "Services & network"], ["notbuy", "Not buyers"], ["dnd", "Do not deal"],
+  ["waiting", "Waiting on"], ["saved", "Saved contacts"], ["all", "Buyer and supplier list"], ["fbuy", "Foreign buyers"], ["sabuy", "SA buyers"], ["sup", "Suppliers"], ["brok", "Brokers"], ["serv", "Services & network"], ["notbuy", "Not buyers"], ["dnd", "Do not deal"],
 ];
 const SIDE_COL = { buyer: "#5C7FB8", supplier: "#4FA88A", broker: "#D9A03F", service: "#8E7CC3", network: "#8E7CC3", competitor: "#6B6B72", other: "#6B6B72" };
 const PRIO_W = ["Top", "High", "Medium", "Low", "—"];
 const EVID = { verified: "Verified contact", found: "Found – not yet tested", posted: "As posted – unverified", guess: "Guess – test first", unverified: "Unverified", none: "No contact yet", risk: "Risk" };
 const VIA = ["Email", "WhatsApp", "Call", "Board message", "Web form", "In person"];
 let dSeg = "all", dStat = "any", dQ = "", dCountry = "", dLimit = 40, dOpen = null, dForm = null, dTaskDone = null, dNewLead = false, dEditLead = null, dPersonForm = null;
-try { dSeg = localStorage.getItem("dSeg") || "all"; } catch (e) {}
+try { dSeg = localStorage.getItem("dSeg") || "waiting"; } catch (e) {}
+window.setDirSeg = s => { dSeg = s; dStat = "any"; dLimit = 40; dCountry = ""; try { localStorage.setItem("dSeg", s); } catch (e) {} };
 
 const inSeg = (l, s) => {
   const dnd = l.status === "dnd";
@@ -90,8 +91,8 @@ function queueHtml() {
   const blocked = all.filter(t => t.status === "blocked");
   const done = all.filter(t => t.status === "done").sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""));
   const gates = (window._gates || []).slice().sort((a, b) => a.sort - b.sort);
-  const k = "dq", opn = isOpen(k, true);
-  let h = `<div class="deal dq"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="1" aria-expanded="${opn}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Next up – buyer search</div><div class="ds">${open.length} ready · ${gated.length} waiting on a gate${later.length ? ` · ${later.length} later` : ""}</div></div><span class="chev"></span></div>`;
+  const k = "dq", opn = isOpen(k, false);
+  let h = `<div class="deal dq"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${opn}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Buyer search – all steps and checks</div><div class="ds">${open.length} ready · ${gated.length} waiting on a gate${later.length ? ` · ${later.length} later` : ""}</div></div><span class="chev"></span></div>`;
   if (opn) {
     h += `<div class="deal-b"><div class="sec-b">${open.slice(0, 5).map((t, i) => taskHtml(t, i + 1)).join("") || `<div class="quiet">Nothing ready. Clear a gate or add a step.</div>`}</div>`;
     h += `<div class="gates">${gates.filter(g => g.major).map(g => gateHtml(g, all)).join("")}</div>`;
@@ -145,11 +146,16 @@ function dirHtml() {
   const counts = {}; for (const l of base) counts[l.status] = (counts[l.status] || 0) + 1;
   const list = base.filter(l => dStat === "any" || (dStat === "notyet" ? ["new", "ready"].includes(l.status) : dStat === "done" ? ["contacted", "replied", "qualified", "deal", "bounced"].includes(l.status) : l.status === dStat))
     .sort((a, b) => a.priority - b.priority || ["replied", "qualified", "deal", "ready", "contacted", "new", "bounced", "parked", "skip", "dnd"].indexOf(a.status) - ["replied", "qualified", "deal", "ready", "contacted", "new", "bounced", "parked", "skip", "dnd"].indexOf(b.status) || a.name.localeCompare(b.name));
-  const segCount = s => (window._leads || []).filter(l => inSeg(l, s)).length;
+  const waitN = new Set((window._items || []).filter(i => !i._me).map(i => i.waiting_on)).size;
+  const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).length : (window._leads || []).filter(l => inSeg(l, s)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
-  let h = queueHtml();
-  h += `<div class="dtools"><h2 style="margin:18px 4px 8px">The list</h2><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search name, company, number, grade…" value="${esc(dQ)}" autocomplete="off"></div>
+  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
     <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>`;
+  if (dSeg === "waiting" || dSeg === "saved") {
+    h += `</div>` + (dSeg === "waiting" ? waitingPeopleHtml(dQ) : savedContactsHtml(dQ));
+    if (dQ.trim()) { const n = base.length; if (n) h += `<button class="wide" data-dseg="all" style="margin-top:14px">${ic("search")}${n} match${n > 1 ? "es" : ""} in the buyer and supplier list</button>`; }
+    return h;
+  }
   const total = base.length || 1;
   h += `<div class="pipe" aria-hidden="true">${Object.keys(ST).filter(s => counts[s]).map(s => `<i style="width:${counts[s] / total * 100}%;background:${ST[s][1]}"></i>`).join("")}</div>`;
   const notyet = (counts.new || 0) + (counts.ready || 0), touched = ["contacted", "replied", "qualified", "deal", "bounced"].reduce((a, s) => a + (counts[s] || 0), 0);
@@ -161,7 +167,7 @@ function dirHtml() {
   h += `<div class="lcount">${list.length} shown</div><div class="llist">`;
   h += list.slice(0, dLimit).map(leadRowHtml).join("") || `<div class="empty">Nothing matches. Clear the search or pick another group.</div>`;
   h += `</div>${list.length > dLimit ? `<button class="wide" data-dmore="1">Show ${Math.min(40, list.length - dLimit)} more (${list.length - dLimit} left)</button>` : ""}`;
-  h += libraryHtml();
+  h += `<h2>Buyer search queue</h2>` + queueHtml();
   return h;
 }
 function leadRowHtml(l) {

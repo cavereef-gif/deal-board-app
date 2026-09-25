@@ -609,3 +609,104 @@ body.canback header.appbar .brand{order:3;flex-basis:100%}
 .whoseg span{flex:1 1 calc(100% - 40px)}
 .ccard .t{flex-wrap:wrap}
 .ccard .t > div{flex:1 1 170px !important}
+
+/* ---------- v17 prototype: Home as one list ---------- */
+.hello .hn{font:500 24px/1.2 var(--font);letter-spacing:-.2px;margin-top:0}
+.hello{margin:4px 2px 12px}
+.brief .tsum.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.brief .tsum{font:400 16px/1.45 var(--font)}
+.brief .linkb.more{padding:4px 0;min-height:36px}
+.sbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 4px;padding:12px 14px;border-radius:var(--r2);background:var(--card);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.sbar:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--prop)}
+.sbar span{flex:1 1 160px;font-size:16px}
+.hlist{margin-top:6px}
+.hgrp{margin-top:14px}
+.hg-h{width:100%;display:flex;align-items:center;gap:10px;background:transparent;padding:6px 4px;min-height:44px;justify-content:flex-start;text-align:left}
+.hg-t{flex:1;font:500 18px/1.25 var(--font)}
+.hg-n{min-width:32px;height:28px;padding:0 8px;border-radius:14px;background:var(--raise);display:grid;place-items:center;font-size:14px;font-weight:500}
+.hgrp .chev{width:30px;height:30px}
+.hg-b{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.hrow{position:relative;border-radius:var(--r2);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.hrow:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line2)}
+.hrow.r-warn:before{background:var(--warn)} .hrow.r-prop:before{background:var(--prop)} .hrow.r-bad:before{background:var(--bad)} .hrow.r-deal:before{background:var(--accent)}
+.hr-main{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px 12px 18px;background:transparent;border-radius:0;text-align:left;font-weight:400;min-height:60px}
+.hr-t{font-size:16px;line-height:1.35;color:var(--text)}
+.hr-m{font-size:14px;line-height:1.35;color:var(--muted)}
+.hr-acts{display:flex;gap:8px;padding:0 14px 12px 18px;flex-wrap:wrap}
+.hr-acts button{min-height:44px}
+.ov .card{margin-top:6px}
+.ov .prog{padding:14px;gap:14px}
+.ov .rings{width:96px;height:96px}
+.wk .wn{height:22px;margin-top:4px;font-size:14px;color:var(--muted)}
+
+/* ---------- v17 prototype: new task sheet, due dates, chat picker, typing mode ---------- */
+.seg2{display:flex;gap:8px;margin-top:8px}
+.seg2.wrap{flex-wrap:wrap}
+.seg2 button{flex:1 1 auto;min-height:48px;background:var(--raise);border:1px solid var(--line);font-weight:500}
+.seg2 button.on{background:var(--primary);color:var(--on-primary);border-color:transparent}
+#taskSheet .sheet-b{max-height:92vh;overflow:auto}
+#taskSheet .fld{margin-top:14px}
+#taskSheet .lbl{margin-top:16px}
+.tsmore{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.tsmore summary{font-size:16px;font-weight:500;cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--text)}
+.tick{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:16px;min-height:44px}
+.tick input{width:22px;height:22px}
+#tsAdd{margin-top:18px}
+.duerow{margin-top:12px;padding:10px 12px;border-radius:var(--r3);background:var(--card2)}
+.duerow .dr-t{font-size:16px;margin-bottom:8px}
+.duerow .dr-b{display:flex;flex-wrap:wrap;gap:8px}
+.duerow .dr-b button{min-height:44px}
+.datepick{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:var(--r3);background:var(--raise);font-weight:500;font-size:16px;overflow:hidden}
+.datepick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.pkres{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:60vh;overflow:auto}
+.pkrow{flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card2);padding:12px 14px;font-weight:400}
+.pk-n{font-size:16px}
+.pk-s{font-size:14px;color:var(--muted)}
+body.typing .tabs{display:none}
+body.typing .composer{bottom:calc(10px + env(safe-area-inset-bottom))}
+
+/* ---------- v17 prototype: deal pages, Contacts, More ---------- */
+.dcard{width:100%;background:transparent;border-radius:0;text-align:left;font-weight:400}
+.dcard .dh{display:flex;flex-direction:column}
+.dcard .dx{display:block}
+.dpage{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.dsum{display:flex;align-items:center;gap:12px;padding:14px 14px 4px}
+.dsum-t{flex:1;min-width:0}
+.dsum .ds{margin-top:0;font-size:16px;color:var(--text)}
+.dtabs4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px 4px}
+.dtabs4 .dtab{justify-content:center;min-height:48px;font-size:16px;background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.dtabs4 .dtab.on{background:var(--primary);color:var(--on-primary);border-color:transparent}
+.dpage .dpanel .lbl{margin-top:18px}
+.dpage .dpanel .hrow{margin-bottom:8px}
+.stg-h .st{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stg-h .cnt{font-size:14px;color:var(--muted);white-space:nowrap}
+.nowtag,.nexttag{display:inline-flex;align-items:center;padding:2px 10px;border-radius:10px;background:var(--primary);color:var(--on-primary);font-size:14px;font-weight:500;line-height:1.5}
+.nexttag{margin:6px 0 2px}
+.step.next{border-radius:var(--r3);background:var(--card2);padding:4px 8px;margin:4px -8px}
+.pcard .pc-acts{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 12px}
+.pcard .hg-b{padding:0 10px 12px}
+.pcard .hrow{background:var(--card2);box-shadow:none}
+.setc{padding:16px}
+.keybox.card{padding:14px 16px}
+.menu .mi{justify-content:flex-start;text-align:left}
+/* v17 prototype – batch 6: every tap target at least 44px high */
+.chips button,.seg,.seg.sm,.hscroll button,.linkb,.sheet-h button,.composer .cmode .seg,.composer .cmode select,.post .plink,.freq .seg,.whochips button{min-height:44px}
+.post .plink{padding:6px 12px}
+/* v17: compact top of Home so today's tasks show on the first screen */
+.hello{margin:0 2px 10px}
+.hello .hn{font:500 18px/1.3 var(--font)}
+.hello .hd{margin-top:2px}
+.whochips{margin-bottom:10px}
+.bline{margin-bottom:10px}
+.bl-main{width:100%;display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;background:var(--card);box-shadow:var(--shadow);border-radius:var(--r2);padding:10px 14px;min-height:48px;font-weight:400}
+.bl-l{flex:none;font-size:14px;color:var(--muted);font-weight:500}
+.bl-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px}
+.sbar{margin:0 0 4px;padding:8px 8px 8px 16px;flex-wrap:nowrap}
+.sbar span{flex:1;font-size:16px}
+.hgrp{margin-top:8px}
+.hr-main{padding:10px 14px 10px 18px;min-height:56px;gap:2px}
+.hr-acts{padding:0 14px 10px 18px}
+.hg-l{display:flex;align-items:center;gap:10px;padding:8px 4px 2px;font:500 16px/1.3 var(--font);color:var(--muted)}
+.hg-l span:first-child{flex:1}
+.hg-c{font-size:14px}
+.hlist .bline{margin:14px 0 0}
