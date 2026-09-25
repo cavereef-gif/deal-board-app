@@ -39,19 +39,23 @@ h1{font-size:21px;font-weight:500;margin:0}
 .card-h .name{flex:1;font-size:19px;font-weight:500}
 .card-h .sub{color:var(--muted);font-size:14px;font-weight:400;display:block}
 .card-h button{padding:8px 12px;min-height:38px;font-size:14px}
+.cstrip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);color:var(--muted);font-size:14px}
+.cstrip button{padding:6px 10px;min-height:34px;font-size:13px;background:var(--card2);border:1px solid var(--line)}
 .row{padding:11px 14px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
 .row{border-left:6px solid transparent}
 .row.p1{border-left-color:var(--dot-high)} .row.p2{border-left-color:var(--rail-normal)} .row.p3{border-left-color:var(--dot-low)}
-.pinfo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
-.pinfo .t{display:flex;align-items:center;gap:10px}
+.pinfo,.ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.pinfo .t,.ccard .t{display:flex;align-items:center;gap:10px}
 .pinfo .t .n{flex:1;font-size:19px;font-weight:500}
-.pinfo .t button{padding:7px 11px;min-height:36px;font-size:14px}
-.pinfo .s{color:var(--muted);font-size:15px;margin-top:4px}
-.pinfo .k{margin-top:8px;font-size:15px;white-space:pre-wrap}
-.pinfo .lbl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
-.pinfo textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
-.pinfo input{font-size:15px;padding:10px;margin-top:4px}
+.ccard .t .n{flex:1;font-size:18px;font-weight:500}
+.pinfo .t button,.ccard .t button{padding:7px 11px;min-height:36px;font-size:14px}
+.pinfo .s,.ccard .s{color:var(--muted);font-size:15px;margin-top:4px}
+.pinfo .k,.ccard .k{margin-top:8px;font-size:15px;white-space:pre-wrap}
+.ccard .k{margin-top:5px}
+.lbl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
+.pinfo textarea,.ccard textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
+.pinfo input,.ccard input,.ccard select{font-size:15px;padding:10px;margin-top:4px}
 .row .l1{display:flex;align-items:flex-start;gap:9px}
 .row .num{color:var(--muted);min-width:20px;font-size:15px;padding-top:2px}
 .row .txt{flex:1}
@@ -63,6 +67,25 @@ h1{font-size:21px;font-weight:500;margin:0}
 .acts{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 0 29px}
 .acts button{padding:7px 11px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line)}
 .acts button.primary{background:var(--btn)}
+.npanel{margin:9px 0 0 29px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px 12px}
+.npanel .lbl:first-child{margin-top:2px}
+.npanel .acts button{background:var(--btn)}
+.note{padding:7px 0;border-bottom:1px solid var(--line);font-size:15px;white-space:pre-wrap}
+.note:last-of-type{border-bottom:0}
+.note .nm{color:var(--muted);font-size:13px;margin-top:2px}
+.nadd{display:flex;gap:6px;margin-top:8px}
+.nadd input{flex:1;font-size:15px;padding:10px;min-width:0}
+.nadd button{min-height:42px;flex:none}
+.file{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.file:last-of-type{border-bottom:0}
+.file .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .fn a{color:var(--text);text-decoration:underline;text-underline-offset:3px}
+.file .fm{color:var(--muted);font-size:13px;flex:none}
+.file button{padding:5px 9px;min-height:32px;font-size:13px;flex:none}
+.quiet{color:var(--muted);font-size:14px;padding:4px 0}
+.h2row{display:flex;align-items:center;gap:10px;margin:18px 2px 8px}
+.h2row h2{flex:1;margin:0}
+.h2row button{padding:6px 11px;min-height:34px;font-size:14px}
 h2{font-size:14px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:18px 2px 8px}
 .empty{color:var(--muted);padding:30px 0;text-align:center}
 form.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0 16px}
@@ -95,6 +118,7 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .sugg{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;align-self:stretch;white-space:pre-wrap}
 .sugg .acts{margin:8px 0 0}
 .fab2{position:fixed;left:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:90vw;z-index:5}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
 </style>
@@ -152,13 +176,16 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <button class="fab hidden" id="addBtn">+ Add</button>
 <button class="fab2 hidden" id="botFab">Bot</button>
+<input type="file" id="fileInput" class="hidden">
+<div id="toast" class="toast hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "7";
+const APP_VERSION = "8";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
+const PROJECTS = ["Transport", "Chrome", "Buyer search", "Verve admin", "Other"];
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 const $ = id => document.getElementById(id);
 let view = "worklist"; try { view = localStorage.getItem("view") || "worklist"; } catch(e){}
@@ -166,6 +193,10 @@ if (view === "todo") view = "worklist";
 let who = ""; try { who = localStorage.getItem("who") || "" } catch(e){}
 let chat = []; let botBusy = false;
 let me = "";
+const openPanels = new Set();   // "item:<id>", "contact:<id>", "project:<name>"
+let editContact = null;         // contact id being edited
+let newContact = null;          // {} or {name} when the new-contact form is open
+let pendingAttach = null;       // {type, id} waiting for a file pick
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "Dark" : "Light";
   document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F4F1EA" : "#1C1C1E";
@@ -177,6 +208,14 @@ $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme ==
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
 const isMe = it => /^(me|us|chris & annemarie)$/i.test((it.waiting_on || "").trim());
+const fmtWhen = d => new Date(d).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const fmtSize = n => n > 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round((n||0)/1024)) + " KB";
+const firstName = n => (n || "").split(/[\s(&,]/)[0];
+const toWa = p => { let d = (p || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); if (d.length === 10 && d[0] === "0") d = "27" + d.slice(1); else if (d.length === 9) d = "27" + d; return d; };
+const notesFor = id => (window._notes || []).filter(n => n.item_id === id);
+const attsFor = (type, id) => (window._atts || []).filter(a => a.target_type === type && String(a.target_id) === String(id));
+const contactsFor = name => { const low = (name || "").toLowerCase(); return (window._contacts || []).filter(c => { const cn = (c.name || "").toLowerCase(); const f = firstName(cn); return low === cn || (f.length > 2 && new RegExp("\\b" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b").test(low)); }); };
+let toastT; function toast(msg, ms){ $("toast").textContent = msg; $("toast").classList.remove("hidden"); clearTimeout(toastT); if (ms !== 0) toastT = setTimeout(() => $("toast").classList.add("hidden"), ms || 3000); }
 
 function demoItems(){
   const d = n => new Date(Date.now() - n*864e5).toISOString();
@@ -189,6 +228,16 @@ function demoItems(){
     {id:"6",project:"Verve admin",waiting_on:"Annemarie",waiting_for:"Add Chris as CIPC director",blocks:"Bank FICA",next_action:"File CoR39",state:"Proposed",priority:2,owner:"Annemarie",nudge_after_days:3,last_chased:null,created_at:d(0)}
   ];
 }
+function demoExtras(){
+  const d = n => new Date(Date.now() - n*864e5).toISOString();
+  window._contacts = [
+    {id:"c1",name:"Lazarus",phone:"078 219 5810",whatsapp:"27782195810",email:"",company:"",role:"Client-side intermediary (with Jan)",project:"Transport",notes:"Unverified.",created_by:"claude",updated_at:d(1)},
+    {id:"c2",name:"Piet (Pieter)",phone:"",whatsapp:"",email:"",company:"",role:"NDNCA pending",project:"Chrome",notes:"",created_by:"claude",updated_at:d(2)}
+  ];
+  window._notes = [{id:1,item_id:"1",new_value:"Lazarus says the permit office wants the truck list first.",changed_by:"Annemarie",changed_at:d(1),source:"app"},{id:2,item_id:"1",new_value:"Asked Jan for the reference number.",changed_by:"Chris",changed_at:d(2),source:"app"}];
+  window._atts = [{id:"a1",target_type:"item",target_id:"1",path:"demo",name:"Permit application scan.pdf",size:234000,uploaded_by:"Annemarie",created_at:d(1)}];
+  window._urls = { demo: "#" };
+}
 
 async function checkVersion(){
   try {
@@ -200,11 +249,20 @@ async function checkVersion(){
 async function load(){
   checkVersion();
   let items;
-  if (DEMO) { items = demoItems(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
-    const [r1, r2] = await Promise.all([sb.from("items").select("*").neq("state","Done"), sb.from("projects").select("*")]);
+    const [r1, r2, r3, r4, r5] = await Promise.all([
+      sb.from("items").select("*").neq("state","Done"),
+      sb.from("projects").select("*"),
+      sb.from("contacts").select("*").order("name"),
+      sb.from("events").select("id,item_id,new_value,changed_by,changed_at,source").eq("field","note").order("changed_at", { ascending: false }).limit(400),
+      sb.from("attachments").select("*").order("created_at", { ascending: false })
+    ]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
-    items = r1.data; window._projects = r2.data || [];
+    items = r1.data; window._projects = r2.data || []; window._contacts = r3.data || []; window._notes = r4.data || []; window._atts = r5.data || [];
+    window._urls = window._urls || {};
+    const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
+    if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
       return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
       const b = r && r.data && r.data[0];
@@ -224,8 +282,23 @@ async function load(){
   $("people").innerHTML = ["Me", ...names.filter(n => !/^me$/i.test(n))].map(n => `<option value="${esc(n)}">`).join("");
   render();
 }
+// Signed links expire after an hour; refresh them so old links do not go dead while the app stays open.
+setInterval(() => { window._urls = {}; if (!DEMO && !$("board").classList.contains("hidden")) load(); }, 50*60*1000);
 
 const byPrioThenAge = (a,b) => (a.priority||2) - (b.priority||2) || b._days - a._days;
+
+function filesHtml(type, id){
+  const arr = attsFor(type, id);
+  return `<div class="files">${arr.map(a => `<div class="file"><span class="fn">${window._urls[a.path] ? `<a href="${esc(window._urls[a.path])}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} ${new Date(a.created_at).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" })}</span><button data-rmfile="${a.id}" aria-label="Remove file">Remove</button></div>`).join("") || `<div class="quiet">No files yet.</div>`}
+    <div class="acts" style="margin:8px 0 0"><button data-attach="${type}:${esc(String(id))}">Attach file or photo</button></div></div>`;
+}
+function panelHtml(it){
+  const ns = notesFor(it.id);
+  return `<div class="npanel"><div class="lbl">Notes</div>
+    ${ns.length ? ns.map(n => `<div class="note">${esc(n.new_value)}<div class="nm">${esc(n.changed_by)} · ${fmtWhen(n.changed_at)}</div></div>`).join("") : `<div class="quiet">No notes yet. Anything you write here is seen by both of you.</div>`}
+    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${it.id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${it.id}">Save</button></div>
+    <div class="lbl">Files</div>${filesHtml("item", it.id)}</div>`;
+}
 
 function rowHtml(it, n){
   const stateDot = it.state === "Proposed" ? "d-prop" : (it._stale ? "d-stale" : "d-ok");
@@ -233,6 +306,7 @@ function rowHtml(it, n){
   const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : `<span class="pill"><i class="dot" style="background:var(--rail-normal)"></i>Normal</span>`;
   const own = `<span class="pill">${esc(it.owner || "Chris")}${(it.owner || "Chris") === me ? " (me)" : ""}</span>`;
   const other = (it.owner || "Chris") === "Annemarie" ? "Chris" : "Annemarie";
+  const nN = notesFor(it.id).length, fN = attsFor("item", it.id).length, open = openPanels.has("item:" + it.id);
   return `<div class="row p${it.priority || 2}" data-id="${it.id}">
     <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}" style="margin-top:6px"></i>${n ? `<span class="num">${n}.</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
@@ -243,9 +317,33 @@ function rowHtml(it, n){
       ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
       ${it.priority === 1 ? `<button data-a="priority" data-v="2">Normal</button>` : `<button data-a="priority" data-v="1">High</button>`}
       <button data-a="assign" data-v="${other}">→ ${other}</button>
+      <button data-panel="item:${it.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes${nN ? " " + nN : ""}${fN ? " · Files " + fN : ""}</button>
       <button data-botitem="${it.id}">Bot</button>
       ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
-    </div></div>`;
+    </div>${open ? panelHtml(it) : ""}</div>`;
+}
+
+function contactFormHtml(c){
+  const f = (k, lbl, type) => `<div class="lbl">${lbl}</div><input class="c-${k}" type="${type || "text"}" value="${esc(c[k] || "")}" autocomplete="off">`;
+  return `<div class="cform" data-cform="${c.id || "new"}">${f("name", "Name")}${f("phone", "Phone (e.g. 078 219 5810)", "tel")}${f("whatsapp", "WhatsApp number only if different (27…)", "tel")}${f("email", "Email", "email")}
+    <div class="two"><div>${f("company", "Company")}</div><div>${f("role", "Role")}</div></div>
+    <div class="lbl">Project</div><select class="c-project"><option value="">—</option>${PROJECTS.map(p => `<option${c.project === p ? " selected" : ""}>${p}</option>`).join("")}</select>
+    <div class="lbl">Notes</div><textarea class="c-notes">${esc(c.notes || "")}</textarea>
+    <div class="acts" style="margin:10px 0 0"><button class="primary" data-csave="${c.id || "new"}">Save contact</button><button data-ccancel="${c.id || "new"}">Cancel</button></div><div class="msg c-msg"></div></div>`;
+}
+function contactHtml(c){
+  const open = openPanels.has("contact:" + c.id), edit = editContact === c.id;
+  const wa = c.whatsapp || toWa(c.phone);
+  const fN = attsFor("contact", c.id).length;
+  const sub = [c.company, c.role].filter(Boolean).join(" · ");
+  return `<div class="ccard" data-cid="${c.id}"><div class="t"><div class="n">${esc(c.name)}</div>${c.phone ? `<button data-call="${esc(c.phone)}">Call</button>` : ""}${wa ? `<button data-wa1="${esc(wa)}">WhatsApp</button>` : ""}</div>
+    <div class="s">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div>
+    <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
+    ${c.notes ? `<div class="k">${esc(c.notes)}</div>` : ""}
+    <div class="acts" style="margin:9px 0 0"><button data-panel="contact:${c.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button><button data-cedit="${c.id}"${edit ? ' style="background:var(--tab-on)"' : ""}>Edit</button><button data-botcontact="${esc(c.name)}">Bot</button></div>
+    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
+    ${edit ? contactFormHtml(c) : ""}
+    <div class="s" style="margin-top:8px;font-size:13px">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
 }
 
 function render(){
@@ -253,7 +351,7 @@ function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length, assigned = items.filter(i => (i.owner || "Chris") === me).length;
   $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span><span>${assigned} on ${me || "me"}</span>`;
-  if (!items.length) { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
+  if (!items.length && view !== "people" && view !== "bot") { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
   let html = "";
   if (view === "people") {
     const groups = {};
@@ -264,10 +362,18 @@ function render(){
       const oldest = Math.max(...arr.map(i => i._days));
       const anyStale = arr.some(i => i._stale);
       html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest}d</span></div><button data-botperson="${esc(name)}">Bot</button><button data-wa="${esc(name)}">WhatsApp list</button></div>`;
+      const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
+      html += cs.length ? `<div class="cstrip">${cs.map(c => `<span>${esc(firstName(c.name))} ${esc(c.phone || "+" + c.whatsapp)}</span>${c.phone ? `<button data-call="${esc(c.phone)}">Call</button>` : ""}<button data-wa1="${esc(c.whatsapp || toWa(c.phone))}">WhatsApp</button>`).join("")}</div>`
+                       : `<div class="cstrip"><span>No number saved</span><button data-cnew="${esc(firstName(name))}">Add contact</button></div>`;
       arr.forEach((it, i) => html += rowHtml(it, i+1));
       html += `</div>`;
     }
     if (!order.length) html = `<div class="empty">Nothing waiting on anyone.</div>`;
+    const contacts = window._contacts || [];
+    html += `<div class="h2row" id="contactsHead"><h2>Contacts — ${contacts.length}</h2><button data-cnew="">+ Contact</button></div>`;
+    if (newContact) html += `<div class="ccard">${contactFormHtml(newContact)}</div>`;
+    contacts.forEach(c => html += contactHtml(c));
+    if (!contacts.length) html += `<div class="quiet">No contacts saved yet. Tap + Contact, or tell the bot someone's number.</div>`;
   } else if (view === "worklist") {
     const target = who || me || "Chris";
     const list = items.filter(i => who === "All" || (i.owner || "Chris") === target).sort(byPrioThenAge);
@@ -288,8 +394,8 @@ function render(){
     }
     if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.project)} · ${esc(m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
-      <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
+    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.project)} · ${esc(m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+      <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
       <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
       <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
         <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
@@ -304,12 +410,15 @@ function render(){
     for (const proj of names) {
       const arr = (byProj[proj] || []).sort(byPrioThenAge);
       const p = pinfo.find(x => x.name === proj) || {name: proj, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:""};
+      const fN = attsFor("project", proj).length, open = openPanels.has("project:" + proj);
       html += `<div class="pinfo" data-p="${esc(proj)}"><div class="t"><div class="n">${esc(proj)}</div><button data-botproj="${esc(proj)}">Bot</button><button data-edit="${esc(proj)}">Edit info</button></div>
         <div class="s">${esc(p.stage) || "Stage not set"}</div>
         <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
         ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
         ${p.contacts ? `<div class="lbl">Contacts</div><div class="k">${esc(p.contacts)}</div>` : ""}
         ${p.next_milestone ? `<div class="lbl">Next milestone</div><div class="k">${esc(p.next_milestone)}</div>` : ""}
+        <div class="acts" style="margin:10px 0 0"><button data-panel="project:${esc(proj)}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button></div>
+        ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("project", proj)}</div>` : ""}
         ${p.updated_at ? `<div class="s" style="margin-top:8px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
         <div class="edit hidden"><div class="lbl">Stage</div><input class="e-stage" value="${esc(p.stage)}">
         <div class="lbl">Summary</div><textarea class="e-summary">${esc(p.summary)}</textarea>
@@ -337,9 +446,10 @@ $("list").addEventListener("click", async e => {
   if (wa) {
     const name = wa.dataset.wa;
     const asks = (window._items || []).filter(i => i.waiting_on === name).sort(byPrioThenAge);
-    const first = name.split(/[&,]| and /)[0].trim();
-    const text = `Hi ${first}, quick check-in on a few things:\n` + asks.map((a, i) => `${i+1}. ${a.waiting_for}`).join("\n") + `\nAny update? Thanks.`;
-    location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+    const cs = contactsFor(name).filter(c => c.whatsapp || c.phone);
+    const num = cs.length === 1 ? (cs[0].whatsapp || toWa(cs[0].phone)) : "";
+    const text = `Hi ${firstName(name)}, quick check-in on a few things:\n` + asks.map((a, i) => `${i+1}. ${a.waiting_for}`).join("\n") + `\nAny update? Thanks.`;
+    location.href = `https://wa.me/${num}?text=` + encodeURIComponent(text);
     return;
   }
   const b = e.target.closest("button[data-a]"); if (!b) return;
@@ -349,6 +459,78 @@ $("list").addEventListener("click", async e => {
   const { error } = await sb.rpc("item_action", { p_id: id, p_action: b.dataset.a, p_value: b.dataset.v || null });
   if (error) { b.textContent = "Failed"; console.error(error); row.querySelectorAll("button").forEach(x => x.disabled = false); return; }
   load();
+});
+
+// Notes, files and contacts
+$("list").addEventListener("click", async e => {
+  const pn = e.target.closest("button[data-panel]");
+  if (pn) { const k = pn.dataset.panel; openPanels.has(k) ? openPanels.delete(k) : openPanels.add(k); render(); return; }
+  const cl = e.target.closest("button[data-call]");
+  if (cl) { location.href = "tel:" + cl.dataset.call.replace(/[^\d+]/g, ""); return; }
+  const w1 = e.target.closest("button[data-wa1]");
+  if (w1) { location.href = "https://wa.me/" + w1.dataset.wa1; return; }
+  const nb = e.target.closest("button[data-note]");
+  if (nb) {
+    const inp = document.querySelector(`input[data-noteinput="${nb.dataset.note}"]`); const text = ((inp && inp.value) || "").trim(); if (!text) { inp && inp.focus(); return; }
+    if (DEMO) { alert("Demo mode — nothing saved"); return; }
+    nb.disabled = true; nb.textContent = "…";
+    const { error } = await sb.from("events").insert({ item_id: nb.dataset.note, field: "note", new_value: text, source: "app" });
+    if (error) { nb.textContent = "Failed"; toast("Could not save note: " + error.message, 5000); nb.disabled = false; return; }
+    load(); return;
+  }
+  const at = e.target.closest("button[data-attach]");
+  if (at) { const [type, ...rest] = at.dataset.attach.split(":"); pendingAttach = { type, id: rest.join(":") }; $("fileInput").value = ""; $("fileInput").click(); return; }
+  const rf = e.target.closest("button[data-rmfile]");
+  if (rf) {
+    const a = (window._atts || []).find(x => x.id === rf.dataset.rmfile); if (!a) return;
+    if (!confirm(`Remove "${a.name}" for everyone?`)) return;
+    if (DEMO) { alert("Demo mode — nothing saved"); return; }
+    rf.disabled = true; rf.textContent = "…";
+    await sb.storage.from("files").remove([a.path]);
+    const { error } = await sb.from("attachments").delete().eq("id", a.id);
+    if (error) toast("Could not remove: " + error.message, 5000);
+    load(); return;
+  }
+  const cn = e.target.closest("button[data-cnew]");
+  if (cn) { newContact = newContact && !cn.dataset.cnew ? null : { name: cn.dataset.cnew || "" }; editContact = null; render();
+    const h = $("contactsHead"); if (h && newContact) h.scrollIntoView({ block: "start" }); const f = document.querySelector(".cform input.c-name"); if (f && newContact && !f.value) f.focus(); return; }
+  const ce = e.target.closest("button[data-cedit]");
+  if (ce) { editContact = editContact === ce.dataset.cedit ? null : ce.dataset.cedit; render(); return; }
+  const cc = e.target.closest("button[data-ccancel]");
+  if (cc) { if (cc.dataset.ccancel === "new") newContact = null; else editContact = null; render(); return; }
+  const cs = e.target.closest("button[data-csave]");
+  if (cs) {
+    const form = cs.closest(".cform"); const v = k => (form.querySelector(".c-" + k).value || "").trim();
+    const row = { name: v("name"), phone: v("phone"), whatsapp: v("whatsapp").replace(/\D/g, "") || toWa(v("phone")), email: v("email"), company: v("company"), role: v("role"), project: v("project"), notes: v("notes") };
+    if (!row.name) { form.querySelector(".c-msg").textContent = "A name is needed."; return; }
+    if (DEMO) { form.querySelector(".c-msg").textContent = "Demo mode — nothing saved"; return; }
+    cs.disabled = true; cs.textContent = "…";
+    const { error } = cs.dataset.csave === "new" ? await sb.from("contacts").insert(row) : await sb.from("contacts").update(row).eq("id", cs.dataset.csave);
+    if (error) { form.querySelector(".c-msg").textContent = "Failed: " + error.message; cs.disabled = false; cs.textContent = "Save contact"; return; }
+    newContact = null; editContact = null; toast("Contact saved."); load(); return;
+  }
+  const bc = e.target.closest("button[data-botcontact]");
+  if (bc) { askBot(`About ${bc.dataset.botcontact}: what is open with them, what do we know, what is missing from their contact card, and what should we ask them next?`, "ask"); return; }
+});
+$("list").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const inp = e.target.closest("input[data-noteinput]"); if (!inp) return;
+  e.preventDefault(); const btn = document.querySelector(`button[data-note="${inp.dataset.noteinput}"]`); if (btn) btn.click();
+});
+$("fileInput").addEventListener("change", async () => {
+  const f = $("fileInput").files && $("fileInput").files[0]; const t = pendingAttach; pendingAttach = null;
+  if (!f || !t) return;
+  if (f.size > 25 * 1024 * 1024) { toast("That file is over 25 MB. Send a smaller one.", 5000); return; }
+  if (DEMO) { alert("Demo mode — nothing saved"); return; }
+  toast("Uploading " + f.name + "…", 0);
+  const safe = f.name.replace(/[^\w.\-]+/g, "_").slice(-80);
+  const path = `${t.type}/${t.id}/${Date.now()}-${safe}`;
+  const up = await sb.storage.from("files").upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
+  if (up.error) { toast("Upload failed: " + up.error.message, 6000); return; }
+  const { error } = await sb.from("attachments").insert({ target_type: t.type, target_id: String(t.id), path, name: f.name, size: f.size, mime: f.type || "" });
+  if (error) { toast("Uploaded, but could not record it: " + error.message, 6000); return; }
+  openPanels.add(`${t.type}:${t.id}`);
+  toast("Saved " + f.name); load();
 });
 
 $("list").addEventListener("click", async e => {
@@ -382,7 +564,7 @@ async function askBot(question, mode, focus, silent){
     for (const s of (data.suggestions || [])) chat.push({ role: "sugg", s, text: "" });
     if (mode === "brief") window._brief = { text: data.answer || "", created_at: new Date().toISOString(), actor: me, for_date: "" };
     botBusy = false; render();
-    if (data.reload || mode === "brief") load(); else if (view === "bot") { window.scrollTo(0, document.body.scrollHeight); }
+    if (data.reload || mode === "brief" || (data.actions || []).length) load(); else if (view === "bot") { window.scrollTo(0, document.body.scrollHeight); }
   } catch (err) {
     botBusy = false; chat.push({ role: "sys", text: "Bot error: " + (err.message || err) }); render();
   }
