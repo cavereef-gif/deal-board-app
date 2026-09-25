@@ -83,6 +83,9 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .ask{display:flex;gap:8px;align-items:flex-end}
 .ask textarea{flex:1;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:16px;min-height:48px;max-height:140px;resize:vertical}
 .ask button{min-height:48px}
+.keybox{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--muted);font-size:14px}
+.keybox summary{cursor:pointer;min-height:36px;display:flex;align-items:center}
+.keybox input{margin-top:8px;font-size:15px}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
 </style>
@@ -178,11 +181,12 @@ function demoItems(){
 
 async function load(){
   let items;
-  if (DEMO) { items = demoItems(); window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2] = await Promise.all([sb.from("items").select("*").neq("state","Done"), sb.from("projects").select("*")]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
     items = r1.data; window._projects = r2.data || [];
+    sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render(); });
   }
   for (const it of items) {
     it._days = daysSince(it.last_chased || it.created_at);
@@ -255,7 +259,11 @@ function render(){
   } else if (view === "bot") {
     html += `<div class="chat">${chat.length ? chat.map(m => `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
-      <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>`;
+      <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
+      <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
+        <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
+        <div class="acts" style="margin:8px 0 0"><button class="primary" data-bot="savekey">Save key</button></div>
+        <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>`;
   } else {
     const byProj = {};
     for (const it of items) (byProj[it.project] ||= []).push(it);
@@ -337,7 +345,7 @@ async function askBot(question, mode){
     if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
     const history = chat.filter(m => m.role !== "sys").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
     const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history } });
-    if (error) throw error;
+    if (error) { let msg = error.message || String(error); try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){} throw new Error(msg); }
     chat.push({ role: "assistant", text: data.answer || "(no answer)" });
     if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
     botBusy = false; render();
@@ -349,6 +357,16 @@ async function askBot(question, mode){
 $("list").addEventListener("click", e => {
   const b = e.target.closest("button[data-bot]"); if (!b) return;
   if (b.dataset.bot === "clear") { chat = []; render(); return; }
+  if (b.dataset.bot === "savekey") {
+    const k = ($("botKey").value || "").trim(); if (k.length < 20) { $("keyMsg").textContent = "That does not look like a key."; return; }
+    if (DEMO) { $("keyMsg").textContent = "Demo mode — nothing saved"; return; }
+    b.disabled = true; b.textContent = "…";
+    sb.rpc("set_bot_key", { p_key: k }).then(({ error }) => {
+      if (error) { $("keyMsg").textContent = "Failed: " + error.message; b.disabled = false; b.textContent = "Save key"; return; }
+      $("botKey").value = ""; window._keyStatus = "set just now"; chat.push({ role: "sys", text: "Key saved. Try Daily brief." }); render();
+    });
+    return;
+  }
   if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
   const q = ($("q") && $("q").value.trim()) || ""; if (!q) return; askBot(q, "ask");
 });
