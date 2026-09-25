@@ -145,6 +145,7 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const APP_VERSION = "6";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -179,7 +180,15 @@ function demoItems(){
   ];
 }
 
+async function checkVersion(){
+  try {
+    const r = await fetch("version.txt?t=" + Date.now(), { cache: "no-store" });
+    const v = (await r.text()).trim();
+    if (r.ok && v && v !== APP_VERSION) { if ("caches" in window) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } location.reload(); }
+  } catch(e){}
+}
 async function load(){
+  checkVersion();
   let items;
   if (DEMO) { items = demoItems(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
@@ -293,7 +302,7 @@ function render(){
     }
   }
   $("list").innerHTML = html;
-  $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
 }
 
 document.querySelector(".tabs").addEventListener("click", e => {
@@ -379,7 +388,7 @@ $("addForm").onsubmit = async e => {
   if (error) { $("addMsg").textContent = "Failed: " + error.message; return; }
   e.target.reset(); $("addMsg").textContent = ""; $("addBtn").click(); load();
 };
-$("refreshBtn").onclick = load;
+$("refreshBtn").onclick = () => location.reload();
 $("outBtn").onclick = async () => { await sb.auth.signOut(); me = ""; show(); };
 
 $("loginForm").onsubmit = async e => {
