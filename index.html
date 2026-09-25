@@ -18,7 +18,8 @@
   <div class="brand"><span class="logo" aria-hidden="true">DB</span><h1 id="pageTitle">Deal Board</h1></div>
   <div class="hdr-btns">
     <button id="addBtn" class="primary addb hidden" aria-label="Add a wait">+ Add</button>
-    <button id="menuBtn" aria-label="Menu" data-ico="more"></button>
+    <button id="botBtn" class="ib t-bot hidden" aria-label="Ask the bot" title="Ask the bot" data-ico="bot"></button>
+    <button id="menuBtn" class="avatar" aria-label="Menu">DB</button>
   </div>
 </header>
 
@@ -35,17 +36,18 @@
 </section>
 
 <section id="board" class="hidden">
-  <div class="tabs">
-    <button data-v="worklist" class="on"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></svg>Today</button>
-    <button data-v="leads"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>Directory</button>
-    <button data-v="deals"><svg viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="13" rx="2.5"/><path d="M9 6.5V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v1.5M3.5 12h17"/></svg>Deals</button>
-    <button data-v="people"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.2c2.3.2 3.9 1.8 4.5 4.3"/></svg>People</button>
-    <button data-v="bot"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="12" rx="4"/><path d="M12 7V4M9 12.5h.01M15 12.5h.01M9.5 16h5"/></svg>Bot</button>
-  </div>
+  <nav class="tabs" aria-label="Main">
+    <button data-v="worklist" aria-label="Home" title="Home" data-ico="home"></button>
+    <button data-v="leads" aria-label="Directory" title="Directory" data-ico="search"></button>
+    <button class="plus" id="plusBtn" type="button" aria-label="Add" title="Add" data-ico="plus"></button>
+    <button data-v="deals" aria-label="Deals" title="Deals" data-ico="deals"></button>
+    <button data-v="board" aria-label="Notice board" title="Notice board" data-ico="board"><span class="nb hidden" id="boardDot"></span></button>
+  </nav>
   <div class="strip" id="strip"></div>
   <form id="addForm" class="panel hidden">
+    <div class="formh"><h3>New task</h3><button type="button" class="linkb" id="addCancel">Cancel</button></div>
     <label for="fFor">What are we waiting for?</label><input id="fFor" required placeholder="e.g. Permits">
-    <label for="fOn">From whom? (type Me if it's our own task)</label><input id="fOn" list="people" required placeholder="e.g. Jan & Lazarus">
+    <label for="fOn">From whom? (type Chris, Annemarie or Us if it's our own task)</label><input id="fOn" list="people" required placeholder="e.g. Jan & Lazarus"><div class="seen hidden" id="fOnSeen"></div>
     <datalist id="people"></datalist>
     <label for="fBlocks">What does it block?</label><input id="fBlocks" placeholder="e.g. Maize loads">
     <label for="fNext">Next step</label><input id="fNext" placeholder="e.g. WhatsApp on Monday">
@@ -57,7 +59,7 @@
       <div><label for="fPrio">Priority</label>
       <select id="fPrio"><option value="1">High</option><option value="2" selected>Normal</option><option value="3">Low</option></select></div>
     </div>
-    <label for="fOwner">Who on our side owns it?</label>
+    <label for="fOwner">Who does it – Chris or Annemarie?</label>
     <select id="fOwner"><option>Chris</option><option>Annemarie</option></select>
     <button class="wide primary" type="submit">Add</button>
     <div class="msg" id="addMsg"></div>
@@ -67,6 +69,28 @@
 </section>
 
 <button class="fab2 hidden" id="botFab">Bot</button>
+<div id="composer" class="composer hidden">
+  <div class="cmode"><button type="button" class="seg sm on" data-cmode="post">Message</button><button type="button" class="seg sm" data-cmode="check">Log a check</button><select id="cDeal" aria-label="Link to a deal"><option value="">No deal</option></select></div>
+  <div class="crow"><button type="button" class="ib t-file" id="cAttach" aria-label="Attach a file or photo" title="Attach a file or photo" data-ico="clip"></button><textarea id="cText" rows="1" placeholder="Message Annemarie…"></textarea><button type="button" class="primary send" id="cSend" aria-label="Send" data-ico="send"></button></div>
+  <div class="cfile hidden" id="cFile"></div>
+</div>
+<input type="file" id="cFileInput" class="hidden">
+<div id="addSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Add">
+  <div class="sheet-b">
+    <div class="sheet-h"><span>Add</span><button id="addClose" type="button">Close</button></div>
+    <div class="addgrid">
+      <button type="button" data-add="task" class="t-me"><span class="qi" data-ico="checkbox"></span>Task for Chris or Annemarie</button>
+      <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
+      <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
+      <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
+      <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
+      <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
+      <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Deal calculator</button>
+      <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search the archive</button>
+      <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
+    </div>
+  </div>
+</div>
 <input type="file" id="fileInput" class="hidden">
 <input type="file" id="chatInput" class="hidden" accept=".txt,.zip,text/plain,application/zip">
 <div id="toast" class="toast hidden"></div>
@@ -74,6 +98,10 @@
   <div class="sheet-b">
     <div class="sheet-h"><span>Deal Board</span><button id="menuClose" type="button">Close</button></div>
     <div class="menu">
+      <button class="mi" type="button" data-mview="people" data-ico="people">People and contacts</button>
+      <button class="mi" type="button" data-mview="archive" data-ico="archive">Archive – used before?</button>
+      <button class="mi" type="button" data-mview="calc" data-ico="calc">Deal calculator</button>
+      <button class="mi" type="button" data-mview="bot" data-ico="bot">Bot</button>
       <button id="themeBtn" class="mi" type="button">Light mode</button>
       <button id="refreshBtn" class="mi hidden" type="button" data-ico="refresh">Refresh</button>
       <button id="outBtn" class="mi hidden" type="button" data-ico="out">Sign out</button>
@@ -100,7 +128,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="ui.js"></script>
 <script>
-const APP_VERSION = "15";
+const APP_VERSION = "16";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -184,15 +212,36 @@ let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 fillIcons();
-const PAGE_TITLES = { worklist: "Today", leads: "Directory", deals: "Deals", people: "People", bot: "Bot" };
+const PAGE_TITLES = { worklist: "Deal Board", leads: "Directory", deals: "Deals", people: "People", bot: "Bot", board: "Notice board", archive: "Archive", calc: "Calculator" };
+function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
+window.goView = goView;
 function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
 function closeMenu(){ $("menuSheet").classList.add("hidden"); }
 $("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu;
-$("menuSheet").addEventListener("click", e => { if (e.target.id === "menuSheet" || e.target.closest("#themeBtn")) { if (e.target.id === "menuSheet") closeMenu(); } });
+$("menuSheet").addEventListener("click", e => {
+  if (e.target.id === "menuSheet") { closeMenu(); return; }
+  const mv = e.target.closest("button[data-mview]"); if (mv) { closeMenu(); goView(mv.dataset.mview); }
+});
+$("botBtn").onclick = () => goView("bot");
+$("plusBtn").onclick = () => $("addSheet").classList.remove("hidden");
+$("addClose").onclick = () => $("addSheet").classList.add("hidden");
+$("addSheet").addEventListener("click", e => {
+  if (e.target.id === "addSheet") { $("addSheet").classList.add("hidden"); return; }
+  const b = e.target.closest("button[data-add]"); if (!b) return;
+  $("addSheet").classList.add("hidden");
+  const a = b.dataset.add;
+  if (a === "task") { if (view !== "worklist") goView("worklist"); if ($("addForm").classList.contains("hidden")) $("addBtn").click(); window.scrollTo({ top: 0, behavior: "smooth" }); $("fFor").focus({ preventScroll: true }); return; }
+  if (a === "post" || a === "check") { goView("board"); if (window.setComposerMode) setComposerMode(a); setTimeout(() => $("cText").focus(), 50); return; }
+  if (a === "deal") { newDealOpen = true; if (dealFilter === "Closed") dealFilter = "Active"; goView("deals"); setTimeout(() => { const n = $("ndName"); if (n) n.focus(); }, 50); return; }
+  if (a === "contact") { newContact = { name: "" }; editContact = null; goView("people"); setTimeout(() => { const h = $("contactsHead"); if (h) h.scrollIntoView({ block: "start" }); }, 50); return; }
+  if (a === "lead") { dNewLead = true; goView("leads"); setTimeout(() => { const f = document.querySelector(".lf-name"); if (f) { f.scrollIntoView({ block: "center" }); f.focus(); } }, 80); return; }
+  if (a === "calc" || a === "archive") { goView(a); return; }
+  if (a === "chat") { toast("Open the person, lead or deal and tap the green chat-import icon.", 5000); goView("people"); return; }
+});
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
-const isMe = it => /^(me|us|chris & annemarie)$/i.test((it.waiting_on || "").trim());
+const isMe = it => /^(me|us|ours|chris|annemarie|chris (&|and) annemarie)$/i.test((it.waiting_on || "").trim());
 const fmtWhen = d => new Date(d).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const fmtDay = d => new Date(d).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
 const fmtSize = n => n > 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round((n||0)/1024)) + " KB";
@@ -246,6 +295,8 @@ function demoExtras(){
   window._steps = [];
   for (const [deal, stages] of Object.entries(tpl)) stages.forEach(([stage, titles], si) => titles.forEach((title, ti) => window._steps.push({ id: `${deal}-${si}-${ti}`, deal_id: deal, stage, sort: (si+1)*100 + ti + 1, title, status: deal === "dm1" && si === 0 && ti < 3 ? "done" : "open", done_by: deal === "dm1" && si === 0 && ti < 3 ? "Chris" : null, done_at: deal === "dm1" && si === 0 && ti < 3 ? d(1) : null, evidence: deal === "dm1" && si === 0 && ti === 0 ? "Photos in Files" : null })));
   if (window.kitDemoSteps) { window._steps = window._steps.filter(s => s.deal_id !== "dm1"); const ks = kitDemoSteps("dm1", "mineral", "local"); ks.slice(0, 3).forEach(s => Object.assign(s, { status: "done", done_by: "Chris", done_at: d(1) })); ks[0].evidence = "Requirement sheet in Files"; window._steps.push(...ks); Object.assign(window._deals[0], { kit: "sa1", kit_route: "local" }); }
+  window._posts = [{id:"p1",author:"Annemarie",kind:"post",body:"Jan phoned – they want the truck list before the permit goes in. Can you send it tonight?",deal_id:"dm2",pinned:true,done:false,created_at:d(0.3)},{id:"p2",author:"Chris",kind:"post",body:"Will do. Adrian is sending the list at 6.",deal_id:null,pinned:false,done:false,created_at:d(0.2)},{id:"p3",author:"Claude",kind:"claude",body:"Checked: chrome export permit (ITAC) – still only a draft on 25 Sep 2026; no permit or export tax in force yet.",deal_id:"dm1",pinned:false,done:false,created_at:d(0.1)}];
+  window._done = [{id:"x1",project:"Transport",waiting_on:"Adrian",waiting_for:"Rate for Middelburg run",owner:"Chris",state:"Done",updated_at:d(12),created_at:d(20)},{id:"x2",project:"Chrome",waiting_on:"Benro",waiting_for:"Stockpile photos",owner:"Annemarie",state:"Done",updated_at:d(30),created_at:d(40)}];
   window._hist = [{id:9,deal_id:"dm1",item_id:null,field:"step",old_value:"",new_value:"Material sourced (stockpile or production confirmed) — done (Photos in Files)",changed_by:"Chris",changed_at:d(1)},{id:8,deal_id:"dm1",item_id:null,field:"term:instrument",old_value:null,new_value:"To discuss",changed_by:"Annemarie",changed_at:d(2)}];
 }
 
@@ -262,7 +313,7 @@ async function load(){
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
   if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
-    const [r1, r2, r3, r4, r5, r6, r7, r8, r9] = await Promise.all([
+    const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
       sb.from("projects").select("*"),
       sb.from("contacts").select("*").order("name"),
@@ -271,11 +322,14 @@ async function load(){
       sb.from("deals").select("*").order("sort").order("created_at"),
       sb.from("deal_steps").select("*").order("sort"),
       sb.from("events").select("id,item_id,deal_id,field,old_value,new_value,changed_by,changed_at").not("deal_id", "is", null).not("field", "in", "(note,draft)").order("changed_at", { ascending: false }).limit(400),
-      sb.from("events").select("id,item_id,deal_id,lead_id,contact_id,old_value,new_value,changed_by,changed_at").eq("field", "draft").order("changed_at", { ascending: false }).limit(300)
+      sb.from("events").select("id,item_id,deal_id,lead_id,contact_id,old_value,new_value,changed_by,changed_at").eq("field", "draft").order("changed_at", { ascending: false }).limit(300),
+      sb.from("posts").select("*").order("created_at", { ascending: false }).limit(300),
+      sb.from("items").select("*").eq("state", "Done").order("updated_at", { ascending: false }).limit(500)
     ]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
     items = r1.data; window._projects = r2.data || []; window._contacts = r3.data || []; window._notes = r4.data || []; window._atts = r5.data || [];
     window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || []; window._drafts = r9.data || [];
+    window._posts = (r10 && r10.data) || []; window._done = (r11 && r11.data) || [];
     window._urls = window._urls || {};
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
@@ -296,8 +350,8 @@ async function load(){
   }
   window._items = items;
   await dirP;
-  const names = [...new Set(items.map(i => i.waiting_on).filter(Boolean))].sort();
-  $("people").innerHTML = ["Me", ...names.filter(n => !/^me$/i.test(n))].map(n => `<option value="${esc(n)}">`).join("");
+  const names = [...new Set(["Chris", "Annemarie", ...items.filter(i => !i._me).map(i => i.waiting_on).filter(Boolean)])].sort();
+  $("people").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
   const keepDeal = $("fDeal").value;
   $("fDeal").innerHTML = `<option value="">No deal</option>` + liveDeals().map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
   $("fDeal").value = keepDeal && dealById(keepDeal) ? keepDeal : "";
@@ -342,9 +396,9 @@ function rowHtml(it, n){
       ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Keep it</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Got it</button>${ib("clock", "warn", `data-a="chased"`, "Asked today")}`}
       ${prop ? (it._me ? ib("check", "ok", `data-a="done"`, "Done") : ib("check", "ok", `data-a="done"`, "Got it") + ib("clock", "warn", `data-a="chased"`, "Asked today")) : ""}
     </div>
+    <div class="whoseg" role="group" aria-label="Who does it">${ic("assign")}<span>Who does it</span>${["Chris", "Annemarie"].map(n => n === owner ? `<button class="seg sm on" type="button" aria-pressed="true">${n}</button>` : `<button class="seg sm" type="button" data-a="assign" data-v="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
     <div class="tools">
       ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2"`, "High priority – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make high priority")}
-      ${ib("assign", "me", `data-a="assign" data-v="${other}"`, "Hand to " + other)}
       ${ib("note", "note", `data-panel="item:${it.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}
       ${canWa ? ib("chat", "wa", `data-wa="${esc(it.waiting_on)}"`, "WhatsApp " + esc(firstName(it.waiting_on))) : ""}
       ${ib("bot", "bot", `data-botitem="${it.id}"`, "Ask the bot")}
@@ -465,6 +519,7 @@ function dealHtml(d){
       ...(pg.total || window.kitSecHtml ? [["steps", "list", "Steps", pg.total ? `${pg.done}/${pg.total}` : ""]] : []),
       ["waits", "wait", "Waiting", waits.length],
       ...(defs.length ? [["terms", "terms", "Terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`]] : []),
+      ...(window.calcHtml && d.kind !== "general" ? [["calc", "calc", "Calculator", ""]] : []),
       ...(d.kind === "mineral" && d.kit && window.kitGuideHtml ? [["guide", "guide", "Guide", ""]] : []),
       ["notes", "note", "Notes", ns.length + dds.length],
       ["files", "clip", "Files", fN],
@@ -478,6 +533,7 @@ function dealHtml(d){
     else if (t === "waits") h += (waits.map(miniHtml).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a wait for this deal</button></div>`;
     else if (t === "terms") h += termsHtml(d, defs);
     else if (t === "guide") h += kitGuideHtml(d);
+    else if (t === "calc") h += calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
     else if (t === "notes") h += (dds.length ? draftHtml("deal", d.id, "") : "") + notesBlock(ns, "deal", d.id);
     else if (t === "files") h += filesHtml("deal", d.id);
     else if (t === "info") h += infoHtml(d);
@@ -548,7 +604,11 @@ function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
   $("pageTitle").textContent = PAGE_TITLES[view] || "Deal Board";
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
-  if (view === "worklist") $("strip").innerHTML = stat(stale, "Chase", "var(--warn)", "chase") + stat(proposed, "Confirm", "var(--prop)", "confirm") + stat(mine, "Ours", "var(--accent)", "ours") + stat(items.length, "Open", "");
+  $("botBtn").classList.toggle("hidden", !me || view === "bot");
+  $("composer").classList.toggle("hidden", view !== "board" || !me);
+  document.body.classList.toggle("boardview", view === "board");
+  if (window.boardDot) boardDot();
+  if (view === "worklist") $("strip").innerHTML = "";
   else if (view === "deals") { const ld = liveDeals(), st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
     $("strip").innerHTML = stat(ld.length, "Deals", "var(--ok)") + stat(`${st[0]}<small style="font-size:14px;color:var(--muted)">/${st[1]}</small>`, "Steps", "var(--accent)") + stat(items.filter(i => i.deal_id).length, "Waiting", "") + stat(items.filter(i => i.deal_id && i._stale && !i._me).length, "Chase", "var(--warn)"); }
   else if (view === "people") $("strip").innerHTML = stat(new Set(items.filter(i => !i._me).map(i => i.waiting_on)).size, "People", "") + stat(stale, "Chase", "var(--warn)") + stat(items.filter(i => !i._me).length, "Asks", "") + stat((window._contacts || []).length, "Contacts", "var(--c-call)");
@@ -587,6 +647,12 @@ function render(){
     if (!contacts.length) html += `<div class="quiet">No contacts saved yet. Tap Contact, or tell the bot someone's number.</div>`;
   } else if (view === "worklist") {
     html = todayHtml(items);
+  } else if (view === "board") {
+    html = window.boardHtml ? boardHtml() : "";
+  } else if (view === "archive") {
+    html = window.archiveHtml ? archiveHtml() : "";
+  } else if (view === "calc") {
+    html = window.calcPageHtml ? calcPageHtml() : "";
   } else if (view === "bot") {
     html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes – you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}</button></div>
@@ -598,10 +664,22 @@ function render(){
   } else {
     html = dealsViewHtml();
   }
+  const si = window._sheetItem && items.find(i => i.id === window._sheetItem);
+  if (window._sheetItem && !si) window._sheetItem = null;
+  if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our task" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
   $("list").innerHTML = html;
+  (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
+  if (typeof syncSheetHist === "function") setTimeout(syncSheetHist, 0);
   $("addBtn").classList.toggle("hidden", !me || view === "bot");
   $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
 }
+// Item sheet (opened from Home cards and lists)
+window.openItemSheet = id => { window._sheetItem = id; render(); };
+$("list").addEventListener("click", e => {
+  const c = e.target.closest("[data-closesheet]"); if (!c) return;
+  if (c.dataset.closesheet === "bg" && e.target !== c) return;
+  window._sheetItem = null; render();
+});
 // Stat tiles on Today jump to their section
 $("strip").addEventListener("click", e => {
   const b = e.target.closest("button[data-jump]"); if (!b) return;
@@ -613,11 +691,29 @@ $("strip").addEventListener("click", e => {
 const navStack = [];
 function navSnap(){ return { view, y: window.scrollY, keys: [...openKeys], openStep, dealFilter, panels: [...openPanels], dir: window.dirSnap ? dirSnap() : null }; }
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
-function navPush(){ navStack.push(navSnap()); if (navStack.length > 40) navStack.shift(); try { history.pushState({ db: navStack.length }, ""); } catch(e){} updBack(); }
+// Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
+let sheetHist = false, ignorePop = false;
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet")].filter(x => x && !x.classList.contains("hidden"));
+function syncSheetHist(){
+  const any = openSheets().length > 0 || !!window._sheetItem;
+  if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
+  else if (!any && sheetHist) { sheetHist = false; ignorePop = true; try { history.back(); } catch(e){ ignorePop = false; } }
+}
+document.addEventListener("click", () => setTimeout(syncSheetHist, 0));
+function navPush(){
+  navStack.push(navSnap()); if (navStack.length > 40) navStack.shift();
+  window._sheetItem = null;
+  if (sheetHist && !openSheets().length) sheetHist = false;   // the sheet's history entry becomes this step's entry
+  else { try { history.pushState({ db: navStack.length }, ""); } catch(e){} }
+  updBack();
+}
 window.navPush = navPush;
 window.addEventListener("popstate", () => {
-  const cs = [$("chatSheet"), $("menuSheet")].find(x => x && !x.classList.contains("hidden"));
-  if (cs) { cs.classList.add("hidden"); try { history.pushState({ db: navStack.length }, ""); } catch(e){} return; }
+  if (ignorePop) { ignorePop = false; return; }
+  const cs = openSheets(), had = sheetHist;
+  cs.forEach(x => x.classList.add("hidden")); sheetHist = false;
+  if (window._sheetItem) { window._sheetItem = null; if (had) render(); }
+  if (had) return;
   const s = navStack.pop(); updBack(); if (!s) return;
   view = s.view; try{ localStorage.setItem("view", view) }catch(e){}
   openKeys = new Set(s.keys); saveOpen(); openStep = s.openStep; dealFilter = s.dealFilter;
@@ -656,7 +752,7 @@ $("list").addEventListener("click", async e => {
   }
   const b = e.target.closest("button[data-a]"); if (!b) return;
   const row = b.closest(".row"); const id = row.dataset.id;
-  if (DEMO) { alert("Demo mode — nothing saved"); return; }
+  if (DEMO) { const it = (window._items || []).find(i => i.id === id); if (it && b.dataset.a === "assign") { it.owner = b.dataset.v; render(); return; } alert("Demo mode — nothing saved"); return; }
   row.querySelectorAll("button").forEach(x => x.disabled = true); b.textContent = "…";
   const { error } = await sb.rpc("item_action", { p_id: id, p_action: b.dataset.a, p_value: b.dataset.v || null });
   if (error) { b.textContent = "Failed"; console.error(error); row.querySelectorAll("button").forEach(x => x.disabled = false); return; }
@@ -943,11 +1039,15 @@ $("list").addEventListener("click", e => {
   const q = ($("q") && $("q").value.trim()) || ""; if (!q) return; askBot(q, "ask");
 });
 
-$("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); $("addBtn").textContent = $("addForm").classList.contains("hidden") ? "+ Add" : "Close"; if (!$("addForm").classList.contains("hidden")) $("fFor").focus(); };
+$("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); const open = !$("addForm").classList.contains("hidden"); $("addBtn").textContent = open ? "Close" : "+ Add"; if (open) { if (me === "Chris" || me === "Annemarie") $("fOwner").value = me; $("fFor").focus(); } };
+$("addCancel").onclick = () => { $("addForm").reset(); $("fOnSeen").classList.add("hidden"); $("addMsg").textContent = ""; if (!$("addForm").classList.contains("hidden")) $("addBtn").click(); };
+$("fOn").addEventListener("change", () => { const v = $("fOn").value.trim().toLowerCase(); if (v === "chris") $("fOwner").value = "Chris"; if (v === "annemarie") $("fOwner").value = "Annemarie"; });
 $("addForm").onsubmit = async e => {
   e.preventDefault();
   if (DEMO) { $("addMsg").textContent = "Demo mode — nothing saved"; return; }
-  const { error } = await sb.rpc("add_item", { p_project: $("fProject").value, p_waiting_on: $("fOn").value.trim(), p_waiting_for: $("fFor").value.trim(), p_blocks: $("fBlocks").value.trim(), p_next: $("fNext").value.trim(), p_priority: Number($("fPrio").value), p_owner: $("fOwner").value, p_deal: $("fDeal").value || null });
+  const on = $("fOn").value.trim(), own = /^(me|us|ours|chris|annemarie|chris (&|and) annemarie)$/i.test(on);   // our own task: stored as "Me", shown by owner name
+  if (/^chris$/i.test(on)) $("fOwner").value = "Chris"; if (/^annemarie$/i.test(on)) $("fOwner").value = "Annemarie";
+  const { error } = await sb.rpc("add_item", { p_project: $("fProject").value, p_waiting_on: own ? "Me" : on, p_waiting_for: $("fFor").value.trim(), p_blocks: $("fBlocks").value.trim(), p_next: $("fNext").value.trim(), p_priority: Number($("fPrio").value), p_owner: $("fOwner").value, p_deal: $("fDeal").value || null });
   if (error) { $("addMsg").textContent = "Failed: " + error.message; return; }
   e.target.reset(); $("fDeal").value = ""; $("addMsg").textContent = ""; $("addBtn").click(); load();
 };
@@ -974,9 +1074,10 @@ async function show(){
     if (signedIn) {
       const em = data.session.user.email || "";
       me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
+      $("menuBtn").textContent = (me || "D").slice(0, 1).toUpperCase();
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
     }
-  } else me = "Chris";
+  } else { me = "Chris"; $("menuBtn").textContent = "C"; }
   $("login").classList.toggle("hidden", signedIn);
   $("board").classList.toggle("hidden", !signedIn);
   $("addBtn").classList.toggle("hidden", !signedIn);
@@ -992,6 +1093,9 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="today.js"></script>
 <script src="kitdata.js"></script>
 <script src="dealkit.js"></script>
+<script src="board.js"></script>
+<script src="calc.js"></script>
+<script src="archive.js"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>

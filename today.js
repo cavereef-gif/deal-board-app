@@ -1,4 +1,4 @@
-// Deal Board v12 — Today page: clear numbered sections, one tappable line per task, each line opens where the work gets done.
+// Deal Board v16 — Home: greeting, focus cards, progress rings, deal tiles, week schedule; tapping any task opens it in a sheet.
 // WhatsApp drafts from the brief live on their item / deal / lead, not on this page.
 function parseBrief(b) {
   if (!b || !b.text) return null;
@@ -33,48 +33,95 @@ function itemRow(it, why) {
     title: who + esc(it.waiting_for), sub: sub + (hasDraft ? `${sub ? " · " : ""}WhatsApp draft ready` : ""), right: `${it._days}d`, open, body: rowHtml(it, 0) });
 }
 
+// ---------- Home: greeting, focus cards, progress rings, deal tiles, week schedule ----------
+const SA = () => new Date(Date.now() + 2 * 3600e3);
+const saKey = d => new Date(new Date(d).getTime() + 2 * 3600e3).toISOString().slice(0, 10);
+function dueOf(it) { const base = new Date(it.last_chased || it.created_at); return new Date(base.getTime() + (it.nudge_after_days || 3) * 864e5); }
+function fcard(it, hot) {
+  const due = saKey(dueOf(it)), td = saKey(Date.now());
+  const tag = it.state === "Proposed" ? ["confirm", "CONFIRM"] : it._me ? ["ours", "OUR TASK"] : it._stale ? ["chase", "CHASE"] : due === td ? ["today", "TODAY"] : ["ok", "ON TRACK"];
+  return `<button class="fcard${hot ? " hot" : ""}" data-tgo="item:${it.id}"><span class="fc-top"><span>${it._me ? esc(it.owner || "Chris") : esc(it.waiting_on)}</span>${ic("more")}</span><span class="fc-t">${esc(it.waiting_for)}</span><span class="fc-b"><span class="tag ${tag[0]}">${tag[1]}</span><span class="fc-d">${it._days} day${it._days === 1 ? "" : "s"}</span></span></button>`;
+}
+function ringsSvg(vals) {
+  const R = [52, 41, 30], cols = ["url(#velvetGrad)", "#FF7BBF", "#5FD9C9"];
+  return `<svg class="rings" viewBox="0 0 128 128" aria-hidden="true">${R.map((r, i) => { const c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, vals[i] || 0)); return `<circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" stroke="${cols[i]}" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"${p === 0 ? ' stroke-opacity="0"' : ""}/>`; }).join("")}</svg>`;
+}
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function dtile(d) {
+  const pg = dealProgress(d.id), waits = itemsOf(d.id);
+  const owners = [...new Set(waits.map(i => i.owner || "Chris"))];
+  const kindIc = d.kind === "transport" ? ["truck", "#72A9FF"] : d.kind === "mineral" ? ["gem", "#C7B6FF"] : ["deals", "#F0C05A"];
+  const av = owners.map(o => `<span style="background:${o === "Annemarie" ? "#FF9CCB" : "#C7B6FF"}" title="${esc(o)}">${esc(o[0])}</span>`).join("");
+  return `<button class="dtile" data-tgo="deal:${d.id}${pg.next ? ":" + pg.next.id : ""}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done}/${pg.total}</span></span></button>`;
+}
+function srow(it) {
+  const due = dueOf(it), dk = saKey(due), td = saKey(Date.now());
+  const late = it._days - (it.nudge_after_days || 3), when = it._stale ? (late > 0 ? `overdue ${late} day${late === 1 ? "" : "s"}` : "due today") : dk === td ? "due today" : "due " + fmtDay(due);
+  const c = it.priority === 1 ? "var(--bad)" : it.state === "Proposed" ? "var(--prop)" : it._stale ? "var(--warn)" : "var(--accent)";
+  return `<button class="srow" data-tgo="item:${it.id}"><span class="sq" style="--c:${c}"></span><span class="sx"><span class="st1">${it._me ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="st2">${when} · ${esc(it.owner || "Chris")}${it.state === "Proposed" ? " · not confirmed" : ""}</span></span>${ic("chev")}</button>`;
+}
 function todayHtml(items) {
-  const target = who || me || "Chris";
-  const mine = items.filter(i => who === "All" || (i.owner || "Chris") === target);
+  const target = who === "All" ? "All" : (who || me || "Chris");
+  const mine = items.filter(i => target === "All" || (i.owner || "Chris") === target);
   const br = parseBrief(window._brief);
   const order = (br && br.chase_order) || [];
   const rank = it => { const i = order.indexOf(it.id); return i < 0 ? 999 : i; };
-  // Chase = everyone we wait on who is due (or the bot put first), confirmed or still proposed
   const chase = mine.filter(i => !i._me && (order.includes(i.id) || (i._stale && i.state !== "Proposed"))).sort((a, b) => rank(a) - rank(b) || byPrioThenAge(a, b));
   const ours = mine.filter(i => i._me).sort(byPrioThenAge);
-  const proposed = mine.filter(i => i.state === "Proposed" && !chase.includes(i) && !ours.includes(i)).sort(byPrioThenAge);
-  const waiting = mine.filter(i => !i._me && i.state !== "Proposed" && !chase.includes(i)).sort(byPrioThenAge);
-  const td = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
+  const proposed = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
+  const td = saKey(Date.now());
   const gOpen = k => ((window._gates || []).find(g => g.key === k) || {}).status === "open";
   const queue = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 5);
-  const deals = liveDeals().map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next || x.d.next_milestone);
-
-  const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
-  const dayStr = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" });
-  let h = `<div class="hero"><div class="hero-top"><span class="tdate">${dayStr}</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}</button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
-    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap the refresh icon for the new tappable version." : botBusy ? "Writing today's brief…" : "No brief yet today."}</div>
-    ${!br && !botBusy ? `<div class="acts0" style="margin:0 0 12px"><button class="primary" data-bot="brief-here">${ic("brief")}Get today's brief</button></div>` : ""}
-    <div class="chips">${chips}</div></div>`;
-
+  const hr = SA().getUTCHours();
+  let h = `<section class="hello"><div class="hi">${hr < 12 ? "Good morning," : hr < 17 ? "Good afternoon," : "Good evening,"}</div><div class="hn">${esc(me || "there")}</div>
+    <div class="hd">${SA().toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" })} · ${chase.length} to chase · ${ours.length} of our own</div></section>`;
+  h += `<div class="chips whochips">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
+  // brief
+  h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}</button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
+    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap the refresh icon for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap the refresh icon."}</div></div>`;
+  // focus
+  const focus = [...chase, ...ours.filter(i => !chase.includes(i))].slice(0, 10);
+  h += `<div class="sech"><h3>Focus</h3><span class="sc">${focus.length ? "swipe →" : ""}</span></div><div class="carousel">${focus.map((it, i) => fcard(it, i === 0)).join("") || `<div class="fempty">Nothing to chase – well done.</div>`}</div>`;
+  // progress rings
+  const ld = liveDeals(), st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
+  const L = window._leads || [], reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
+  const onTrack = mine.filter(i => !i._stale || i._me).length;
+  const doneWk = (window._done || []).filter(i => (target === "All" || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
+  h += `<div class="sech"><h3>Progress</h3></div><div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, mine.length ? onTrack / mine.length : 0])}
+    <div class="legend"><div class="lg"><i style="background:linear-gradient(135deg,#964EC2,#FF7BBF)"></i><div><b>Deal steps ${pct(st[0], st[1])}%</b><span>${st[0]} of ${st[1]} ticked</span></div></div>
+    <div class="lg"><i style="background:#FF7BBF"></i><div><b>Buyer list ${pct(reached, L.length)}%</b><span>${reached} of ${L.length} contacted</span></div></div>
+    <div class="lg"><i style="background:#5FD9C9"></i><div><b>On track ${pct(onTrack, mine.length)}%</b><span>${doneWk} done this week</span></div></div></div></div>`;
+  // deals
+  if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">See all</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
+  // schedule
+  const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
+  const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
+  const byDay = {}; for (const it of mine) { const k = it._stale ? td : saKey(dueOf(it)); (byDay[k] ||= []).push(it); }
+  h += `<div class="sech"><h3>Schedule</h3><span class="sc">chase dates</span></div><div class="card week"><div class="wk-m">${now.toLocaleDateString("en-ZA", { timeZone: "UTC", month: "long", year: "numeric" }).toUpperCase()}</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), arr = byDay[k] || [];
+    return `<div><div class="wd">${"MTWTFSS"[(d.getUTCDay() + 6) % 7]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="dots">${arr.slice(0, 3).map(i => `<i style="background:${i.priority === 1 ? "var(--bad)" : i._stale ? "var(--warn)" : "var(--accent)"}"></i>`).join("")}</div></div>`; }).join("")}</div></div>`;
+  const tmr = saKey(Date.now() + 864e5), sun = saKey(days[6]);
+  const dueNow = mine.filter(i => i._stale || saKey(dueOf(i)) <= td).sort(byPrioThenAge);
+  const dueTmr = mine.filter(i => !dueNow.includes(i) && saKey(dueOf(i)) === tmr).sort(byPrioThenAge);
+  const dueWk = mine.filter(i => !dueNow.includes(i) && !dueTmr.includes(i) && saKey(dueOf(i)) <= sun).sort((a, b) => dueOf(a) - dueOf(b));
+  const later = mine.filter(i => !dueNow.includes(i) && !dueTmr.includes(i) && !dueWk.includes(i)).sort((a, b) => dueOf(a) - dueOf(b));
+  h += `<div class="sgrp">Today${dueNow.length ? " · " + dueNow.length : ""}</div>${dueNow.map(srow).join("") || `<div class="quiet" style="padding:0 4px">Nothing due today.</div>`}`;
+  if (dueTmr.length) h += `<div class="sgrp">Tomorrow · ${dueTmr.length}</div>${dueTmr.map(srow).join("")}`;
+  if (dueWk.length) h += `<div class="sgrp">Later this week · ${dueWk.length}</div>${dueWk.map(srow).join("")}`;
+  if (later.length) { const k = "home:later", o = isOpen(k, false); h += `<button class="sgrp linkb" style="padding:0;margin:16px 4px 8px" data-tog="${k}" data-dflt="0" aria-expanded="${o}">Next week and later · ${later.length} ${o ? "▴" : "▾"}</button>${o ? later.map(srow).join("") : ""}`; }
+  // confirm, risks, buyer search
   let n = 0;
-  const prop = it => it.state === "Proposed" ? " · not confirmed yet" : "";
-  h += tSection(++n, "chase", "Chase today", "Waiting on other people – most urgent first", chase.map(it => itemRow(it, `${it._days} days since last asked${prop(it)}`)));
-  h += tSection(++n, "ours", "Our own tasks", "Things only we can do", ours.map(it => itemRow(it, `${it._days} days open${prop(it)}`)));
-  if (proposed.length) h += tSection(++n, "confirm", "To confirm", "Proposed – tap, then OK keep or Drop", proposed.map(it => itemRow(it, "Proposed")));
-  h += tSection(++n, "deals", "Deals – next step", "Tap to open the deal at that step", deals.map(({ d, pg }) => tRow({ go: "deal:" + d.id + (pg.next ? ":" + pg.next.id : ""), dot: d.status === "On hold" ? DOT.prop : DOT.blue,
-    title: esc(d.name), sub: pg.next ? `${esc(pg.cur.name)} · next: ${esc(pg.next.title)} · ${pg.done}/${pg.total} ticked` : "Next: " + esc(d.next_milestone), right: "" })));
-  if (queue.length) h += tSection(++n, "buyers", "Buyer search – next up", "Top of the scored queue; tap to open the lead", queue.map(t => {
-    const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(t.kind) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
-  }));
+  if (proposed.length) h += `<div style="height:14px"></div>` + tSection(++n, "confirm", "Needs your OK", "Proposed by the bot – keep or drop", proposed.map(it => itemRow(it, "Proposed")));
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map(r => (r.ref_type && r.ref_id && refName(r))
     ? tRow({ go: r.ref_type + ":" + r.ref_id, dot: DOT.high, title: esc(r.text), sub: "On: " + esc(refName(r)), right: "" })
-    : `<div class="tline"><i class="dot" style="background:${DOT.high}"></i><span>${esc(r.text)}</span></div>`));
-  if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the tappable version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
-  h += tSection(++n, "waiting", "Waiting – not due yet", "No chase needed today", waiting.map(it => itemRow(it, `${it._days} of ${it.nudge_after_days || 3} days`)), false);
-  if (!items.length) h += `<div class="empty">Nothing open. Tap + Add.</div>`;
+    : `<div class="tline"><i class="dot" style="background:${DOT.high}"></i><span>${esc(r.text)}</span></div>`), false);
+  if (queue.length) h += tSection(++n, "buyers", "Buyer search – next up", "Top of the scored queue; tap to open the lead", queue.map(t => {
+    const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
+    return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(t.kind) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
+  }), false);
+  if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the new version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
+  if (!items.length) h += `<div class="empty">Nothing open. Tap + to add a task.</div>`;
   return h;
 }
 window.todayHtml = todayHtml;
@@ -105,8 +152,8 @@ function goTo(ref) {
   const [type, id, extra] = ref.split(":");
   const scrollTo = sel => setTimeout(() => { const el = document.querySelector(sel); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 30);
   if (type === "item") {
-    if (view === "worklist" && document.querySelector(`[data-tgo="item:${id}"]`)) { toggleKey("ti:" + id, false); render(); return; }
     const it = (window._items || []).find(i => i.id === id); if (!it) { toast("That item is closed or gone."); return; }
+    if (window.openItemSheet) { openItemSheet(id); return; }
     navPush(); view = "worklist"; openKeys.delete("-ti:" + id); openKeys.add("+ti:" + id); saveOpen(); render(); scrollTo(`[data-tgo="item:${id}"]`); return;
   }
   if (type === "deal") {
