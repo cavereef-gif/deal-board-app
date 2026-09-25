@@ -181,7 +181,7 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "8";
+const APP_VERSION = "9";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -596,7 +596,7 @@ $("list").addEventListener("click", e => {
   if (b.dataset.bot === "brief-here") { askBot("", "brief", "", true); return; }
   if (b.dataset.bot === "clear") { chat = []; render(); return; }
   if (b.dataset.bot === "savekey") {
-    const k = ($("botKey").value || "").trim(); if (k.length < 20) { $("keyMsg").textContent = "That does not look like a key."; return; }
+    const k = ($("botKey").value || "").trim(); if (!/^sk-ant-/.test(k) || k.length < 40) { $("keyMsg").textContent = "That is not an API key. It must start with sk-ant- (the workspace ID starting wrkspc_ will not work)."; return; }
     if (DEMO) { $("keyMsg").textContent = "Demo mode — nothing saved"; return; }
     b.disabled = true; b.textContent = "…";
     sb.rpc("set_bot_key", { p_key: k }).then(({ error }) => {
