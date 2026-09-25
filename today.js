@@ -39,11 +39,11 @@ function todayHtml(items) {
   const br = parseBrief(window._brief);
   const order = (br && br.chase_order) || [];
   const rank = it => { const i = order.indexOf(it.id); return i < 0 ? 999 : i; };
-  const proposed = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
-  const live = mine.filter(i => i.state !== "Proposed");
-  const chase = live.filter(i => !i._me && (i._stale || order.includes(i.id))).sort((a, b) => rank(a) - rank(b) || byPrioThenAge(a, b));
-  const ours = live.filter(i => i._me).sort(byPrioThenAge);
-  const waiting = live.filter(i => !i._me && !chase.includes(i)).sort(byPrioThenAge);
+  // Chase = everyone we wait on who is due (or the bot put first), confirmed or still proposed
+  const chase = mine.filter(i => !i._me && (order.includes(i.id) || (i._stale && i.state !== "Proposed"))).sort((a, b) => rank(a) - rank(b) || byPrioThenAge(a, b));
+  const ours = mine.filter(i => i._me).sort(byPrioThenAge);
+  const proposed = mine.filter(i => i.state === "Proposed" && !chase.includes(i) && !ours.includes(i)).sort(byPrioThenAge);
+  const waiting = mine.filter(i => !i._me && i.state !== "Proposed" && !chase.includes(i)).sort(byPrioThenAge);
   const td = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
   const gOpen = k => ((window._gates || []).find(g => g.key === k) || {}).status === "open";
   const queue = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 5);
@@ -57,8 +57,9 @@ function todayHtml(items) {
     <div class="chips" style="margin:10px 0 0">${chips}</div></div>`;
 
   let n = 0;
-  h += tSection(++n, "chase", "Chase today", "Waiting on other people and due for a chase", chase.map(it => itemRow(it, it._stale ? `${it._days} days since last asked` : "Bot says chase")));
-  h += tSection(++n, "ours", "Our own tasks", "Things only we can do", ours.map(it => itemRow(it, `${it._days} days open`)));
+  const prop = it => it.state === "Proposed" ? " · not confirmed yet" : "";
+  h += tSection(++n, "chase", "Chase today", "Waiting on other people – most urgent first", chase.map(it => itemRow(it, `${it._days} days since last asked${prop(it)}`)));
+  h += tSection(++n, "ours", "Our own tasks", "Things only we can do", ours.map(it => itemRow(it, `${it._days} days open${prop(it)}`)));
   if (proposed.length) h += tSection(++n, "confirm", "To confirm", "Proposed – tap, then OK keep or Drop", proposed.map(it => itemRow(it, "Proposed")));
   h += tSection(++n, "deals", "Deals – next step", "Tap to open the deal at that step", deals.map(({ d, pg }) => tRow({ go: "deal:" + d.id + (pg.next ? ":" + pg.next.id : ""), dot: d.status === "On hold" ? DOT.prop : DOT.blue,
     title: esc(d.name), sub: pg.next ? `${esc(pg.cur.name)} · next: ${esc(pg.next.title)} · ${pg.done}/${pg.total} ticked` : "Next: " + esc(d.next_milestone), right: "" })));
@@ -67,7 +68,10 @@ function todayHtml(items) {
     return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(t.kind) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
   }));
   const risks = (br && br.risks) || [];
-  if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map((r, i) => tRow({ go: (r.ref_type && r.ref_id) ? r.ref_type + ":" + r.ref_id : "none:" + i, dot: DOT.high, title: esc(r.text), sub: r.where ? esc(r.where) : "", right: "" })));
+  const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
+  if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map(r => (r.ref_type && r.ref_id && refName(r))
+    ? tRow({ go: r.ref_type + ":" + r.ref_id, dot: DOT.high, title: esc(r.text), sub: "On: " + esc(refName(r)), right: "" })
+    : `<div class="tline"><i class="dot" style="background:${DOT.high};margin-right:8px"></i>${esc(r.text)}</div>`));
   if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the tappable version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   h += tSection(++n, "waiting", "Waiting – not due yet", "No chase needed today", waiting.map(it => itemRow(it, `${it._days} of ${it.nudge_after_days || 3} days`)), false);
   if (!items.length) h += `<div class="empty">Nothing open. Tap + Add.</div>`;
@@ -81,11 +85,12 @@ function briefAsText() {
   const items = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === target);
   const lines = [];
   if (br && br.summary) lines.push(br.summary, "");
-  const chase = items.filter(i => i.state !== "Proposed" && !i._me && (i._stale || ((br && br.chase_order) || []).includes(i.id))).sort(byPrioThenAge);
+  const ord = (br && br.chase_order) || [];
+  const chase = items.filter(i => !i._me && (ord.includes(i.id) || (i._stale && i.state !== "Proposed"))).sort((a, b) => ((ord.indexOf(a.id) + 1) || 999) - ((ord.indexOf(b.id) + 1) || 999) || byPrioThenAge(a, b));
   if (chase.length) lines.push("CHASE TODAY", ...chase.map((i, n) => `${n + 1}. ${i.waiting_on}: ${i.waiting_for} (${i._days}d)${i.next_action ? " – next: " + i.next_action : ""}`), "");
-  const ours = items.filter(i => i.state !== "Proposed" && i._me).sort(byPrioThenAge);
+  const ours = items.filter(i => i._me).sort(byPrioThenAge);
   if (ours.length) lines.push("OUR OWN TASKS", ...ours.map((i, n) => `${n + 1}. ${i.waiting_for}`), "");
-  const prop = items.filter(i => i.state === "Proposed");
+  const prop = items.filter(i => i.state === "Proposed" && !chase.includes(i) && !ours.includes(i));
   if (prop.length) lines.push("TO CONFIRM", ...prop.map((i, n) => `${n + 1}. ${i.waiting_on}: ${i.waiting_for}`), "");
   const deals = liveDeals().map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next);
   if (deals.length) lines.push("DEALS – NEXT STEP", ...deals.map(({ d, pg }, n) => `${n + 1}. ${d.name}: ${pg.cur.name} – ${pg.next.title}`), "");
