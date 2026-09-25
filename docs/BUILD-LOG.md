@@ -16,7 +16,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - Crowded rows now wrap (page title under Back, person and contact headers, "Who does it").
 - Checks: `node --check` on every script. tools/screens.py on 40 screens (Home, task sheet, Add, Search, Deals, Board, People, Archive, Calculator, Ask) at 360x780 and 375x667, dark and light, demo mode: pctUnder14 = 0 everywhere; at most 4 text sizes on every screen; icon-only buttons = 0 apart from the + ; colouredText = []; heavyLarge = []; lowest contrast 4.67; no sideways scroll (extra scrollWidth check, test copy only); no console errors. Screenshots looked at.
 - Not changed (later batches): small tap targets (batch 6), Home order and header counts (batch 2).
-- Preview PR: preview-batch-1 → main (link in the PR list). Not live yet.
+- Preview PR: https://github.com/cavereef-gif/deal-board-app/pull/1 (branch preview-batch-1). Not live yet.
 
 ## 25 Sep 2026 – v16 batch 0: privacy (not live yet)
 - Demo data (index.html and directory2.js) now uses made-up people, companies, deal names, 555-style phone numbers and example.com emails. Same shapes, so demo mode still shows every feature.
