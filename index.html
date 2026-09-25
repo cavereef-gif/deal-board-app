@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Deal Board</title>
-<meta name="theme-color" content="#1C1C1E">
+<meta name="theme-color" content="#18191C">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -170,14 +170,106 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .hist .hm{color:var(--muted);font-size:13px}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
+
+/* ---------- v11: modern look ---------- */
+:root{--bg:#18191C;--card:#222328;--card2:#2A2B31;--line:#34353C;--text:#E2E2E4;--muted:#A0A0A8;--btn:#33343B;--tab:#26272C;--tab-on:#3E3F48;--r:16px}
+:root[data-theme="light"]{--bg:#F3F1EC;--card:#FFFFFF;--card2:#F6F4EF;--line:#E0DCD2;--text:#1E1E20;--muted:#5E5E64;--btn:#ECE8DF;--tab:#E9E5DB;--tab-on:#D6D0C2}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 14px calc(96px + env(safe-area-inset-bottom));max-width:720px}
+header{position:sticky;top:0;z-index:4;background:var(--bg);padding:14px 0 10px}
+h1{font-size:20px;font-weight:600;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+h1 .logo{width:28px;height:28px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:inline-grid;place-items:center;font-size:13px;font-weight:600}
+button{border-radius:12px}
+.card,.deal,.pinfo,.ccard,.brief,form.panel{border-radius:var(--r)}
+:root[data-theme="light"] .card,:root[data-theme="light"] .deal,:root[data-theme="light"] .ccard,:root[data-theme="light"] .brief,:root[data-theme="light"] .lead{box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:4px;background:var(--card);border-top:1px solid var(--line);justify-content:center}
+.tabs button{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;font-size:12px;background:transparent;min-height:52px}
+.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{background:var(--tab-on)}
+.fab{bottom:calc(76px + env(safe-area-inset-bottom));border-radius:18px}
+.fab2{display:none!important}
+.toast{bottom:calc(140px + env(safe-area-inset-bottom))}
+.strip{gap:8px}
+.strip span{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+/* directory */
+.dtools{padding:6px 0 8px}
+#dQ{font-size:16px;padding:12px 14px;border-radius:14px;background:var(--card)}
+.hscroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.hscroll::-webkit-scrollbar{display:none}
+.seg{flex:none;white-space:nowrap;padding:8px 12px;min-height:38px;font-size:14px;background:var(--tab);border:1px solid var(--line);border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.seg span{color:var(--muted);font-size:13px}
+.seg.on{background:var(--tab-on)}
+.seg.sm{padding:6px 10px;min-height:34px;font-size:13px}
+.pipe{display:flex;height:8px;border-radius:6px;overflow:hidden;margin-top:8px;background:var(--card2)}
+.pipe i{display:block;height:100%}
+.drow2{display:flex;gap:8px;margin-top:8px}
+.drow2 select{flex:1;font-size:15px;padding:9px;border-radius:12px}
+.drow2 button{flex:none;min-height:40px}
+.lcount{color:var(--muted);font-size:13px;margin:6px 2px}
+.lead{scroll-margin-top:72px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;border-left:5px solid transparent;overflow:hidden}
+.lead.p0,.lead.p1{border-left-color:var(--dot-high)} .lead.p2{border-left-color:var(--rail-normal)} .lead.p3{border-left-color:var(--dot-low)}
+.lr{display:flex;align-items:flex-start;gap:12px;padding:12px 12px 12px 10px;cursor:pointer}
+.av{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-size:14px;font-weight:600;margin-top:2px}
+.av.sm{width:32px;height:32px;font-size:12px}
+.lm{flex:1;min-width:0}
+.ln{font-size:16px;font-weight:600;line-height:1.3}
+.ls{color:var(--muted);font-size:14px;margin-top:2px;overflow-wrap:anywhere}
+.lt{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center}
+.flagm{font-size:14px;color:var(--muted)}
+.el{display:inline-flex;align-items:baseline;gap:2px;min-width:30px;height:24px;padding:0 6px;border-radius:6px;background:var(--card2);border:1px solid var(--line);font-size:13px;justify-content:center;align-items:center}
+.el b{font-weight:600} .el i{font-style:normal;font-size:10px;color:var(--muted)}
+.lc{padding:0 14px 14px;border-top:1px solid var(--line)}
+.warn{display:flex;gap:10px;align-items:flex-start;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--dot-high);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:15px}
+.warn .dot{margin-top:4px}
+.bigacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px;margin-top:12px}
+.bigacts button{min-height:46px;font-weight:500;font-size:14px;padding:8px 4px;line-height:1.2;background:var(--btn);border:1px solid var(--line)}
+.about{white-space:pre-wrap;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.person{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.person:last-of-type{border-bottom:0}
+.pm{flex:1;min-width:0}.pn{font-size:15px;font-weight:600}
+.btnlink{display:inline-flex;align-items:center;min-height:38px;padding:7px 11px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:14px}
+.hdet,.libi{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.hdet summary,.libi summary{cursor:pointer;min-height:36px;display:flex;align-items:center;gap:8px;font-size:15px}
+.cnote{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:8px 0;font-size:15px;white-space:pre-wrap}
+.gs{color:var(--muted);font-size:13px;margin-top:3px}
+.gates{padding:0 14px 8px}
+.gate{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.gate .dot{margin-top:5px}.gt{flex:1}.gn{font-size:15px;font-weight:600}
+.gate button{flex:none;padding:7px 11px;min-height:36px;font-size:14px}
+.task{padding:10px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.task.done .tt{color:var(--muted)}
+.tl{display:flex;gap:8px;align-items:flex-start}
+.tn{color:var(--muted);font-size:14px;min-width:16px;padding-top:3px}
+.score{flex:none;min-width:26px;height:26px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:600}
+.tt{flex:1;font-size:15px;line-height:1.4}
+.tm{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0 0}
+.chip{padding:5px 10px;min-height:32px;font-size:13px;background:var(--card2);border:1px solid var(--line);border-radius:999px}
+header h1{white-space:nowrap;font-size:19px}
+.hdr-btns{gap:6px}.hdr-btns button{padding:6px 10px;min-height:34px;font-size:13px;white-space:nowrap;background:var(--card);border:1px solid var(--line)}
+.chip.tb{margin-left:auto;background:var(--btn);font-weight:500}
+.task .tm .pill{font-size:12px}
+.qteaser{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.qteaser .t{display:flex;align-items:center;gap:10px}.qteaser .n{flex:1;font-size:16px;font-weight:600}
+.qteaser .b{font-size:15px;margin-top:6px}
+@media (min-width:1000px){
+  body{max-width:1180px;padding-left:112px}
+  .tabs{top:0;bottom:0;right:auto;width:96px;flex-direction:column;justify-content:flex-start;padding:80px 8px 8px;border-top:0;border-right:1px solid var(--line)}
+  .tabs button{max-width:none;flex:none;min-height:64px;font-size:13px}
+  .fab{bottom:24px}
+  .toast{bottom:32px}
+  #list .llist{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  #list .llist .lead{margin:0}
+  #list .llist .lead.open{grid-column:1 / -1}
+}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
 <header>
-  <h1>Deal Board</h1>
+  <h1><span class="logo">DB</span>Deal Board</h1>
   <div class="hdr-btns">
     <button id="themeBtn" aria-label="Switch light or dark">Light</button>
-    <button id="refreshBtn" class="hidden">Refresh</button>
+    <button id="refreshBtn" class="hidden" aria-label="Refresh">↻</button>
     <button id="outBtn" class="hidden">Sign out</button>
   </div>
 </header>
@@ -196,10 +288,11 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <section id="board" class="hidden">
   <div class="tabs">
-    <button data-v="worklist" class="on">Worklist</button>
-    <button data-v="people">People</button>
-    <button data-v="deals">Deals</button>
-    <button data-v="bot">Bot</button>
+    <button data-v="worklist" class="on"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></svg>Today</button>
+    <button data-v="leads"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>Directory</button>
+    <button data-v="deals"><svg viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="13" rx="2.5"/><path d="M9 6.5V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v1.5M3.5 12h17"/></svg>Deals</button>
+    <button data-v="people"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.2c2.3.2 3.9 1.8 4.5 4.3"/></svg>People</button>
+    <button data-v="bot"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="12" rx="4"/><path d="M12 7V4M9 12.5h.01M15 12.5h.01M9.5 16h5"/></svg>Bot</button>
   </div>
   <div class="strip" id="strip"></div>
   <form id="addForm" class="panel hidden">
@@ -228,11 +321,12 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 <button class="fab hidden" id="addBtn">+ Add</button>
 <button class="fab2 hidden" id="botFab">Bot</button>
 <input type="file" id="fileInput" class="hidden">
+<input type="file" id="chatInput" class="hidden" accept=".txt,.zip,text/plain,application/zip">
 <div id="toast" class="toast hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "10";
+const APP_VERSION = "11";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -303,8 +397,8 @@ function isOpen(k, dflt){ if (openKeys.has("+" + k)) return true; if (openKeys.h
 function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openKeys].slice(-300))); } catch(e){} }
 function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
-function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "Dark" : "Light";
-  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F4F1EA" : "#1C1C1E";
+function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "☾ Dark" : "☀ Light";
+  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F3F1EC" : "#18191C";
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -319,7 +413,8 @@ const fmtSize = n => n > 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, 
 const firstName = n => (n || "").split(/[\s(&,]/)[0];
 const toWa = p => { let d = (p || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); if (d.length === 10 && d[0] === "0") d = "27" + d.slice(1); else if (d.length === 9) d = "27" + d; return d; };
 const notesFor = id => (window._notes || []).filter(n => n.item_id === id);
-const dealNotes = id => (window._notes || []).filter(n => n.deal_id === id && !n.item_id);
+const contactNotes = id => (window._notes || []).filter(n => n.contact_id === id);
+const dealNotes = id => (window._notes || []).filter(n => n.deal_id === id && !n.item_id && !n.lead_id);
 const attsFor = (type, id) => (window._atts || []).filter(a => a.target_type === type && String(a.target_id) === String(id));
 const contactsFor = name => { const low = (name || "").toLowerCase(); return (window._contacts || []).filter(c => { const cn = (c.name || "").toLowerCase(); const f = firstName(cn); return low === cn || (f.length > 2 && new RegExp("\\b" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b").test(low)); }); };
 const dealById = id => (window._deals || []).find(d => d.id === id);
@@ -377,13 +472,14 @@ async function checkVersion(){
 async function load(){
   checkVersion();
   let items;
+  const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
   if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
       sb.from("projects").select("*"),
       sb.from("contacts").select("*").order("name"),
-      sb.from("events").select("id,item_id,deal_id,new_value,changed_by,changed_at,source").eq("field","note").order("changed_at", { ascending: false }).limit(500),
+      sb.from("events").select("id,item_id,deal_id,lead_id,contact_id,new_value,changed_by,changed_at,source").eq("field","note").order("changed_at", { ascending: false }).limit(500),
       sb.from("attachments").select("*").order("created_at", { ascending: false }),
       sb.from("deals").select("*").order("sort").order("created_at"),
       sb.from("deal_steps").select("*").order("sort"),
@@ -410,6 +506,7 @@ async function load(){
     it._me = isMe(it);
   }
   window._items = items;
+  await dirP;
   const names = [...new Set(items.map(i => i.waiting_on).filter(Boolean))].sort();
   $("people").innerHTML = ["Me", ...names.filter(n => !/^me$/i.test(n))].map(n => `<option value="${esc(n)}">`).join("");
   const keepDeal = $("fDeal").value;
@@ -456,6 +553,7 @@ function rowHtml(it, n){
       ${it.priority === 1 ? `<button data-a="priority" data-v="2">Normal</button>` : `<button data-a="priority" data-v="1">High</button>`}
       <button data-a="assign" data-v="${other}">→ ${other}</button>
       <button data-panel="item:${it.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes${nN ? " " + nN : ""}${fN ? " · Files " + fN : ""}</button>
+      ${!it._me && contactsFor(it.waiting_on).some(c => c.phone || c.whatsapp) ? `<button data-wa="${esc(it.waiting_on)}">WhatsApp ${esc(firstName(it.waiting_on))}</button>` : ""}
       <button data-botitem="${it.id}">Bot</button>
       ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
       <select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Link to a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select>
@@ -474,7 +572,7 @@ function contactFormHtml(c){
     <div class="two"><div>${f("company", "Company")}</div><div>${f("role", "Role")}</div></div>
     <div class="lbl">Project</div><select class="c-project"><option value="">—</option>${PROJECTS.map(p => `<option${c.project === p ? " selected" : ""}>${p}</option>`).join("")}</select>
     <div class="lbl">Notes</div><textarea class="c-notes">${esc(c.notes || "")}</textarea>
-    <div class="acts" style="margin:10px 0 0"><button class="primary" data-csave="${c.id || "new"}">Save contact</button><button data-ccancel="${c.id || "new"}">Cancel</button></div><div class="msg c-msg"></div></div>`;
+    <div class="acts" style="margin:10px 0 0"><button class="primary" data-csave="${c.id || "new"}">Save contact</button><button data-ccancel="${c.id || "new"}">Cancel</button>${"contacts" in navigator ? `<button data-cpick="1">Pick from phone</button>` : ""}</div><div class="msg c-msg"></div></div>`;
 }
 function contactHtml(c){
   const open = openPanels.has("contact:" + c.id), edit = editContact === c.id;
@@ -485,8 +583,8 @@ function contactHtml(c){
     <div class="s">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div>
     <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
     ${c.notes ? `<div class="k">${esc(c.notes)}</div>` : ""}
-    <div class="acts" style="margin:9px 0 0"><button data-panel="contact:${c.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button><button data-cedit="${c.id}"${edit ? ' style="background:var(--tab-on)"' : ""}>Edit</button><button data-botcontact="${esc(c.name)}">Bot</button></div>
-    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
+    <div class="acts" style="margin:9px 0 0"><button data-panel="contact:${c.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes ${contactNotes(c.id).length} · Files ${fN}</button><button data-dchat="contact:${c.id}">Import WhatsApp chat</button><button data-emailcontact="${c.id}">Email me</button><button data-cedit="${c.id}"${edit ? ' style="background:var(--tab-on)"' : ""}>Edit</button><button data-botcontact="${esc(c.name)}">Bot</button></div>
+    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
     ${edit ? contactFormHtml(c) : ""}
     <div class="s" style="margin-top:8px;font-size:13px">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
 }
@@ -577,7 +675,7 @@ function dealHtml(d){
     h += secHtml(d, "files", "Files", attsFor("deal", d.id).length, false, () => filesHtml("deal", d.id));
     const hs = histOf(d.id);
     h += secHtml(d, "hist", "History", hs.length, false, () => hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
-    h += `<div class="sec-b"><div class="acts0"><button data-botdeal="${d.id}">Bot: review this deal</button><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></div></div></div>`;
+    h += `<div class="sec-b"><div class="acts0"><button data-botdeal="${d.id}">Bot: review this deal</button><button data-emaildeal="${d.id}">Email me</button><button data-dchat="deal:${d.id}">Import WhatsApp chat</button><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></div></div></div>`;
   }
   return h + `</div>`;
 }
@@ -629,6 +727,15 @@ function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length, assigned = items.filter(i => (i.owner || "Chris") === me).length;
   $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span><span>${assigned} on ${me || "me"}</span>`;
+  if (view === "leads") {
+    const Ls = window._leads || [];
+    const cnt = f => Ls.filter(f).length;
+    $("strip").innerHTML = `<span>${Ls.length} in the list</span><span><i class="dot" style="background:#8A8A92"></i>${cnt(l => l.status === "new" || l.status === "ready")} not contacted</span><span><i class="dot" style="background:#3E9BA6"></i>${cnt(l => ["contacted","replied","qualified","deal"].includes(l.status))} contacted</span><span><i class="dot d-ok"></i>${cnt(l => ["replied","qualified"].includes(l.status))} replied</span>`;
+    $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap <b>Import WhatsApp chat</b>.</div></div>` : "") + dirHtml();
+    $("foot").textContent = (me ? me + " · " : "") + "app v" + APP_VERSION;
+    $("addBtn").classList.add("hidden");
+    return;
+  }
   if (!items.length && view === "worklist") { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
   let html = "";
   if (view === "people") {
@@ -658,9 +765,11 @@ function render(){
     const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
     const br = window._brief;
     const todayStr = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
-    html += `<div class="brief"><div class="t"><div class="n">Today's brief</div><button data-bot="brief-here">${botBusy ? "Working…" : br ? "Refresh" : "Get brief"}</button></div>
+    html += `<div class="brief"><div class="t"><div class="n">Today's brief</div>${br ? `<button data-emailbrief="1">Email me</button>` : ""}<button data-bot="brief-here">${botBusy ? "Working…" : br ? "Refresh" : "Get brief"}</button></div>
       ${br ? `<div class="b">${esc(br.text)}</div><div class="s">${new Date(br.created_at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · for ${esc(br.actor)}</div>` : `<div class="s">No brief yet for ${todayStr}. Tap Get brief.</div>`}</div>`;
-    html += `<div class="chips">${chips}</div>`;
+    const q = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(k => ((window._gates || []).find(g => g.key === k) || {}).status === "open") && (!t.not_before || t.not_before <= new Date(Date.now() + 2*3600e3).toISOString().slice(0,10))).sort((a, b) => b.score - a.score || a.rank - b.rank);
+    if (q.length) html += `<div class="qteaser"><div class="t"><div class="n">Buyer search — next up</div><button data-v2="leads">Open</button></div>${q.slice(0, 3).map((t, i) => `<div class="b">${i + 1}. ${esc(t.task)}</div>`).join("")}</div>`;
+    html += `<div class="chips">${chips}<button data-emaillist="1">Email me this list</button></div>`;
     const bands = [[1,"High priority"],[2,"Normal"],[3,"Low"]];
     let n = 0;
     for (const [pr, label] of bands) {
@@ -672,7 +781,7 @@ function render(){
     }
     if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="e.g. What is still missing on the chrome deal? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
       <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
       <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
@@ -683,6 +792,7 @@ function render(){
     html = dealsViewHtml();
   }
   $("list").innerHTML = html;
+  $("addBtn").classList.toggle("hidden", !me || view === "bot");
   $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
 }
 
@@ -833,7 +943,7 @@ $("list").addEventListener("click", async e => {
     if (DEMO) { alert("Demo mode — nothing saved"); return; }
     const [ntype, nid] = nb.dataset.note.split(":");
     nb.disabled = true; nb.textContent = "…";
-    const row = { field: "note", new_value: text, source: "app" }; row[ntype === "deal" ? "deal_id" : "item_id"] = nid;
+    const row = { field: "note", new_value: text, source: "app" }; row[{ deal: "deal_id", lead: "lead_id", contact: "contact_id" }[ntype] || "item_id"] = nid;
     const { error } = await sb.from("events").insert(row);
     if (error) { nb.textContent = "Failed"; toast("Could not save note: " + error.message, 5000); nb.disabled = false; return; }
     load(); return;
@@ -889,7 +999,7 @@ $("fileInput").addEventListener("change", async () => {
   if (up.error) { toast("Upload failed: " + up.error.message, 6000); return; }
   const { error } = await sb.from("attachments").insert({ target_type: t.type, target_id: String(t.id), path, name: f.name, size: f.size, mime: f.type || "" });
   if (error) { toast("Uploaded, but could not record it: " + error.message, 6000); return; }
-  if (t.type === "item" || t.type === "contact" || t.type === "project") openPanels.add(`${t.type}:${t.id}`);
+  if (t.type === "item" || t.type === "contact" || t.type === "project" || t.type === "lead") openPanels.add(`${t.type}:${t.id}`);
   if (t.type === "deal") { openKeys.delete("-sec:" + t.id + ":files"); openKeys.add("+sec:" + t.id + ":files"); saveOpen(); }
   toast("Saved " + f.name); load();
 });
@@ -910,6 +1020,23 @@ $("list").addEventListener("click", async e => {
 $("list").addEventListener("click", e => {
   const c = e.target.closest("button[data-who]"); if (!c) return;
   who = c.dataset.who; try{ localStorage.setItem("who", who) }catch(e){} render();
+});
+
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.v2) { view = d.v2; try { localStorage.setItem("view", view); } catch (x) {} render(); window.scrollTo(0, 0); return; }
+  if (d.emailbrief && window._brief) { emailMe("Deal Board brief " + new Date().toLocaleDateString("en-ZA"), window._brief.text); return; }
+  if (d.emaillist) {
+    const its = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === (who || me || "Chris")).sort(byPrioThenAge);
+    emailMe("Deal Board – open list " + new Date().toLocaleDateString("en-ZA"), its.map((i, n) => `${n + 1}. ${i._me ? "" : i.waiting_on + ": "}${i.waiting_for} (${i._days}d${i.next_action ? ", next: " + i.next_action : ""}${i.state === "Proposed" ? ", proposed" : ""})`).join("\n")); return; }
+  if (d.emailcontact) { const c = (window._contacts || []).find(x => x.id === d.emailcontact); if (!c) return;
+    emailMe("Contact: " + c.name, [c.name, [c.company, c.role].filter(Boolean).join(" · "), c.phone ? "Phone: " + c.phone : "", c.email ? "Email: " + c.email : "", c.notes, ...contactNotes(c.id).map(n => `${n.changed_by} ${fmtDay(n.changed_at)}: ${n.new_value}`)].filter(Boolean).join("\n")); return; }
+  if (d.emaildeal) { const dl = dealById(d.emaildeal); if (!dl) return; const pg = dealProgress(dl.id);
+    const p = dl.params || {}; const terms = Object.entries(p).filter(([k]) => k !== "target" && k !== "limit").map(([k, v]) => `${termLabel(k)}: ${v}`).join("\n");
+    emailMe("Deal: " + dl.name, [dl.name + " — " + dl.status, dl.stage, pg.total ? `Checklist ${pg.done}/${pg.total}${pg.next ? " · next: " + pg.next.title : ""}` : "", terms ? "Terms:\n" + terms : "", itemsOf(dl.id).length ? "Waiting on:\n" + itemsOf(dl.id).map(i => `- ${i.waiting_on}: ${i.waiting_for} (${i._days}d)`).join("\n") : "", dl.key_facts ? "Key facts:\n" + dl.key_facts : "", dl.next_milestone ? "Next milestone: " + dl.next_milestone : ""].filter(Boolean).join("\n\n")); return; }
+  if (d.cpick) { try { const [c] = await navigator.contacts.select(["name", "tel", "email"], { multiple: false }); if (!c) return; const f = b.closest(".cform");
+      const set = (k, v) => { const x = f.querySelector(".c-" + k); if (x && v) x.value = v; }; if (!f.querySelector(".c-name").value) set("name", (c.name || [])[0]); set("phone", (c.tel || [])[0]); set("email", (c.email || [])[0]); } catch (x) { toast("Could not open your phone contacts."); } return; }
 });
 
 async function askBot(question, mode, focus, silent){
@@ -942,6 +1069,12 @@ $("list").addEventListener("click", async e => {
   if (ap) {
     const m = chat[Number(ap.dataset.apply)]; if (!m || !m.s) return;
     const s = m.s, tgt = String(s.target || s.project || "").trim().toLowerCase();
+    if (s.lead_id) {
+      ap.disabled = true; ap.textContent = "…";
+      const { error } = s.field === "status" ? await sb.rpc("lead_status", { p_id: s.lead_id, p_status: s.value, p_via: null, p_outcome: s.note || null }) : await sb.rpc("save_lead", { p_id: s.lead_id, p: { [s.field]: s.value } });
+      if (error) { ap.textContent = "Failed"; toast(error.message, 5000); return; }
+      chat.splice(Number(ap.dataset.apply), 1, { role: "sys", text: `Applied to ${s.lead_name || "the lead"} · ${s.field}.` }); render(); load(); return;
+    }
     const merge = cur => (s.mode === "append" && (s.field === "key_facts" || s.field === "contacts")) ? (cur ? cur + "\n" + s.text : s.text) : s.text;
     const deal = (window._deals || []).find(d => d.name.toLowerCase() === tgt);
     ap.disabled = true; ap.textContent = "…";
@@ -1017,11 +1150,12 @@ async function show(){
   $("refreshBtn").classList.toggle("hidden", !signedIn);
   $("outBtn").classList.toggle("hidden", !signedIn);
   $("botFab").classList.toggle("hidden", !signedIn);
-  if (signedIn) load();
+  if (signedIn) { load(); if (window.readSharedInbox) readSharedInbox(); }
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
-show();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
+<script src="directory.js"></script>
+<script src="directory2.js"></script>
+<script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>
