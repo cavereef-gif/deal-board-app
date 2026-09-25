@@ -29,8 +29,8 @@ function postHtml(p) {
     ${files.length ? `<div class="pa">${files.map(a => `<a href="${esc((window._urls || {})[a.path] || "#")}" target="_blank" rel="noopener">${ic("clip")}${esc(a.name)}</a>`).join("")}</div>` : ""}
     ${deal ? `<button class="plink" data-tgo="deal:${deal.id}">${ic("deals")}${esc(deal.name.length > 34 ? deal.name.slice(0, 32) + "…" : deal.name)}</button>` : ""}
     <div class="pm"><span class="sp">${esc(p.author)} · ${fmtWhen(p.created_at)}${p.done ? " · done" : ""}</span>
-      <button class="pbtn" data-postact="${p.id}" data-v="${p.pinned ? "unpin" : "pin"}" aria-label="${p.pinned ? "Unpin" : "Pin to the top"}" title="${p.pinned ? "Unpin" : "Pin to the top"}">${ic("pin")}</button>
-      <button class="pbtn" data-postact="${p.id}" data-v="${p.done ? "open" : "done"}" aria-label="${p.done ? "Mark as open" : "Mark as done"}" title="${p.done ? "Mark as open" : "Mark as done"}">${ic(p.done ? "undo" : "check")}</button></div></div>`;
+      <button class="pbtn" data-postact="${p.id}" data-v="${p.pinned ? "unpin" : "pin"}" aria-label="${p.pinned ? "Unpin" : "Pin to the top"}" title="${p.pinned ? "Unpin" : "Pin to the top"}">${ic("pin")}<span>${p.pinned ? "Unpin" : "Pin"}</span></button>
+      <button class="pbtn" data-postact="${p.id}" data-v="${p.done ? "open" : "done"}" aria-label="${p.done ? "Mark as open" : "Mark as done"}" title="${p.done ? "Mark as open" : "Mark as done"}">${ic(p.done ? "undo" : "check")}<span>${p.done ? "Reopen" : "Done"}</span></button></div></div>`;
 }
 function boardHtml() {
   const P = (window._posts || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
