@@ -70,9 +70,8 @@ function hGroup(key, title, rows, dflt) {
 }
 function homeGroups(items, target) {
   const mine = items.filter(i => target === "All" || (i.owner || "Chris") === target);
-  const now = SA(), toSun = 6 - ((now.getUTCDay() + 6) % 7);
   const g = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
-  for (const it of mine) { const n = dayDiff(dueDate(it)); (n < 0 ? g.overdue : n === 0 ? g.today : n === 1 ? g.tomorrow : n <= Math.max(toSun, 1) ? g.week : g.later).push(it); }
+  for (const it of mine) { const n = dayDiff(dueDate(it)); (n < 0 ? g.overdue : n === 0 ? g.today : n === 1 ? g.tomorrow : n <= 7 ? g.week : g.later).push(it); }
   const byDue = (a, b) => dueDate(a) - dueDate(b) || byPrioThenAge(a, b);
   g.overdue.sort(byPrioThenAge); g.today.sort(byPrioThenAge); g.tomorrow.sort(byPrioThenAge); g.week.sort(byDue); g.later.sort(byDue);
   return { mine, g, sugg: mine.filter(i => i.state === "Proposed") };
@@ -91,8 +90,8 @@ function todayHtml(items) {
   h += hLabel("Overdue", g.overdue.map(i => homeRow(i, all)));
   h += hLabel("Today", g.today.map(i => homeRow(i, all)));
   h += hLabel("Tomorrow", g.tomorrow.map(i => homeRow(i, all)));
-  h += hLabel("Later this week", g.week.map(i => homeRow(i, all)));
-  h += hGroup("later", "Next week and later", g.later.map(i => homeRow(i, all)), false);
+  h += hLabel("Next 7 days", g.week.map(i => homeRow(i, all)));
+  h += hGroup("later", "Later than a week", g.later.map(i => homeRow(i, all)), false);
   // brief: one or two lines, "Read more" opens the rest
   const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
   const bOpen = isOpen("home:brief", false);
