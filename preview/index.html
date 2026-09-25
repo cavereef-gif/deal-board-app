@@ -8,7 +8,7 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=16">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
 </head>
 <body>
@@ -126,7 +126,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js"></script>
+<script src="ui.js?v=16"></script>
 <script>
 const APP_VERSION = "16";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -1088,14 +1088,14 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js"></script>
-<script src="directory2.js"></script>
-<script src="today.js"></script>
-<script src="../kitdata.js"></script>
-<script src="dealkit.js"></script>
-<script src="board.js"></script>
-<script src="calc.js"></script>
-<script src="archive.js"></script>
+<script src="directory.js?v=16"></script>
+<script src="directory2.js?v=16"></script>
+<script src="today.js?v=16"></script>
+<script src="../kitdata.js?v=16"></script>
+<script src="dealkit.js?v=16"></script>
+<script src="board.js?v=16"></script>
+<script src="calc.js?v=16"></script>
+<script src="archive.js?v=16"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
