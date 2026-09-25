@@ -72,6 +72,17 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .wide{margin-top:14px;width:100%;padding:14px;font-weight:500;border:1px solid var(--line)}
 .msg{color:var(--muted);font-size:15px;margin-top:10px;min-height:20px}
 .fab{position:fixed;right:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.chips{display:flex;gap:6px;margin:0 0 10px}
+.chips button{padding:7px 12px;min-height:36px;font-size:14px;background:var(--tab)}
+.chips button.on{background:var(--tab-on);font-weight:500}
+.chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.bub{max-width:92%;padding:10px 13px;border-radius:14px;white-space:pre-wrap;font-size:16px;line-height:1.4}
+.bub.u{align-self:flex-end;background:var(--tab-on)}
+.bub.a{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
+.bub.s{align-self:center;background:transparent;color:var(--muted);font-size:14px}
+.ask{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{flex:1;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:16px;min-height:48px;max-height:140px;resize:vertical}
+.ask button{min-height:48px}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
 </style>
@@ -100,9 +111,10 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <section id="board" class="hidden">
   <div class="tabs">
-    <button data-v="people" class="on">People</button>
-    <button data-v="todo">To-do</button>
+    <button data-v="worklist" class="on">Worklist</button>
+    <button data-v="people">People</button>
     <button data-v="projects">Projects</button>
+    <button data-v="bot">Bot</button>
   </div>
   <div class="strip" id="strip"></div>
   <form id="addForm" class="panel hidden">
@@ -135,7 +147,10 @@ const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 const $ = id => document.getElementById(id);
-let view = "people"; try { view = localStorage.getItem("view") || "people"; } catch(e){}
+let view = "worklist"; try { view = localStorage.getItem("view") || "worklist"; } catch(e){}
+if (view === "todo") view = "worklist";
+let who = ""; try { who = localStorage.getItem("who") || "" } catch(e){}
+let chat = []; let botBusy = false;
 let me = "";
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "Dark" : "Light";
@@ -222,16 +237,25 @@ function render(){
       html += `</div>`;
     }
     if (!order.length) html = `<div class="empty">Nothing waiting on anyone.</div>`;
-  } else if (view === "todo") {
-    const mine = items.filter(i => i._me).sort(byPrioThenAge);
-    const byOwner = {};
-    for (const it of mine) (byOwner[it.owner || "Chris"] ||= []).push(it);
-    for (const [own, arr] of Object.entries(byOwner).sort((a,b) => (a[0] === me ? -1 : b[0] === me ? 1 : 0))) {
-      html += `<h2>${own === me ? "Mine" : esc(own)} — ${arr.length}</h2><div class="card">`;
-      arr.forEach((it, i) => html += rowHtml(it, i+1));
+  } else if (view === "worklist") {
+    const target = who || me || "Chris";
+    const list = items.filter(i => who === "All" || (i.owner || "Chris") === target).sort(byPrioThenAge);
+    const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
+    html += `<div class="chips">${chips}</div>`;
+    const bands = [[1,"High priority"],[2,"Normal"],[3,"Low"]];
+    let n = 0;
+    for (const [pr, label] of bands) {
+      const arr = list.filter(i => (i.priority || 2) === pr);
+      if (!arr.length) continue;
+      html += `<h2>${label} — ${arr.length}</h2><div class="card">`;
+      arr.forEach(it => html += rowHtml(it, ++n).replace('<div class="txt">', it._me ? '<div class="txt">' : `<div class="txt"><span style="color:var(--muted)">${esc(it.waiting_on)}:</span> `));
       html += `</div>`;
     }
-    if (!mine.length) html = `<div class="empty">No to-do items. Add one with "Me" as the person.</div>`;
+    if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
+  } else if (view === "bot") {
+    html += `<div class="chat">${chat.length ? chat.map(m => `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+      <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
+      <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>`;
   } else {
     const byProj = {};
     for (const it of items) (byProj[it.project] ||= []).push(it);
@@ -298,6 +322,35 @@ $("list").addEventListener("click", async e => {
   const { error } = await sb.rpc("set_project", { p_name: sv.dataset.save, p_summary: box.querySelector(".e-summary").value, p_stage: box.querySelector(".e-stage").value, p_key_facts: box.querySelector(".e-facts").value, p_contacts: box.querySelector(".e-contacts").value, p_next_milestone: box.querySelector(".e-next").value });
   if (error) { sv.textContent = "Failed"; console.error(error); sv.disabled = false; return; }
   load();
+});
+
+$("list").addEventListener("click", e => {
+  const c = e.target.closest("button[data-who]"); if (!c) return;
+  who = c.dataset.who; try{ localStorage.setItem("who", who) }catch(e){} render();
+});
+
+async function askBot(question, mode){
+  if (botBusy) return;
+  if (question) chat.push({ role: "user", text: question });
+  botBusy = true; render();
+  try {
+    if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
+    const history = chat.filter(m => m.role !== "sys").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+    const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history } });
+    if (error) throw error;
+    chat.push({ role: "assistant", text: data.answer || "(no answer)" });
+    if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
+    botBusy = false; render();
+    if (data.reload) load(); else if (view === "bot") { const el = $("list"); el.scrollTop = el.scrollHeight; window.scrollTo(0, document.body.scrollHeight); }
+  } catch (err) {
+    botBusy = false; chat.push({ role: "sys", text: "Bot error: " + (err.message || err) }); render();
+  }
+}
+$("list").addEventListener("click", e => {
+  const b = e.target.closest("button[data-bot]"); if (!b) return;
+  if (b.dataset.bot === "clear") { chat = []; render(); return; }
+  if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
+  const q = ($("q") && $("q").value.trim()) || ""; if (!q) return; askBot(q, "ask");
 });
 
 $("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); $("addBtn").textContent = $("addForm").classList.contains("hidden") ? "+ Add" : "Close"; if (!$("addForm").classList.contains("hidden")) $("fFor").focus(); };
