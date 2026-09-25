@@ -12,7 +12,7 @@
 :root{
   --bg:#1C1C1E; --card:#27272A; --card2:#303034; --line:#3A3A3E; --text:#E4E4E4; --muted:#A3A3A8;
   --btn:#36363B; --btn-text:#E4E4E4; --tab:#2C2C30; --tab-on:#4A4A52;
-  --dot-ok:#4FA88A; --dot-stale:#D9A03F; --dot-prop:#8A8A92; --dot-high:#C45C5C; --dot-low:#6B6B72;
+  --dot-ok:#4FA88A; --dot-stale:#D9A03F; --dot-prop:#8A8A92; --dot-high:#C45C5C; --dot-low:#6B6B72; --rail-normal:#5C7FB8;
 }
 :root[data-theme="light"]{
   --bg:#F4F1EA; --card:#FFFFFF; --card2:#F7F4EE; --line:#DAD5C9; --text:#1F1F1F; --muted:#5C5C60;
@@ -41,6 +41,17 @@ h1{font-size:21px;font-weight:500;margin:0}
 .card-h button{padding:8px 12px;min-height:38px;font-size:14px}
 .row{padding:11px 14px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
+.row{border-left:6px solid transparent}
+.row.p1{border-left-color:var(--dot-high)} .row.p2{border-left-color:var(--rail-normal)} .row.p3{border-left-color:var(--dot-low)}
+.pinfo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.pinfo .t{display:flex;align-items:center;gap:10px}
+.pinfo .t .n{flex:1;font-size:19px;font-weight:500}
+.pinfo .t button{padding:7px 11px;min-height:36px;font-size:14px}
+.pinfo .s{color:var(--muted);font-size:15px;margin-top:4px}
+.pinfo .k{margin-top:8px;font-size:15px;white-space:pre-wrap}
+.pinfo .lbl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
+.pinfo textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
+.pinfo input{font-size:15px;padding:10px;margin-top:4px}
 .row .l1{display:flex;align-items:flex-start;gap:9px}
 .row .num{color:var(--muted);min-width:20px;font-size:15px;padding-top:2px}
 .row .txt{flex:1}
@@ -152,11 +163,11 @@ function demoItems(){
 
 async function load(){
   let items;
-  if (DEMO) items = demoItems();
+  if (DEMO) { items = demoItems(); window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
-    const { data, error } = await sb.from("items").select("*").neq("state","Done");
-    if (error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(error.message)}</div>`; return; }
-    items = data;
+    const [r1, r2] = await Promise.all([sb.from("items").select("*").neq("state","Done"), sb.from("projects").select("*")]);
+    if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
+    items = r1.data; window._projects = r2.data || [];
   }
   for (const it of items) {
     it._days = daysSince(it.last_chased || it.created_at);
@@ -174,9 +185,10 @@ const byPrioThenAge = (a,b) => (a.priority||2) - (b.priority||2) || b._days - a.
 function rowHtml(it, n){
   const stateDot = it.state === "Proposed" ? "d-prop" : (it._stale ? "d-stale" : "d-ok");
   const stateWord = it.state === "Proposed" ? "Proposed" : (it._stale ? "Needs a chase" : "On track");
-  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : "";
-  const own = it.owner && it.owner !== me ? `<span class="pill">${esc(it.owner)}</span>` : "";
-  return `<div class="row" data-id="${it.id}">
+  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : `<span class="pill"><i class="dot" style="background:var(--rail-normal)"></i>Normal</span>`;
+  const own = `<span class="pill">${esc(it.owner || "Chris")}${(it.owner || "Chris") === me ? " (me)" : ""}</span>`;
+  const other = (it.owner || "Chris") === "Annemarie" ? "Chris" : "Annemarie";
+  return `<div class="row p${it.priority || 2}" data-id="${it.id}">
     <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}" style="margin-top:6px"></i>${n ? `<span class="num">${n}.</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
@@ -185,6 +197,7 @@ function rowHtml(it, n){
       ${it.state === "Proposed" ? `<button class="primary" data-a="confirm">OK, keep</button><button data-a="drop">Drop</button>` : ""}
       ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
       ${it.priority === 1 ? `<button data-a="priority" data-v="2">Normal</button>` : `<button data-a="priority" data-v="1">High</button>`}
+      <button data-a="assign" data-v="${other}">→ ${other}</button>
       ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
     </div></div>`;
 }
@@ -192,8 +205,8 @@ function rowHtml(it, n){
 function render(){
   const items = window._items || [];
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
-  const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
-  $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span>`;
+  const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length, assigned = items.filter(i => (i.owner || "Chris") === me).length;
+  $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span><span>${assigned} on ${me || "me"}</span>`;
   if (!items.length) { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
   let html = "";
   if (view === "people") {
@@ -213,8 +226,8 @@ function render(){
     const mine = items.filter(i => i._me).sort(byPrioThenAge);
     const byOwner = {};
     for (const it of mine) (byOwner[it.owner || "Chris"] ||= []).push(it);
-    for (const [own, arr] of Object.entries(byOwner)) {
-      html += `<h2>${esc(own)} — ${arr.length}</h2><div class="card">`;
+    for (const [own, arr] of Object.entries(byOwner).sort((a,b) => (a[0] === me ? -1 : b[0] === me ? 1 : 0))) {
+      html += `<h2>${own === me ? "Mine" : esc(own)} — ${arr.length}</h2><div class="card">`;
       arr.forEach((it, i) => html += rowHtml(it, i+1));
       html += `</div>`;
     }
@@ -222,9 +235,27 @@ function render(){
   } else {
     const byProj = {};
     for (const it of items) (byProj[it.project] ||= []).push(it);
-    for (const [proj, arr] of Object.entries(byProj).sort()) {
-      arr.sort(byPrioThenAge);
-      html += `<h2>${esc(proj)} — ${arr.length}</h2><div class="card">`;
+    const pinfo = window._projects || [];
+    const names = [...new Set([...pinfo.map(p => p.name), ...Object.keys(byProj)])];
+    names.sort((a,b) => ((pinfo.find(p => p.name === a) || {sort:999}).sort) - ((pinfo.find(p => p.name === b) || {sort:999}).sort) || a.localeCompare(b));
+    for (const proj of names) {
+      const arr = (byProj[proj] || []).sort(byPrioThenAge);
+      const p = pinfo.find(x => x.name === proj) || {name: proj, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:""};
+      html += `<div class="pinfo" data-p="${esc(proj)}"><div class="t"><div class="n">${esc(proj)}</div><button data-edit="${esc(proj)}">Edit info</button></div>
+        <div class="s">${esc(p.stage) || "Stage not set"}</div>
+        <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
+        ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
+        ${p.contacts ? `<div class="lbl">Contacts</div><div class="k">${esc(p.contacts)}</div>` : ""}
+        ${p.next_milestone ? `<div class="lbl">Next milestone</div><div class="k">${esc(p.next_milestone)}</div>` : ""}
+        ${p.updated_at ? `<div class="s" style="margin-top:8px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
+        <div class="edit hidden"><div class="lbl">Stage</div><input class="e-stage" value="${esc(p.stage)}">
+        <div class="lbl">Summary</div><textarea class="e-summary">${esc(p.summary)}</textarea>
+        <div class="lbl">Key facts (one per line)</div><textarea class="e-facts" style="min-height:140px">${esc(p.key_facts)}</textarea>
+        <div class="lbl">Contacts (one per line)</div><textarea class="e-contacts">${esc(p.contacts)}</textarea>
+        <div class="lbl">Next milestone</div><input class="e-next" value="${esc(p.next_milestone)}">
+        <div class="acts" style="margin-left:0"><button class="primary" data-save="${esc(proj)}">Save</button><button data-cancel="${esc(proj)}">Cancel</button></div></div></div>`;
+      if (!arr.length) continue;
+      html += `<h2>${esc(proj)} — ${arr.length} open</h2><div class="card">`;
       arr.forEach(it => html += rowHtml(it, 0).replace('<div class="txt">', `<div class="txt"><span style="color:var(--muted)">${esc(it.waiting_on)}:</span> `));
       html += `</div>`;
     }
@@ -254,6 +285,18 @@ $("list").addEventListener("click", async e => {
   row.querySelectorAll("button").forEach(x => x.disabled = true); b.textContent = "…";
   const { error } = await sb.rpc("item_action", { p_id: id, p_action: b.dataset.a, p_value: b.dataset.v || null });
   if (error) { b.textContent = "Failed"; console.error(error); row.querySelectorAll("button").forEach(x => x.disabled = false); return; }
+  load();
+});
+
+$("list").addEventListener("click", async e => {
+  const ed = e.target.closest("button[data-edit]"), cx = e.target.closest("button[data-cancel]"), sv = e.target.closest("button[data-save]");
+  if (!ed && !cx && !sv) return;
+  const box = e.target.closest(".pinfo");
+  if (ed || cx) { box.querySelector(".view").classList.toggle("hidden", !!ed); box.querySelector(".edit").classList.toggle("hidden", !ed); return; }
+  if (DEMO) { alert("Demo mode — nothing saved"); return; }
+  sv.disabled = true; sv.textContent = "…";
+  const { error } = await sb.rpc("set_project", { p_name: sv.dataset.save, p_summary: box.querySelector(".e-summary").value, p_stage: box.querySelector(".e-stage").value, p_key_facts: box.querySelector(".e-facts").value, p_contacts: box.querySelector(".e-contacts").value, p_next_milestone: box.querySelector(".e-next").value });
+  if (error) { sv.textContent = "Failed"; console.error(error); sv.disabled = false; return; }
   load();
 });
 
