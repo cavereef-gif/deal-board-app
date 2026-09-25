@@ -234,7 +234,7 @@ async function readSharedInbox() {
     if (!text) return;
     window._shared = { text, name };
     view = "leads"; try { localStorage.setItem("view", view); } catch (x) {}
-    toast("Chat received. Open the person (Directory or People) and tap Import WhatsApp chat.", 8000);
+    toast("Chat received. Open the person (Directory or People) and tap the green import icon.", 8000);
     render();
   } catch (e) { toast("Could not read the shared chat: " + e.message, 6000); }
 }

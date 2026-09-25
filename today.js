@@ -10,19 +10,19 @@ window.draftsFor = draftsFor;
 function draftHtml(type, id, num) {
   const d = draftsFor(type, id)[0]; if (!d) return "";
   return `<div class="draft"><div class="dl">WhatsApp draft${d.old_value ? " " + esc(d.old_value) : ""} · bot, ${fmtDay(d.changed_at)}</div><div class="dt">${esc(d.new_value)}</div>
-    <div class="acts0">${num ? `<button class="primary" data-wadraft="${esc(num)}" data-draft="${d.id}">Send on WhatsApp</button>` : `<span class="quiet">No number saved – add one on the contact card.</span>`}<button data-copydraft="${d.id}">Copy</button></div></div>`;
+    <div class="acts0">${num ? `<button class="primary" data-wadraft="${esc(num)}" data-draft="${d.id}">${ic("chat")}Send on WhatsApp</button>` : `<span class="quiet">No number saved – add one on the contact card.</span>`}${ib("copy", "file", `data-copydraft="${d.id}"`, "Copy the draft")}</div></div>`;
 }
 window.draftHtml = draftHtml;
 
 function tRow(o) {
   // o: {go, dot, title, sub, right, open, body, rail}
-  return `<div class="trow${o.open ? " open" : ""}${o.rail ? " " + o.rail : ""}"><button class="tgo" data-tgo="${esc(o.go)}" aria-expanded="${!!o.open}"><i class="dot" style="background:${o.dot}"></i><span class="tx"><span class="tt1">${o.title}</span>${o.sub ? `<span class="ts">${o.sub}</span>` : ""}</span>${o.right ? `<span class="tr">${o.right}</span>` : ""}<span class="chev">${o.open ? "▾" : "›"}</span></button>${o.open && o.body ? `<div class="tbody">${o.body}</div>` : ""}</div>`;
+  return `<div class="trow${o.open ? " open" : ""}${o.rail ? " " + o.rail : ""}"><button class="tgo" data-tgo="${esc(o.go)}" aria-expanded="${!!o.open}"><i class="dot" style="background:${o.dot}"></i><span class="tx"><span class="tt1">${o.title}</span>${o.sub ? `<span class="ts">${o.sub}</span>` : ""}</span>${o.right ? `<span class="tr">${o.right}</span>` : ""}<span class="chev"></span></button>${o.open && o.body ? `<div class="tbody">${o.body}</div>` : ""}</div>`;
 }
 function tSection(n, key, title, hint, rows, dflt) {
   const k = "today:" + key, open = isOpen(k, dflt !== false);
-  return `<section class="tsec"><button class="tsh" data-tog="${k}" data-dflt="${dflt === false ? 0 : 1}" aria-expanded="${open}"><span class="tn">${n}</span><span class="th"><span class="tht">${title}</span><span class="ths">${hint}</span></span><span class="tc">${rows.length}</span><span class="chev">${open ? "▾" : "▸"}</span></button>${open ? `<div class="tlist">${rows.join("") || `<div class="quiet" style="padding:10px 14px">Nothing here.</div>`}</div>` : ""}</section>`;
+  return `<section class="tsec" id="tsec-${key}"><button class="tsh" data-tog="${k}" data-dflt="${dflt === false ? 0 : 1}" aria-expanded="${open}"><span class="tn">${n}</span><span class="th"><span class="tht">${title}</span><span class="ths">${hint}</span></span><span class="tc">${rows.length}</span><span class="chev"></span></button>${open ? `<div class="tlist">${rows.join("") || `<div class="quiet" style="padding:10px 14px">Nothing here.</div>`}</div>` : ""}</section>`;
 }
-const DOT = { high: "#C45C5C", stale: "#D9A03F", ok: "#4FA88A", prop: "#8A8A92", blue: "#5C7FB8" };
+const DOT = { high: "var(--bad)", stale: "var(--warn)", ok: "var(--ok)", prop: "var(--prop)", blue: "var(--accent)" };
 
 function itemRow(it, why) {
   const k = "ti:" + it.id, open = isOpen(k, false);
@@ -51,10 +51,10 @@ function todayHtml(items) {
 
   const chips = ["Mine", "Annemarie", "Chris", "All"].filter(c => c !== me).map(c => `<button data-who="${c === "Mine" ? "" : c}" class="${(c === "Mine" && !who) || who === c ? "on" : ""}">${c}</button>`).join("");
   const dayStr = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" });
-  let h = `<div class="thead"><div class="tdate">${dayStr}</div>
-    <div class="tsum">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap Refresh for the new tappable version." : "No brief yet today."}</div>
-    <div class="acts0"><button data-bot="brief-here">${botBusy ? "Working…" : br ? "Refresh brief" : "Get brief"}</button><button data-emailbrief="1">Email me today</button></div>
-    <div class="chips" style="margin:10px 0 0">${chips}</div></div>`;
+  let h = `<div class="hero"><div class="hero-top"><span class="tdate">${dayStr}</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}</button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
+    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap the refresh icon for the new tappable version." : botBusy ? "Writing today's brief…" : "No brief yet today."}</div>
+    ${!br && !botBusy ? `<div class="acts0" style="margin:0 0 12px"><button class="primary" data-bot="brief-here">${ic("brief")}Get today's brief</button></div>` : ""}
+    <div class="chips">${chips}</div></div>`;
 
   let n = 0;
   const prop = it => it.state === "Proposed" ? " · not confirmed yet" : "";
@@ -71,7 +71,7 @@ function todayHtml(items) {
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map(r => (r.ref_type && r.ref_id && refName(r))
     ? tRow({ go: r.ref_type + ":" + r.ref_id, dot: DOT.high, title: esc(r.text), sub: "On: " + esc(refName(r)), right: "" })
-    : `<div class="tline"><i class="dot" style="background:${DOT.high};margin-right:8px"></i>${esc(r.text)}</div>`));
+    : `<div class="tline"><i class="dot" style="background:${DOT.high}"></i><span>${esc(r.text)}</span></div>`));
   if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the tappable version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   h += tSection(++n, "waiting", "Waiting – not due yet", "No chase needed today", waiting.map(it => itemRow(it, `${it._days} of ${it.nudge_after_days || 3} days`)), false);
   if (!items.length) h += `<div class="empty">Nothing open. Tap + Add.</div>`;
@@ -114,7 +114,7 @@ function goTo(ref) {
     navPush(); view = "deals"; try { localStorage.setItem("view", view); } catch (e) {}
     if (dealFilter === "Closed" && (d.status === "Active" || d.status === "On hold")) dealFilter = "Active";
     openKeys.delete("-deal:" + id); openKeys.add("+deal:" + id);
-    if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { openKeys.delete(`-sec:${id}:check`); openKeys.add(`+stage:${id}:${st.stage}`); openStep = st.id; } }
+    if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { if (window.setDealTab) setDealTab(id, "steps"); openKeys.delete(`-stage:${id}:${st.stage}`); openKeys.add(`+stage:${id}:${st.stage}`); openStep = st.id; } }
     saveOpen(); render(); scrollTo(extra ? `[data-step="${extra}"]` : `.deal[data-deal="${id}"]`); return;
   }
   if (type === "lead") {

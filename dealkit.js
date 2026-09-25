@@ -20,7 +20,7 @@ function kitSecHtml(d) {
   const asking = kitAsk === d.id;
   const form = () => `${d.kind === "mineral" ? `<div class="lbl">Route</div><select data-kitroute="${d.id}">${kitRouteOpts(route)}</select>` : ""}
     <div class="ks">${kitUntouched(d.id)} untouched steps will be replaced by ${kitCount(d.kind, route, d.id)} kit steps${d.kind === "mineral" ? " for this route" : ""}. Ticked steps, steps with a note and your own steps are kept.</div>
-    <div class="acts0"><button class="primary" data-kitgo="${d.id}">Yes, ${d.kit ? "change the route" : "switch this deal"}</button><button data-kitno="${d.id}">Cancel</button></div>`;
+    <div class="acts0"><button class="primary" data-kitgo="${d.id}">${ic("check")}Yes, ${d.kit ? "change the route" : "switch this deal"}</button><button data-kitno="${d.id}">Cancel</button></div>`;
   if (!d.kit) {
     return `<div class="kitban"><div class="kh"><i class="dot d-prop"></i><span>This deal still has the old short checklist</span></div>
       <div class="ks">The South African deal kit gives ${d.kind === "mineral" ? "40–50 specific steps for the route you pick" : "19 specific steps"} – each with what good looks like, who does it and the document that closes it${d.kind === "mineral" ? ", plus when each assay happens" : ""}.</div>
@@ -37,7 +37,7 @@ function kitGuideHtml(d) {
   return `<div class="kg"><div class="lbl" style="margin-top:0">Delivery terms – ${esc(KIT.routes[r])}</div><ul>${g.terms.map(li).join("")}</ul>
     <div class="lbl">When the assays happen</div><ol>${g.tests.map(li).join("")}</ol>
     <div class="lbl">Stop and check if you see</div><ul>${[...KIT.watch, ...(r === "local" ? [] : KIT.watchExport)].map(li).join("")}</ul>
-    <div class="acts0"><button data-kitplay="1">Full deal kit playbook</button></div></div>`;
+    <div class="acts0"><button data-kitplay="1">${ic("book")}Full deal kit playbook</button></div></div>`;
 }
 
 // Kit playbook card (bottom of Deals, and inside the Directory playbook)
@@ -46,7 +46,7 @@ function kitLibHtml() {
   const itac = (window._library || []).find(x => x.kind === "rule" && /^Chrome export permit/.test(x.title));
   const arr = itac ? [...L, itac] : L; if (!arr.length) return "";
   const k = "lib:kit", o = isOpen(k, false);
-  return `<div class="deal libx" id="kitlib"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${o}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Deal kit – the South African way</div><div class="ds">Procedure, Incoterms, when to test, documents, red flags, chrome permit status</div></div><span class="chev">${o ? "▾" : "▸"}</span></div>
+  return `<div class="deal libx" id="kitlib"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${o}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Deal kit – the South African way</div><div class="ds">Procedure, Incoterms, when to test, documents, red flags, chrome permit status</div></div><span class="chev"></span></div>
     ${o ? `<div class="sec-b">${arr.map(x => `<details class="libi"><summary>${esc(x.title)}</summary><div class="about">${esc(x.body)}</div></details>`).join("")}</div>` : ""}</div>`;
 }
 window.kitSecHtml = kitSecHtml; window.kitGuideHtml = kitGuideHtml; window.kitLibHtml = kitLibHtml;

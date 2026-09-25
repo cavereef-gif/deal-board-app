@@ -4,355 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Deal Board</title>
-<meta name="theme-color" content="#161932">
+<meta name="theme-color" content="#12152B">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<style>
-:root{
-  --bg:#1C1C1E; --card:#27272A; --card2:#303034; --line:#3A3A3E; --text:#E4E4E4; --muted:#A3A3A8;
-  --btn:#36363B; --btn-text:#E4E4E4; --tab:#2C2C30; --tab-on:#4A4A52;
-  --dot-ok:#4FA88A; --dot-stale:#D9A03F; --dot-prop:#8A8A92; --dot-high:#C45C5C; --dot-low:#6B6B72; --rail-normal:#5C7FB8;
-}
-:root[data-theme="light"]{
-  --bg:#F4F1EA; --card:#FFFFFF; --card2:#F7F4EE; --line:#DAD5C9; --text:#1F1F1F; --muted:#5C5C60;
-  --btn:#E9E4D8; --btn-text:#1F1F1F; --tab:#E9E4D8; --tab-on:#CFC8B8;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text)}
-body{font:400 17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:0 14px 100px;max-width:680px;margin:0 auto}
-button{font:inherit;color:var(--btn-text);background:var(--btn);border:0;border-radius:10px;padding:10px 12px;min-height:42px}
-button:disabled{opacity:.5}
-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
-h1{font-size:21px;font-weight:500;margin:0}
-.hdr-btns{display:flex;gap:8px}
-.hdr-btns button{padding:8px 12px;min-height:38px;font-size:15px}
-.tabs{display:flex;gap:6px;margin:6px 0 12px}
-.tabs button{flex:1;background:var(--tab);padding:10px 6px;font-size:15px}
-.tabs button.on{background:var(--tab-on);font-weight:500}
-.strip{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:15px;margin:0 2px 12px}
-.strip span{display:inline-flex;align-items:center;gap:6px}
-.dot{width:13px;height:13px;border-radius:50%;flex:none;display:inline-block}
-.d-ok{background:var(--dot-ok)} .d-stale{background:var(--dot-stale)} .d-prop{background:var(--dot-prop)} .d-high{background:var(--dot-high)} .d-low{background:var(--dot-low)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
-.card-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
-.card-h .name{flex:1;font-size:19px;font-weight:500}
-.card-h .sub{color:var(--muted);font-size:14px;font-weight:400;display:block}
-.card-h button{padding:8px 12px;min-height:38px;font-size:14px}
-.cstrip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);color:var(--muted);font-size:14px}
-.cstrip button{padding:6px 10px;min-height:34px;font-size:13px;background:var(--card2);border:1px solid var(--line)}
-.row{padding:11px 14px;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
-.row{border-left:6px solid transparent}
-.row.p1{border-left-color:var(--dot-high)} .row.p2{border-left-color:var(--rail-normal)} .row.p3{border-left-color:var(--dot-low)}
-.pinfo,.ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
-.pinfo .t,.ccard .t{display:flex;align-items:center;gap:10px}
-.pinfo .t .n{flex:1;font-size:19px;font-weight:500}
-.ccard .t .n{flex:1;font-size:18px;font-weight:500}
-.pinfo .t button,.ccard .t button{padding:7px 11px;min-height:36px;font-size:14px}
-.pinfo .s,.ccard .s{color:var(--muted);font-size:15px;margin-top:4px}
-.pinfo .k,.ccard .k{margin-top:8px;font-size:15px;white-space:pre-wrap}
-.ccard .k{margin-top:5px}
-.lbl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
-.pinfo textarea,.ccard textarea,.sec-b textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
-.pinfo input,.ccard input,.ccard select{font-size:15px;padding:10px;margin-top:4px}
-.row .l1{display:flex;align-items:flex-start;gap:9px}
-.row .num{color:var(--muted);min-width:20px;font-size:15px;padding-top:2px}
-.row .txt{flex:1}
-.row .days{font-size:17px;font-weight:500;min-width:36px;text-align:right;padding-top:1px}
-.row .l2{color:var(--muted);font-size:14px;margin:3px 0 0 29px}
-.row .l2 b{font-weight:500;color:var(--text)}
-.pills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0 29px}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
-.acts{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 0 29px}
-.acts button,.acts select{padding:7px 11px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;width:auto;max-width:100%}
-.acts button.primary{background:var(--btn)}
-.npanel{margin:9px 0 0 29px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px 12px}
-.npanel .lbl:first-child{margin-top:2px}
-.npanel .acts button{background:var(--btn)}
-.note{padding:7px 0;border-bottom:1px solid var(--line);font-size:15px;white-space:pre-wrap}
-.note:last-of-type{border-bottom:0}
-.note .nm{color:var(--muted);font-size:13px;margin-top:2px}
-.nadd{display:flex;gap:6px;margin-top:8px}
-.nadd input{flex:1;font-size:15px;padding:10px;min-width:0}
-.nadd button{min-height:42px;flex:none}
-.file{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
-.file:last-of-type{border-bottom:0}
-.file .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file .fn a{color:var(--text);text-decoration:underline;text-underline-offset:3px}
-.file .fm{color:var(--muted);font-size:13px;flex:none}
-.file button{padding:5px 9px;min-height:32px;font-size:13px;flex:none}
-.quiet{color:var(--muted);font-size:14px;padding:4px 0}
-.h2row{display:flex;align-items:center;gap:10px;margin:18px 2px 8px}
-.h2row h2{flex:1;margin:0}
-.h2row button{padding:6px 11px;min-height:34px;font-size:14px}
-h2{font-size:14px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:18px 2px 8px}
-.empty{color:var(--muted);padding:30px 0;text-align:center}
-form.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0 16px}
-label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
-input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:17px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.wide{margin-top:14px;width:100%;padding:14px;font-weight:500;border:1px solid var(--line)}
-.msg{color:var(--muted);font-size:15px;margin-top:10px;min-height:20px}
-.fab{position:fixed;right:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
-.chips{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
-.chips button{padding:7px 12px;min-height:36px;font-size:14px;background:var(--tab)}
-.chips button.on{background:var(--tab-on);font-weight:500}
-.chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-.bub{max-width:92%;padding:10px 13px;border-radius:14px;white-space:pre-wrap;font-size:16px;line-height:1.4}
-.bub.u{align-self:flex-end;background:var(--tab-on)}
-.bub.a{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
-.bub.s{align-self:center;background:transparent;color:var(--muted);font-size:14px}
-.ask{display:flex;gap:8px;align-items:flex-end}
-.ask textarea{flex:1;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:16px;min-height:48px;max-height:140px;resize:vertical}
-.ask button{min-height:48px}
-.keybox{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--muted);font-size:14px}
-.keybox summary{cursor:pointer;min-height:36px;display:flex;align-items:center}
-.keybox input{margin-top:8px;font-size:15px}
-.brief{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
-.brief .t{display:flex;align-items:center;gap:10px}
-.brief .t .n{flex:1;font-size:16px;font-weight:500}
-.brief .t button{padding:7px 11px;min-height:36px;font-size:14px}
-.brief .b{white-space:pre-wrap;font-size:15px;margin-top:8px;line-height:1.45}
-.brief .s{color:var(--muted);font-size:13px;margin-top:6px}
-.sugg{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;align-self:stretch;white-space:pre-wrap}
-.sugg .acts{margin:8px 0 0}
-.fab2{position:fixed;left:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:90vw;z-index:5}
-/* Deals */
-.deal{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
-.deal-h{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;min-height:56px}
-.deal-h .dot{margin-top:6px}
-.dh{flex:1;min-width:0}
-.dn{font-size:18px;font-weight:500;line-height:1.3}
-.ds{color:var(--muted);font-size:14px;margin-top:2px}
-.dx{color:var(--muted);font-size:14px;margin-top:5px}
-.bar{height:7px;background:var(--card2);border:1px solid var(--line);border-radius:4px;margin-top:7px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--dot-ok)}
-.chev{color:var(--muted);font-size:16px;padding-top:2px;flex:none;width:18px;text-align:center}
-.deal-b{border-top:1px solid var(--line)}
-.deal-b .pinfo{border:0;border-top:1px solid var(--line);border-radius:0;margin:0}
-.sec{border-bottom:1px solid var(--line)}
-.sec:last-of-type{border-bottom:0}
-.sec-h{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;min-height:46px;background:var(--card2)}
-.sec-h .st{flex:1;font-size:15px;font-weight:500}
-.cnt{color:var(--muted);font-size:14px}
-.sec-b{padding:6px 14px 12px}
-.sec-b input,.sec-b select{font-size:15px;padding:10px;margin-top:4px}
-.stg{border-bottom:1px solid var(--line)}
-.stg-h{display:flex;align-items:center;gap:9px;padding:9px 0;cursor:pointer;min-height:44px}
-.stg-h .st{flex:1;font-size:15px}
-.sbox{width:14px;height:14px;border-radius:4px;border:2px solid var(--muted);flex:none}
-.sbox.part{border-color:var(--dot-ok);background:linear-gradient(90deg,var(--dot-ok) 50%,transparent 50%)}
-.sbox.full{border-color:var(--dot-ok);background:var(--dot-ok)}
-.step-r{display:flex;align-items:flex-start;gap:10px;padding:8px 0 8px 4px;cursor:pointer;min-height:42px}
-.cbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;color:#1C1C1E;font-weight:600}
-.step.done .cbox{background:var(--dot-ok);border-color:var(--dot-ok)}
-.step.na .cbox{background:var(--dot-low);border-color:var(--dot-low)}
-.stt{flex:1;font-size:15px;line-height:1.35;padding-top:1px}
-.step.done .stt,.step.na .stt{color:var(--muted)}
-.step-m{color:var(--muted);font-size:13px;margin:-4px 0 6px 36px}
-.step-p{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 10px 10px;margin:4px 0 8px}
-.acts0{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.acts0 button,.acts0 select{padding:7px 11px;min-height:38px;font-size:14px;background:var(--card2);border:1px solid var(--line);width:auto;max-width:100%;border-radius:10px;color:var(--text);margin:0}
-.acts0 button.primary{background:var(--btn)}
-.mini{display:flex;align-items:flex-start;gap:9px;padding:9px 4px 9px 8px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px;border-left:5px solid transparent}
-.mini.p1{border-left-color:var(--dot-high)} .mini.p2{border-left-color:var(--rail-normal)} .mini.p3{border-left-color:var(--dot-low)}
-.mini .dot{margin-top:5px}
-.mt{flex:1;font-size:15px;line-height:1.35}
-.mw{color:var(--muted)}
-.md{font-size:15px;font-weight:500;flex:none}
-.mini-b{border:1px solid var(--line);border-radius:12px;margin:6px 0 10px;overflow:hidden}
-.kv{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
-.kv .k{color:var(--muted);flex:0 0 42%}
-.kv .v{flex:1;white-space:pre-wrap;min-width:0;overflow-wrap:anywhere}
-.hist{font-size:14px;padding:6px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
-.hist .hm{color:var(--muted);font-size:13px}
-.hidden{display:none!important}
-.foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
-
-/* ---------- v11: modern look ---------- */
-:root{--bg:#18191C;--card:#222328;--card2:#2A2B31;--line:#34353C;--text:#E2E2E4;--muted:#A0A0A8;--btn:#33343B;--tab:#26272C;--tab-on:#3E3F48;--r:16px}
-:root[data-theme="light"]{--bg:#F3F1EC;--card:#FFFFFF;--card2:#F6F4EF;--line:#E0DCD2;--text:#1E1E20;--muted:#5E5E64;--btn:#ECE8DF;--tab:#E9E5DB;--tab-on:#D6D0C2}
-body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 14px calc(96px + env(safe-area-inset-bottom));max-width:720px}
-header{position:sticky;top:0;z-index:4;background:var(--bg);padding:14px 0 10px}
-h1{font-size:20px;font-weight:600;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
-h1 .logo{width:28px;height:28px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:inline-grid;place-items:center;font-size:13px;font-weight:600}
-button{border-radius:12px}
-.card,.deal,.pinfo,.ccard,.brief,form.panel{border-radius:var(--r)}
-:root[data-theme="light"] .card,:root[data-theme="light"] .deal,:root[data-theme="light"] .ccard,:root[data-theme="light"] .brief,:root[data-theme="light"] .lead{box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04)}
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:4px;background:var(--card);border-top:1px solid var(--line);justify-content:center}
-.tabs button{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;font-size:12px;background:transparent;min-height:52px}
-.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabs button.on{background:var(--tab-on)}
-.fab{bottom:calc(76px + env(safe-area-inset-bottom));border-radius:18px}
-.fab2{display:none!important}
-.toast{bottom:calc(140px + env(safe-area-inset-bottom))}
-.strip{gap:8px}
-.strip span{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
-/* directory */
-.dtools{padding:6px 0 8px}
-#dQ{font-size:16px;padding:12px 14px;border-radius:14px;background:var(--card)}
-.hscroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.hscroll::-webkit-scrollbar{display:none}
-.seg{flex:none;white-space:nowrap;padding:8px 12px;min-height:38px;font-size:14px;background:var(--tab);border:1px solid var(--line);border-radius:999px;display:inline-flex;align-items:center;gap:6px}
-.seg span{color:var(--muted);font-size:13px}
-.seg.on{background:var(--tab-on)}
-.seg.sm{padding:6px 10px;min-height:34px;font-size:13px}
-.pipe{display:flex;height:8px;border-radius:6px;overflow:hidden;margin-top:8px;background:var(--card2)}
-.pipe i{display:block;height:100%}
-.drow2{display:flex;gap:8px;margin-top:8px}
-.drow2 select{flex:1;font-size:15px;padding:9px;border-radius:12px}
-.drow2 button{flex:none;min-height:40px}
-.lcount{color:var(--muted);font-size:13px;margin:6px 2px}
-.lead{scroll-margin-top:72px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;border-left:5px solid transparent;overflow:hidden}
-.lead.p0,.lead.p1{border-left-color:var(--dot-high)} .lead.p2{border-left-color:var(--rail-normal)} .lead.p3{border-left-color:var(--dot-low)}
-.lr{display:flex;align-items:flex-start;gap:12px;padding:12px 12px 12px 10px;cursor:pointer}
-.av{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-size:14px;font-weight:600;margin-top:2px}
-.av.sm{width:32px;height:32px;font-size:12px}
-.lm{flex:1;min-width:0}
-.ln{font-size:16px;font-weight:600;line-height:1.3}
-.ls{color:var(--muted);font-size:14px;margin-top:2px;overflow-wrap:anywhere}
-.lt{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center}
-.flagm{font-size:14px;color:var(--muted)}
-.el{display:inline-flex;align-items:baseline;gap:2px;min-width:30px;height:24px;padding:0 6px;border-radius:6px;background:var(--card2);border:1px solid var(--line);font-size:13px;justify-content:center;align-items:center}
-.el b{font-weight:600} .el i{font-style:normal;font-size:10px;color:var(--muted)}
-.lc{padding:0 14px 14px;border-top:1px solid var(--line)}
-.warn{display:flex;gap:10px;align-items:flex-start;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--dot-high);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:15px}
-.warn .dot{margin-top:4px}
-.bigacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px;margin-top:12px}
-.bigacts button{min-height:46px;font-weight:500;font-size:14px;padding:8px 4px;line-height:1.2;background:var(--btn);border:1px solid var(--line)}
-.about{white-space:pre-wrap;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
-.person{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
-.person:last-of-type{border-bottom:0}
-.pm{flex:1;min-width:0}.pn{font-size:15px;font-weight:600}
-.btnlink{display:inline-flex;align-items:center;min-height:38px;padding:7px 11px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:14px}
-.hdet,.libi{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
-.hdet summary,.libi summary{cursor:pointer;min-height:36px;display:flex;align-items:center;gap:8px;font-size:15px}
-.cnote{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:8px 0;font-size:15px;white-space:pre-wrap}
-.gs{color:var(--muted);font-size:13px;margin-top:3px}
-.gates{padding:0 14px 8px}
-.gate{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
-.gate .dot{margin-top:5px}.gt{flex:1}.gn{font-size:15px;font-weight:600}
-.gate button{flex:none;padding:7px 11px;min-height:36px;font-size:14px}
-.task{padding:10px 0;border-bottom:1px solid var(--line)}
-.task:last-child{border-bottom:0}
-.task.done .tt{color:var(--muted)}
-.tl{display:flex;gap:8px;align-items:flex-start}
-.tn{color:var(--muted);font-size:14px;min-width:16px;padding-top:3px}
-.score{flex:none;min-width:26px;height:26px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:600}
-.tt{flex:1;font-size:15px;line-height:1.4}
-.tm{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0 0}
-.chip{padding:5px 10px;min-height:32px;font-size:13px;background:var(--card2);border:1px solid var(--line);border-radius:999px}
-header h1{white-space:nowrap;font-size:19px}
-.hdr-btns{gap:6px}.hdr-btns button{padding:6px 10px;min-height:34px;font-size:13px;white-space:nowrap;background:var(--card);border:1px solid var(--line)}
-.chip.tb{margin-left:auto;background:var(--btn);font-weight:500}
-.task .tm .pill{font-size:12px}
-.qteaser{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
-.qteaser .t{display:flex;align-items:center;gap:10px}.qteaser .n{flex:1;font-size:16px;font-weight:600}
-.qteaser .b{font-size:15px;margin-top:6px}
-@media (min-width:1000px){
-  body{max-width:1180px;padding-left:112px}
-  .tabs{top:0;bottom:0;right:auto;width:96px;flex-direction:column;justify-content:flex-start;padding:80px 8px 8px;border-top:0;border-right:1px solid var(--line)}
-  .tabs button{max-width:none;flex:none;min-height:64px;font-size:13px}
-  .fab{bottom:24px}
-  .toast{bottom:32px}
-  #list .llist{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
-  #list .llist .lead{margin:0}
-  #list .llist .lead.open{grid-column:1 / -1}
-}
-
-/* ---------- v12: Today page ---------- */
-.thead{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
-.tdate{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
-.tsum{font-size:16px;line-height:1.45;margin-top:6px}
-.tsec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
-.tsh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 14px;min-height:60px}
-.tsh .tn{flex:none;width:28px;height:28px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:14px;font-weight:600}
-.th{flex:1;min-width:0;display:flex;flex-direction:column}
-.tht{font-size:17px;font-weight:500}
-.ths{font-size:13px;color:var(--muted);margin-top:2px}
-.tc{flex:none;min-width:30px;height:26px;padding:0 8px;border-radius:999px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:14px}
-.tlist{border-top:1px solid var(--line)}
-.trow{border-bottom:1px solid var(--line);border-left:5px solid transparent}
-.trow:last-child{border-bottom:0}
-.trow.p1{border-left-color:var(--dot-high)} .trow.p2{border-left-color:var(--rail-normal)} .trow.p3{border-left-color:var(--dot-low)}
-.tgo{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 12px 12px 10px;min-height:56px}
-.tgo:active{background:var(--card2)}
-.tgo .dot{margin-top:5px}
-.tx{flex:1;min-width:0;display:flex;flex-direction:column}
-.tt1{font-size:16px;line-height:1.35;font-weight:400}
-.ts{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.35}
-.tr{flex:none;font-size:15px;font-weight:500;padding-top:1px}
-.tgo .chev{font-size:20px;line-height:1;padding-top:1px}
-.trow.open .tgo{background:var(--card2)}
-.tbody{padding:0 0 4px}
-.tbody .row{border-left:0;padding-top:4px}
-.tbody .row .l1,.tbody .row .l2{display:none}
-.tbody .pills,.tbody .acts,.tbody .npanel,.tbody .draft{margin-left:0}
-.tline{padding:9px 14px;border-bottom:1px solid var(--line);font-size:15px;white-space:pre-wrap}
-.draft{margin:9px 0 0 29px;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--dot-ok);border-radius:12px;padding:10px 12px}
-.dl{font-size:13px;color:var(--muted)}
-.dt{font-size:15px;white-space:pre-wrap;margin-top:4px}
-.sec-b .draft,.lc .draft{margin-left:0}
-/* v13: back button, deal kit */
-.backb{padding:6px 12px;min-height:34px;font-size:14px;border-radius:999px;background:var(--card);border:1px solid var(--line);margin-right:8px;white-space:nowrap}
-body.canback header h1{display:none}
-body.canback .backb{margin-right:auto}
-header{gap:6px}
-.step-r,.deal,.trow,.lead,#kitlib,.ccard{scroll-margin-top:84px}
-.step-r .stx{display:flex;flex-direction:column;min-width:0}
-.step-c{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
-.step-p .sd{font-size:15px;line-height:1.5;margin:2px 0 8px}
-.step-p .swho{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14px;margin:0 0 10px}
-.step-p .swho .k{color:var(--muted)}
-.kitban{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0;background:var(--card2)}
-.kitban .kh{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500}
-.kitban .ks,.kg li{font-size:14px;line-height:1.5}
-.kitban .ks{color:var(--muted);margin-top:6px}
-.kitline{display:flex;align-items:center;gap:8px;font-size:14px;margin:10px 0 4px}
-.kitline span{flex:1}
-.kitline button{padding:5px 10px;min-height:32px;font-size:13px}
-.kg ul,.kg ol{margin:4px 0 6px;padding-left:20px}
-.kg li{margin:3px 0}
-
-/* ---------- v14: Velvet palette (navy 313866 · violet 50409A · purple 964EC2 · pink FF7BBF) with off-white and ivory ---------- */
-:root{--bg:#161932;--card:#1F2342;--card2:#282D4F;--line:#373D67;--text:#E9E4DA;--muted:#AAA8B2;--btn:#2B3056;--btn-text:#E9E4DA;--tab:#1F2342;--tab-on:#50409A;--tab-on-text:#F1ECE2;
-  --primary:#50409A;--primary-text:#F1ECE2;--accent:#964EC2;--accent2:#FF7BBF;--navy:#313866;--rail-normal:#964EC2}
-:root[data-theme="light"]{--bg:#F5F1E8;--card:#FFFDF5;--card2:#F1ECE0;--line:#E1D9C8;--text:#24242F;--muted:#5E5C68;--btn:#ECE6DA;--btn-text:#24242F;--tab:#F1ECE0;--tab-on:#E4DDF4;--tab-on-text:#24242F;
-  --primary:#50409A;--primary-text:#FFFDF5}
-:root[data-theme="light"] .card,:root[data-theme="light"] .deal,:root[data-theme="light"] .ccard,:root[data-theme="light"] .brief,:root[data-theme="light"] .lead,:root[data-theme="light"] .tsec,:root[data-theme="light"] .thead{box-shadow:0 1px 2px rgba(49,56,102,.05),0 6px 18px rgba(49,56,102,.06)}
-button.primary,.acts button.primary,.acts0 button.primary,.fab{background:var(--primary);color:var(--primary-text);border-color:transparent}
-.tabs button.on,.seg.on{background:var(--tab-on);color:var(--tab-on-text);border-color:transparent}
-.tabs button.on{box-shadow:inset 0 3px 0 var(--accent2)}
-.seg.on span{color:var(--tab-on-text);opacity:.85}
-.bar{border-color:transparent}
-.bar i{background:linear-gradient(90deg,var(--accent),var(--accent2))}
-h1 .logo{background:var(--primary);color:var(--primary-text);border-color:transparent}
-.tsh .tn{background:var(--primary);color:var(--primary-text);border-color:transparent}
-:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
-/* WhatsApp chat sheet */
-.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,28,.55);display:flex;align-items:flex-end;justify-content:center}
-.sheet-b{width:100%;max-width:640px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
-.sheet-h{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500}
-.sheet-h span{flex:1}
-.sheet-h button{padding:6px 12px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line)}
-.sheet textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;font-size:15px;min-height:140px;margin-top:6px}
-.sheet .ks{color:var(--muted);font-size:14px;margin-top:4px}
-.sheet .row2{display:flex;gap:8px;margin-top:8px}
-.sheet .row2 button{flex:1;min-height:44px;font-size:15px}
-@media (min-width:700px){.sheet{align-items:center}.sheet-b{border-radius:20px}}
-</style>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="app.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
 </head>
 <body>
-<header>
-  <button id="backBtn" class="backb hidden" aria-label="Back">‹ Back</button>
-  <h1><span class="logo">DB</span>Deal Board</h1>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="velvetGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#964EC2"/><stop offset="1" stop-color="#FF7BBF"/></linearGradient></defs></svg>
+<header class="appbar">
+  <button id="backBtn" class="backb hidden" aria-label="Back" data-ico="back">Back</button>
+  <div class="brand"><span class="logo" aria-hidden="true">DB</span><h1 id="pageTitle">Deal Board</h1></div>
   <div class="hdr-btns">
-    <button id="themeBtn" aria-label="Switch light or dark">Light</button>
-    <button id="refreshBtn" class="hidden" aria-label="Refresh">↻</button>
-    <button id="outBtn" class="hidden">Sign out</button>
+    <button id="addBtn" class="primary addb hidden" aria-label="Add a wait">+ Add</button>
+    <button id="menuBtn" aria-label="Menu" data-ico="more"></button>
   </div>
 </header>
 
@@ -362,7 +28,7 @@ h1 .logo{background:var(--primary);color:var(--primary-text);border-color:transp
     <input id="email" type="email" autocomplete="username" placeholder="you@example.com" required>
     <label for="pw">Password</label>
     <input id="pw" type="password" autocomplete="current-password" minlength="8" required>
-    <button class="wide" type="submit">Sign in</button>
+    <button class="wide primary" type="submit">Sign in</button>
     <button class="wide" type="button" id="signupBtn">First time: create login</button>
     <div class="msg" id="loginMsg"></div>
   </form>
@@ -393,26 +59,36 @@ h1 .logo{background:var(--primary);color:var(--primary-text);border-color:transp
     </div>
     <label for="fOwner">Who on our side owns it?</label>
     <select id="fOwner"><option>Chris</option><option>Annemarie</option></select>
-    <button class="wide" type="submit">Add</button>
+    <button class="wide primary" type="submit">Add</button>
     <div class="msg" id="addMsg"></div>
   </form>
   <div id="list"></div>
   <div class="foot" id="foot"></div>
 </section>
 
-<button class="fab hidden" id="addBtn">+ Add</button>
 <button class="fab2 hidden" id="botFab">Bot</button>
 <input type="file" id="fileInput" class="hidden">
 <input type="file" id="chatInput" class="hidden" accept=".txt,.zip,text/plain,application/zip">
 <div id="toast" class="toast hidden"></div>
+<div id="menuSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Menu">
+  <div class="sheet-b">
+    <div class="sheet-h"><span>Deal Board</span><button id="menuClose" type="button">Close</button></div>
+    <div class="menu">
+      <button id="themeBtn" class="mi" type="button">Light mode</button>
+      <button id="refreshBtn" class="mi hidden" type="button" data-ico="refresh">Refresh</button>
+      <button id="outBtn" class="mi hidden" type="button" data-ico="out">Sign out</button>
+    </div>
+    <div class="ks" id="menuFoot" style="margin-top:12px"></div>
+  </div>
+</div>
 <div id="chatSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="csTitle">
   <div class="sheet-b">
     <div class="sheet-h"><span id="csTitle">Add a WhatsApp chat</span><button id="csClose" type="button">Close</button></div>
     <div class="ks" id="csFor"></div>
-    <button class="wide primary" id="csFile" type="button">Choose an exported chat file (.txt or .zip)</button>
+    <button class="wide primary" id="csFile" type="button" data-ico="import">Choose an exported chat file (.txt or .zip)</button>
     <div class="lbl">Or paste messages</div>
     <textarea id="csText" placeholder="Paste the copied WhatsApp messages here"></textarea>
-    <div class="row2"><button id="csClip" type="button">Paste from clipboard</button><button class="primary" id="csPaste" type="button">Save and summarise</button></div>
+    <div class="row2"><button id="csClip" type="button" data-ico="copy">Paste from clipboard</button><button class="primary" id="csPaste" type="button" data-ico="check">Save and summarise</button></div>
     <details class="libi"><summary>How to get a chat out of WhatsApp</summary><div class="about">Android, whole chat: open the chat › ⋮ › More › Export chat › Without media. Pick Deal Board if it is in the list; otherwise save it to Drive or Files and tap "Choose an exported chat file" here.
 Android, a few messages: long-press the first message, tap the others, tap Copy (the two-page icon at the top). Come back here and tap "Paste from clipboard".
 iPhone, whole chat: open the chat › tap the name at the top › Export Chat › Without Media › Save to Files. Then tap "Choose an exported chat file" here.
@@ -422,8 +98,9 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ui.js"></script>
 <script>
-const APP_VERSION = "14";
+const APP_VERSION = "15";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -500,12 +177,18 @@ function isOpen(k, dflt){ if (openKeys.has("+" + k)) return true; if (openKeys.h
 function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openKeys].slice(-300))); } catch(e){} }
 function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
-function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "☾ Dark" : "☀ Light";
-  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F5F1E8" : "#161932";
+function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
+  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F4F0E6" : "#12152B";
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+fillIcons();
+const PAGE_TITLES = { worklist: "Today", leads: "Directory", deals: "Deals", people: "People", bot: "Bot" };
+function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
+function closeMenu(){ $("menuSheet").classList.add("hidden"); }
+$("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu;
+$("menuSheet").addEventListener("click", e => { if (e.target.id === "menuSheet" || e.target.closest("#themeBtn")) { if (e.target.id === "menuSheet") closeMenu(); } });
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
@@ -627,125 +310,131 @@ const byPrioThenAge = (a,b) => (a.priority||2) - (b.priority||2) || b._days - a.
 
 function filesHtml(type, id){
   const arr = attsFor(type, id);
-  return `<div class="files">${arr.map(a => `<div class="file"><span class="fn">${window._urls[a.path] ? `<a href="${esc(window._urls[a.path])}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} ${fmtDay(a.created_at)}</span><button data-rmfile="${a.id}" aria-label="Remove file">Remove</button></div>`).join("") || `<div class="quiet">No files yet.</div>`}
-    <div class="acts" style="margin:8px 0 0"><button data-attach="${type}:${esc(String(id))}">Attach file or photo</button></div></div>`;
+  return `<div class="files">${arr.map(a => `<div class="file">${ic("clip")}<span class="fn">${window._urls[a.path] ? `<a href="${esc(window._urls[a.path])}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} ${fmtDay(a.created_at)}</span>${ib("drop", "bad", `data-rmfile="${a.id}"`, "Remove file")}</div>`).join("") || `<div class="quiet">No files yet.</div>`}
+    <div class="acts0"><button data-attach="${type}:${esc(String(id))}">${ic("clip")}Attach file or photo</button></div></div>`;
 }
 function notesBlock(ns, type, id){
   return `${ns.length ? ns.map(n => `<div class="note">${esc(n.new_value)}<div class="nm">${esc(n.changed_by)} · ${fmtWhen(n.changed_at)}</div></div>`).join("") : `<div class="quiet">No notes yet. Anything you write here is seen by both of you.</div>`}
-    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${type}:${id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${type}:${id}">Save</button></div>`;
+    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${type}:${id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${type}:${id}" aria-label="Save note">${ic("send")}</button></div>`;
 }
 function panelHtml(it){
-  return `<div class="npanel"><div class="lbl">Notes</div>${notesBlock(notesFor(it.id), "item", it.id)}
+  return `<div class="npanel"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(notesFor(it.id), "item", it.id)}
     <div class="lbl">Files</div>${filesHtml("item", it.id)}</div>`;
 }
 
 function rowHtml(it, n){
   const stateDot = it.state === "Proposed" ? "d-prop" : (it._stale ? "d-stale" : "d-ok");
   const stateWord = it.state === "Proposed" ? "Proposed" : (it._stale ? "Needs a chase" : "On track");
-  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : `<span class="pill"><i class="dot" style="background:var(--rail-normal)"></i>Normal</span>`;
-  const own = `<span class="pill">${esc(it.owner || "Chris")}${(it.owner || "Chris") === me ? " (me)" : ""}</span>`;
-  const other = (it.owner || "Chris") === "Annemarie" ? "Chris" : "Annemarie";
+  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : "";
+  const owner = it.owner || "Chris", other = owner === "Annemarie" ? "Chris" : "Annemarie";
   const nN = notesFor(it.id).length, fN = attsFor("item", it.id).length, open = openPanels.has("item:" + it.id);
   const deal = it.deal_id ? dealById(it.deal_id) : null;
   const dealOpts = [...liveDeals(), ...(deal && !liveDeals().includes(deal) ? [deal] : [])];
+  const prop = it.state === "Proposed";
+  const canWa = !it._me && contactsFor(it.waiting_on).some(c => c.phone || c.whatsapp);
   return `<div class="row p${it.priority || 2}" data-id="${it.id}">
-    <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}" style="margin-top:6px"></i>${n ? `<span class="num">${n}.</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
+    <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}"></i>${n ? `<span class="num">${n}</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
-    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}${own}<span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
+    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}<span class="pill">${esc(owner)}${owner === me ? " (me)" : ""}</span><span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
     ${window.draftHtml ? (() => { const cs = contactsFor(it.waiting_on).filter(c => c.phone || c.whatsapp); return draftHtml("item", it.id, cs.length ? (cs[0].whatsapp || toWa(cs[0].phone)) : ""); })() : ""}
     <div class="acts">
-      ${it.state === "Proposed" ? `<button class="primary" data-a="confirm">OK, keep</button><button data-a="drop">Drop</button>` : ""}
-      ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
-      ${it.priority === 1 ? `<button data-a="priority" data-v="2">Normal</button>` : `<button data-a="priority" data-v="1">High</button>`}
-      <button data-a="assign" data-v="${other}">→ ${other}</button>
-      <button data-panel="item:${it.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes${nN ? " " + nN : ""}${fN ? " · Files " + fN : ""}</button>
-      ${!it._me && contactsFor(it.waiting_on).some(c => c.phone || c.whatsapp) ? `<button data-wa="${esc(it.waiting_on)}">WhatsApp ${esc(firstName(it.waiting_on))}</button>` : ""}
-      <button data-botitem="${it.id}">Bot</button>
-      ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
-      <select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Link to a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select>
-    </div>${open ? panelHtml(it) : ""}</div>`;
+      ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Keep it</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Got it</button>${ib("clock", "warn", `data-a="chased"`, "Asked today")}`}
+      ${prop ? (it._me ? ib("check", "ok", `data-a="done"`, "Done") : ib("check", "ok", `data-a="done"`, "Got it") + ib("clock", "warn", `data-a="chased"`, "Asked today")) : ""}
+    </div>
+    <div class="tools">
+      ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2"`, "High priority – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make high priority")}
+      ${ib("assign", "me", `data-a="assign" data-v="${other}"`, "Hand to " + other)}
+      ${ib("note", "note", `data-panel="item:${it.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}
+      ${canWa ? ib("chat", "wa", `data-wa="${esc(it.waiting_on)}"`, "WhatsApp " + esc(firstName(it.waiting_on))) : ""}
+      ${ib("bot", "bot", `data-botitem="${it.id}"`, "Ask the bot")}
+      ${!prop ? ib("drop", "bad", `data-a="drop"`, "Drop – not needed") : ""}
+    </div>
+    <label class="fld"><span>Deal</span><select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Not linked – choose a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
+    ${open ? panelHtml(it) : ""}</div>`;
 }
 // One-line row that opens into the full row
 function miniHtml(it){
   const k = "mini:" + it.id, open = isOpen(k, false);
   const dot = it.state === "Proposed" ? "d-prop" : it._stale ? "d-stale" : "d-ok";
-  return `<div class="mini p${it.priority || 2}" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i><span class="mt">${it._me ? "" : `<span class="mw">${esc(it.waiting_on)}:</span> `}${esc(it.waiting_for)}</span><span class="md">${it._days}d</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="mini-b">${rowHtml(it, 0)}</div>` : ""}`;
+  return `<div class="mini p${it.priority || 2}" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i><span class="mt">${it._me ? "" : `<span class="mw">${esc(it.waiting_on)}:</span> `}${esc(it.waiting_for)}</span><span class="md">${it._days}d</span><span class="chev"></span></div>${open ? `<div class="mini-b">${rowHtml(it, 0)}</div>` : ""}`;
 }
 
 function contactFormHtml(c){
-  const f = (k, lbl, type) => `<div class="lbl">${lbl}</div><input class="c-${k}" type="${type || "text"}" value="${esc(c[k] || "")}" autocomplete="off">`;
+  const f = (k, lbl, type) => `<label class="fld"><span>${lbl}</span><input class="c-${k}" type="${type || "text"}" value="${esc(c[k] || "")}" autocomplete="off"></label>`;
   return `<div class="cform" data-cform="${c.id || "new"}">${f("name", "Name")}${f("phone", "Phone (e.g. 078 219 5810)", "tel")}${f("whatsapp", "WhatsApp number only if different (27…)", "tel")}${f("email", "Email", "email")}
-    <div class="two"><div>${f("company", "Company")}</div><div>${f("role", "Role")}</div></div>
-    <div class="lbl">Project</div><select class="c-project"><option value="">—</option>${PROJECTS.map(p => `<option${c.project === p ? " selected" : ""}>${p}</option>`).join("")}</select>
-    <div class="lbl">Notes</div><textarea class="c-notes">${esc(c.notes || "")}</textarea>
-    <div class="acts" style="margin:10px 0 0"><button class="primary" data-csave="${c.id || "new"}">Save contact</button><button data-ccancel="${c.id || "new"}">Cancel</button>${"contacts" in navigator ? `<button data-cpick="1">Pick from phone</button>` : ""}</div><div class="msg c-msg"></div></div>`;
+    <div class="two">${f("company", "Company")}${f("role", "Role")}</div>
+    <label class="fld"><span>Project</span><select class="c-project"><option value="">—</option>${PROJECTS.map(p => `<option${c.project === p ? " selected" : ""}>${p}</option>`).join("")}</select></label>
+    <label class="fld"><span>Notes</span><textarea class="c-notes">${esc(c.notes || "")}</textarea></label>
+    <div class="acts"><button class="primary" data-csave="${c.id || "new"}">${ic("check")}Save contact</button><button data-ccancel="${c.id || "new"}">Cancel</button>${"contacts" in navigator ? `<button data-cpick="1">${ic("user")}From phone</button>` : ""}</div><div class="msg c-msg"></div></div>`;
 }
 function contactHtml(c){
   const open = openPanels.has("contact:" + c.id), edit = editContact === c.id;
   const wa = c.whatsapp || toWa(c.phone);
-  const fN = attsFor("contact", c.id).length;
+  const fN = attsFor("contact", c.id).length, nN = contactNotes(c.id).length;
   const sub = [c.company, c.role].filter(Boolean).join(" · ");
-  return `<div class="ccard" data-cid="${c.id}"><div class="t"><div class="n">${esc(c.name)}</div>${c.phone ? `<button data-call="${esc(c.phone)}">Call</button>` : ""}${wa ? `<button data-wa1="${esc(wa)}">WhatsApp</button>` : ""}</div>
-    <div class="s">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div>
+  return `<div class="ccard" data-cid="${c.id}"><div class="t"><span class="av">${esc(initials(c.name))}</span><div style="flex:1;min-width:0"><div class="n">${esc(c.name)}</div><div class="s" style="margin-top:2px">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div></div>${c.phone ? ib("phone", "call", `data-call="${esc(c.phone)}"`, "Call") : ""}${wa ? ib("chat", "wa", `data-wa1="${esc(wa)}"`, "WhatsApp") : ""}</div>
     <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
-    ${c.notes ? `<div class="k">${esc(c.notes)}</div>` : ""}
+    ${c.notes ? `<div class="k" style="color:var(--muted)">${esc(c.notes)}</div>` : ""}
     ${window.draftHtml ? draftHtml("contact", c.id, wa) : ""}
-    <div class="acts" style="margin:9px 0 0"><button data-panel="contact:${c.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes ${contactNotes(c.id).length} · Files ${fN}</button><button data-dchat="contact:${c.id}">Import WhatsApp chat</button><button data-emailcontact="${c.id}">Email me</button><button data-cedit="${c.id}"${edit ? ' style="background:var(--tab-on)"' : ""}>Edit</button><button data-botcontact="${esc(c.name)}">Bot</button></div>
-    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
+    <div class="tools">${ib("note", "note", `data-panel="contact:${c.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}${ib("chatin", "wa", `data-dchat="contact:${c.id}"`, "Add a WhatsApp chat")}${ib("me", "me", `data-emailcontact="${c.id}"`, "Email me this contact")}${ib("edit", "file", `data-cedit="${c.id}"${edit ? ' class="on"' : ""}`, "Edit")}${ib("bot", "bot", `data-botcontact="${esc(c.name)}"`, "Ask the bot")}</div>
+    ${open ? `<div class="npanel"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
     ${edit ? contactFormHtml(c) : ""}
-    <div class="s" style="margin-top:8px;font-size:13px">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
+    <div class="meta">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
 }
 
 // ---------- Deals ----------
+let dealTab = {}; try { dealTab = JSON.parse(localStorage.getItem("dealTab") || "{}"); } catch(e){}
+function saveDealTab(){ try { localStorage.setItem("dealTab", JSON.stringify(dealTab)); } catch(e){} }
+window.setDealTab = (id, t) => { dealTab[id] = t; saveDealTab(); };
 function secHtml(d, key, title, count, dflt, content){
   const k = `sec:${d.id}:${key}`, open = isOpen(k, dflt);
-  return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${open}"><span class="st">${title}</span><span class="cnt">${count}</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="sec-b">${content()}</div>` : ""}</div>`;
+  return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${open}"><span class="st">${title}</span><span class="cnt">${count}</span><span class="chev"></span></div>${open ? `<div class="sec-b">${content()}</div>` : ""}</div>`;
 }
 function stepHtml(s){
   const o = openStep === s.id;
-  return `<div class="step ${s.status}"><div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}${s.status === "open" && s.closes_with && !o ? `<span class="step-c">Closes with: ${esc(s.closes_with)}</span>` : ""}</span><span class="chev">${o ? "▾" : "›"}</span></div>
+  return `<div class="step ${s.status}"><div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-expanded="${o}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}${s.status === "open" && s.closes_with && !o ? `<span class="step-c">Closes with: ${esc(s.closes_with)}</span>` : ""}</span><span class="chev"></span></div>
     ${s.status !== "open" ? `<div class="step-m">${esc(s.done_by || "")}${s.done_at ? " · " + fmtDay(s.done_at) : ""}${s.evidence ? " — " + esc(s.evidence) : ""}</div>` : ""}
-    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Closes with</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<input data-evid="${s.id}" placeholder="${s.closes_with ? "Proof, e.g. " + esc(s.closes_with) : "Proof or note (optional), e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">Done ✓</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
+    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Closes with</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<label class="fld" style="margin-top:0"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
 }
 function checklistHtml(d, pg){
   let h = pg.stages.map(g => {
     const done = g.steps.filter(s => s.status !== "open").length;
     const isCur = !!(pg.cur && pg.cur.name === g.name);
     const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
-    return `<div class="stg"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="sbox ${done === g.steps.length ? "full" : done ? "part" : ""}"></span><span class="st">${esc(g.name)}</span><span class="cnt">${done}/${g.steps.length}</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? g.steps.map(stepHtml).join("") : ""}</div>`;
+    return `<div class="stg"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="sbox ${done === g.steps.length ? "full" : done ? "part" : ""}"></span><span class="st">${esc(g.name)}</span><span class="cnt">${done}/${g.steps.length}</span><span class="chev"></span></div>${open ? g.steps.map(stepHtml).join("") : ""}</div>`;
   }).join("");
-  if (addStepFor === d.id) h += `<div class="step-p"><div class="lbl">New step</div><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"><div class="lbl">Stage</div><select id="nsStage">${pg.stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${pg.stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select><div class="acts0"><button class="primary" data-savestep="${d.id}">Add step</button><button data-addstep="">Cancel</button></div></div>`;
-  else h += `<div class="acts0"><button data-addstep="${d.id}">+ Add a step</button></div>`;
+  if (addStepFor === d.id) h += `<div class="step-p"><label class="fld" style="margin-top:0"><span>New step</span><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"></label><label class="fld"><span>Stage</span><select id="nsStage">${pg.stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${pg.stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select></label><div class="acts0"><button class="primary" data-savestep="${d.id}">${ic("plus")}Add step</button><button data-addstep="">Cancel</button></div></div>`;
+  else h += `<div class="acts0"><button data-addstep="${d.id}">${ic("plus")}Add a step</button></div>`;
   return h;
 }
 function termsHtml(d, defs){
   const p = d.params || {};
   if (editTerms === d.id) {
-    return defs.map(([k, label, opt]) => `<div class="lbl">${esc(label)}</div>` + (Array.isArray(opt)
-      ? `<select class="t-${k}"><option value="">—</option>${[...opt, ...(p[k] && !opt.includes(p[k]) ? [p[k]] : [])].map(o => `<option${p[k] === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`
-      : `<input class="t-${k}" value="${esc(p[k] || "")}" placeholder="${esc(opt)}" autocomplete="off">`)).join("") +
-      `<div class="acts0"><button class="primary" data-saveterms="${d.id}">Save terms</button><button data-editterms="">Cancel</button></div>`;
+    return defs.map(([k, label, opt]) => `<label class="fld"><span>${esc(label)}</span>` + (Array.isArray(opt)
+      ? `<select class="t-${k}"><option value="">Not set</option>${[...opt, ...(p[k] && !opt.includes(p[k]) ? [p[k]] : [])].map(o => `<option${p[k] === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`
+      : `<input class="t-${k}" value="${esc(p[k] || "")}" placeholder="${esc(opt)}" autocomplete="off">`) + `</label>`).join("") +
+      `<div class="acts0"><button class="primary" data-saveterms="${d.id}">${ic("check")}Save terms</button><button data-editterms="">Cancel</button></div>`;
   }
   const filled = defs.filter(([k]) => p[k]), empty = defs.filter(([k]) => !p[k]);
   return (filled.length ? filled.map(([k, label]) => `<div class="kv"><span class="k">${esc(label)}</span><span class="v">${esc(p[k])}</span></div>`).join("") : `<div class="quiet">No terms written down yet.</div>`) +
-    (empty.length ? `<div class="quiet" style="margin-top:6px">Not set yet: ${empty.map(x => esc(x[1].replace(" (private)", ""))).join(", ")}</div>` : "") +
-    `<div class="acts0"><button data-editterms="${d.id}">Edit terms</button></div>`;
+    (empty.length ? `<div class="quiet" style="margin-top:8px">Not set yet: ${empty.map(x => esc(x[1].replace(" (private)", ""))).join(", ")}</div>` : "") +
+    `<div class="acts0"><button data-editterms="${d.id}">${ic("edit")}Edit terms</button></div>`;
 }
 function infoHtml(d){
   if (editInfo === d.id) {
-    const f = (k, big) => `<div class="lbl">${INFO_LABELS[k]}</div>` + (big ? `<textarea class="i-${k}"${k === "key_facts" ? ' style="min-height:140px"' : ""}>${esc(d[k] || "")}</textarea>` : `<input class="i-${k}" value="${esc(d[k] || "")}">`);
-    return f("name") + `<div class="lbl">Area</div><select class="i-area">${[...AREAS, ...(AREAS.includes(d.area) ? [] : [d.area])].map(a => `<option${d.area === a ? " selected" : ""}>${esc(a)}</option>`).join("")}</select>` +
+    const f = (k, big) => `<label class="fld"><span>${INFO_LABELS[k]}</span>` + (big ? `<textarea class="i-${k}"${k === "key_facts" ? ' style="min-height:140px"' : ""}>${esc(d[k] || "")}</textarea>` : `<input class="i-${k}" value="${esc(d[k] || "")}">`) + `</label>`;
+    return f("name") + `<label class="fld"><span>Area</span><select class="i-area">${[...AREAS, ...(AREAS.includes(d.area) ? [] : [d.area])].map(a => `<option${d.area === a ? " selected" : ""}>${esc(a)}</option>`).join("")}</select></label>` +
       f("stage") + f("summary", true) + f("key_facts", true) + f("contacts", true) + f("next_milestone") +
-      `<div class="acts0"><button class="primary" data-saveinfo="${d.id}">Save</button><button data-editinfo="">Cancel</button></div>`;
+      `<div class="acts0"><button class="primary" data-saveinfo="${d.id}">${ic("check")}Save</button><button data-editinfo="">Cancel</button></div>`;
   }
   return `${d.stage ? `<div class="kv"><span class="k">Status note</span><span class="v">${esc(d.stage)}</span></div>` : ""}
-    ${d.summary ? `<div class="lbl">Summary</div><div class="pinfo-k" style="white-space:pre-wrap;font-size:15px">${esc(d.summary)}</div>` : ""}
-    ${d.key_facts ? `<div class="lbl">Key facts</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.key_facts)}</div>` : ""}
-    ${d.contacts ? `<div class="lbl">Contacts</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.contacts)}</div>` : ""}
-    ${d.next_milestone ? `<div class="lbl">Next milestone</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.next_milestone)}</div>` : ""}
-    <div class="quiet" style="margin-top:8px">Updated ${d.updated_at ? fmtWhen(d.updated_at) : ""} by ${esc(d.updated_by || "")}</div>
-    <div class="acts0"><button data-editinfo="${d.id}">Edit background</button></div>`;
+    ${d.summary ? `<div class="lbl">Summary</div><div class="about">${esc(d.summary)}</div>` : ""}
+    ${d.key_facts ? `<div class="lbl">Key facts</div><div class="about">${esc(d.key_facts)}</div>` : ""}
+    ${d.contacts ? `<div class="lbl">Contacts</div><div class="about">${esc(d.contacts)}</div>` : ""}
+    ${d.next_milestone ? `<div class="lbl">Next milestone</div><div class="about">${esc(d.next_milestone)}</div>` : ""}
+    <div class="quiet" style="margin-top:10px">Updated ${d.updated_at ? fmtWhen(d.updated_at) : ""} by ${esc(d.updated_by || "")}</div>
+    <div class="acts0"><button data-editinfo="${d.id}">${ic("edit")}Edit background</button></div>`;
 }
 function histLine(e){
   const f = e.field || "";
@@ -764,88 +453,111 @@ function dealHtml(d){
   const closed = d.status === "Won" || d.status === "Lost";
   const dot = closed ? "d-low" : d.status === "On hold" ? "d-prop" : stale ? "d-stale" : "d-ok";
   const open = isOpen("deal:" + d.id, false);
-  const pct = pg.total ? Math.round(pg.done / pg.total * 100) : 0;
   let h = `<div class="deal" data-deal="${d.id}"><div class="deal-h" role="button" tabindex="0" data-tog="deal:${d.id}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i>
     <div class="dh"><div class="dn">${esc(d.name)}</div>
-      <div class="ds">${esc(d.area)} · ${esc(d.status)}${pg.total ? ` · ${pg.done}/${pg.total} ticked` : ""}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</div>
-      ${pg.total ? `<div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Checklist ${pct}% done"><i style="width:${pct}%"></i></div>` : ""}
+      <div class="ds">${esc(d.area)} · ${esc(d.status)}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</div>
       ${pg.total ? `<div class="dx">${pg.cur ? `${esc(pg.cur.name)} · next: ${esc(pg.next.title)}` : "Checklist complete"}</div>` : (d.next_milestone ? `<div class="dx">Next: ${esc(d.next_milestone)}</div>` : "")}
-    </div><span class="chev">${open ? "▾" : "▸"}</span></div>`;
+    </div>${pg.total ? ring(pg.done, pg.total) : ""}<span class="chev"></span></div>`;
   if (open) {
-    h += `<div class="deal-b">`;
-    if (window.kitSecHtml) h += `<div class="sec-b" style="padding-bottom:0">${kitSecHtml(d)}</div>`;
-    if (pg.total) h += secHtml(d, "check", "Checklist", `${pg.done}/${pg.total}`, true, () => checklistHtml(d, pg));
-    if (d.kind === "mineral" && d.kit && window.kitGuideHtml) h += secHtml(d, "guide", "Guide – Incoterms, tests, red flags", "", false, () => kitGuideHtml(d));
-    h += secHtml(d, "waits", "Waiting on", waits.length, true, () => (waits.map(miniHtml).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">+ Add wait for this deal</button></div>`);
     const defs = TERMS[d.kind] || [];
-    if (defs.length) h += secHtml(d, "terms", "Deal terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`, false, () => termsHtml(d, defs));
-    h += secHtml(d, "info", "Background", "", false, () => infoHtml(d));
-    const ns = dealNotes(d.id);
-    const dds = window.draftsFor ? draftsFor("deal", d.id) : [];
-    if (dds.length) h += secHtml(d, "drafts", "WhatsApp drafts", dds.length, true, () => draftHtml("deal", d.id, ""));
-    h += secHtml(d, "notes", "Notes", ns.length, false, () => notesBlock(ns, "deal", d.id));
-    h += secHtml(d, "files", "Files", attsFor("deal", d.id).length, false, () => filesHtml("deal", d.id));
-    const hs = histOf(d.id);
-    h += secHtml(d, "hist", "History", hs.length, false, () => hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
-    h += `<div class="sec-b"><div class="acts0"><button data-botdeal="${d.id}">Bot: review this deal</button><button data-emaildeal="${d.id}">Email me</button><button data-dchat="deal:${d.id}">Import WhatsApp chat</button><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></div></div></div>`;
+    const ns = dealNotes(d.id), dds = window.draftsFor ? draftsFor("deal", d.id) : [], hs = histOf(d.id), fN = attsFor("deal", d.id).length;
+    const tabs = [
+      ...(pg.total || window.kitSecHtml ? [["steps", "list", "Steps", pg.total ? `${pg.done}/${pg.total}` : ""]] : []),
+      ["waits", "wait", "Waiting", waits.length],
+      ...(defs.length ? [["terms", "terms", "Terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`]] : []),
+      ...(d.kind === "mineral" && d.kit && window.kitGuideHtml ? [["guide", "guide", "Guide", ""]] : []),
+      ["notes", "note", "Notes", ns.length + dds.length],
+      ["files", "clip", "Files", fN],
+      ["info", "info", "Background", ""],
+      ["hist", "history", "History", hs.length]];
+    const t = tabs.some(x => x[0] === dealTab[d.id]) ? dealTab[d.id] : tabs[0][0];
+    h += `<div class="deal-b">`;
+    if (pg.next && t !== "steps") h += `<div class="nextup"><div class="nu-l">Next step · ${esc(pg.cur.name)}</div><div class="nu-t">${esc(pg.next.title)}</div>${pg.next.closes_with ? `<div class="nu-c">Closes with: ${esc(pg.next.closes_with)}</div>` : ""}<div class="acts0"><button class="primary" data-openstep="${d.id}:${pg.next.id}">${ic("list")}Open this step</button></div></div>`;
+    h += `<div class="hscroll dtabs" role="tablist">${tabs.map(([k, icn, label, n]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}${n !== "" && n !== 0 ? `<span class="n">${n}</span>` : ""}</button>`).join("")}</div><div class="dpanel">`;
+    if (t === "steps") h += (window.kitSecHtml ? kitSecHtml(d) : "") + (pg.total ? checklistHtml(d, pg) : "");
+    else if (t === "waits") h += (waits.map(miniHtml).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a wait for this deal</button></div>`;
+    else if (t === "terms") h += termsHtml(d, defs);
+    else if (t === "guide") h += kitGuideHtml(d);
+    else if (t === "notes") h += (dds.length ? draftHtml("deal", d.id, "") : "") + notesBlock(ns, "deal", d.id);
+    else if (t === "files") h += filesHtml("deal", d.id);
+    else if (t === "info") h += infoHtml(d);
+    else if (t === "hist") h += hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`;
+    h += `</div><div class="dfoot">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Bot: review this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}<label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div></div>`;
   }
   return h + `</div>`;
 }
 function areaInfoHtml(p){
   const fN = attsFor("project", p.name).length, open = openPanels.has("project:" + p.name);
-  return `<div class="pinfo" data-p="${esc(p.name)}"><div class="t"><div class="n" style="font-size:16px">About ${esc(p.name)}</div><button data-botproj="${esc(p.name)}">Bot</button><button data-edit="${esc(p.name)}">Edit info</button></div>
+  return `<div class="pinfo" data-p="${esc(p.name)}"><div class="t"><div class="n">About ${esc(p.name)}</div>${ib("clip", "file", `data-panel="project:${esc(p.name)}"${open ? ' class="on"' : ""}`, "Files", fN || "")}${ib("edit", "file", `data-edit="${esc(p.name)}"`, "Edit info")}${ib("bot", "bot", `data-botproj="${esc(p.name)}"`, "Ask the bot")}</div>
     <div class="s">${esc(p.stage) || "Stage not set"}</div>
     <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
     ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
     ${p.contacts ? `<div class="lbl">Contacts</div><div class="k">${esc(p.contacts)}</div>` : ""}
     ${p.next_milestone ? `<div class="lbl">Next milestone</div><div class="k">${esc(p.next_milestone)}</div>` : ""}
-    <div class="acts" style="margin:10px 0 0"><button data-panel="project:${esc(p.name)}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button></div>
-    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("project", p.name)}</div>` : ""}
-    ${p.updated_at ? `<div class="s" style="margin-top:8px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
-    <div class="edit hidden"><div class="lbl">Stage</div><input class="e-stage" value="${esc(p.stage)}">
-    <div class="lbl">Summary</div><textarea class="e-summary">${esc(p.summary)}</textarea>
-    <div class="lbl">Key facts (one per line)</div><textarea class="e-facts" style="min-height:140px">${esc(p.key_facts)}</textarea>
-    <div class="lbl">Contacts (one per line)</div><textarea class="e-contacts">${esc(p.contacts)}</textarea>
-    <div class="lbl">Next milestone</div><input class="e-next" value="${esc(p.next_milestone)}">
-    <div class="acts" style="margin-left:0"><button class="primary" data-save="${esc(p.name)}">Save</button><button data-cancel="${esc(p.name)}">Cancel</button></div></div></div>`;
+    ${open ? `<div class="npanel"><div class="lbl" style="margin-top:0">Files</div>${filesHtml("project", p.name)}</div>` : ""}
+    ${p.updated_at ? `<div class="s" style="margin-top:10px;font-size:13px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
+    <div class="edit hidden"><label class="fld"><span>Stage</span><input class="e-stage" value="${esc(p.stage)}"></label>
+    <label class="fld"><span>Summary</span><textarea class="e-summary">${esc(p.summary)}</textarea></label>
+    <label class="fld"><span>Key facts (one per line)</span><textarea class="e-facts" style="min-height:140px">${esc(p.key_facts)}</textarea></label>
+    <label class="fld"><span>Contacts (one per line)</span><textarea class="e-contacts">${esc(p.contacts)}</textarea></label>
+    <label class="fld"><span>Next milestone</span><input class="e-next" value="${esc(p.next_milestone)}"></label>
+    <div class="acts"><button class="primary" data-save="${esc(p.name)}">${ic("check")}Save</button><button data-cancel="${esc(p.name)}">Cancel</button></div></div></div>`;
 }
 function areaHtml(name, arr){
   const p = (window._projects || []).find(x => x.name === name) || { name, summary: "", stage: "", key_facts: "", contacts: "", next_milestone: "" };
   const k = "area:" + name, open = isOpen(k, false);
   const stale = arr.filter(i => i._stale && !i._me).length;
-  return `<div class="deal"><div class="deal-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="0" aria-expanded="${open}"><i class="dot ${stale ? "d-stale" : "d-ok"}"></i><div class="dh"><div class="dn">${esc(name)}</div><div class="ds">General · ${arr.length} waiting${stale ? `, ${stale} to chase` : ""}</div>${p.stage ? `<div class="dx">${esc(p.stage)}</div>` : ""}</div><span class="chev">${open ? "▾" : "▸"}</span></div>
+  return `<div class="deal"><div class="deal-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="0" aria-expanded="${open}"><i class="dot ${stale ? "d-stale" : "d-ok"}"></i><div class="dh"><div class="dn">${esc(name)}</div><div class="ds">${arr.length} waiting${stale ? ` · ${stale} to chase` : ""}</div>${p.stage ? `<div class="dx">${esc(p.stage)}</div>` : ""}</div><span class="chev"></span></div>
     ${open ? `<div class="deal-b"><div class="sec-b">${arr.sort(byPrioThenAge).map(miniHtml).join("") || `<div class="quiet">Nothing waiting here.</div>`}</div>${areaInfoHtml(p)}</div>` : ""}</div>`;
 }
 function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = `<div class="h2row"><div class="chips" style="margin:0;flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : "+ Deal"}</button></div>`;
-  if (newDealOpen) h += `<div class="deal"><div class="sec-b"><div class="lbl">Deal name</div><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Benro" maxlength="120">
-      <div class="lbl">Type</div><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select>
-      ${window.KIT ? `<div id="ndRouteBox"><div class="lbl">Route (decides which steps go in the checklist)</div><select id="ndRoute">${kitRouteOpts("local")}</select></div>` : ""}
-      <div class="lbl">Area</div><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select>
-      <div class="acts0"><button class="primary" data-createdeal="1">Create deal</button><button data-newdeal="1">Cancel</button></div><div class="msg" id="ndMsg"></div></div></div>`;
-  h += shown.map(dealHtml).join("") || `<div class="empty">No ${dealFilter === "All" ? "" : dealFilter.toLowerCase() + " "}deals. Tap + Deal.</div>`;
-  if (window.kitLibHtml) h += kitLibHtml();
+  let h = `<div class="h2row"><div class="chips" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Benro" maxlength="120"></label>
+      <label class="fld"><span>Type</span><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
+      ${window.KIT ? `<label class="fld" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
+      <label class="fld"><span>Area</span><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select></label>
+      <div class="acts0"><button class="primary" data-createdeal="1">${ic("check")}Create deal</button><button data-newdeal="1">Cancel</button></div><div class="msg" id="ndMsg"></div></div></div>`;
+  h += shown.map(dealHtml).join("") || `<div class="empty">No ${dealFilter === "All" ? "" : dealFilter.toLowerCase() + " "}deals. Tap Deal to add one.</div>`;
   const unlinked = (window._items || []).filter(i => !i.deal_id || !dealById(i.deal_id));
   const groups = {};
   for (const it of unlinked) (groups[it.project || "Other"] ||= []).push(it);
   const order = (window._projects || []).map(p => p.name);
   const names = Object.keys(groups).sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99) || a.localeCompare(b));
-  if (names.length) h += `<h2>General — not tied to a deal</h2>` + names.map(n => areaHtml(n, groups[n])).join("");
+  if (names.length) h += `<h2>General – not tied to a deal</h2>` + names.map(n => areaHtml(n, groups[n])).join("");
+  const kl = window.kitLibHtml ? kitLibHtml() : ""; if (kl) h += `<h2>Reference</h2>` + kl;
   return h;
 }
+// Deal tabs and the "Open this step" shortcut
+$("list").addEventListener("click", e => {
+  const tb = e.target.closest("button[data-dtab]");
+  if (tb) { const [id, k] = tb.dataset.dtab.split(":"); dealTab[id] = k; saveDealTab(); render(); return; }
+  const os = e.target.closest("button[data-openstep]");
+  if (os) {
+    const [id, sid] = os.dataset.openstep.split(":"); const st = (window._steps || []).find(s => s.id === sid);
+    dealTab[id] = "steps"; saveDealTab();
+    if (st) { openKeys.delete(`-stage:${id}:${st.stage}`); openKeys.add(`+stage:${id}:${st.stage}`); saveOpen(); openStep = st.id; }
+    render(); setTimeout(() => { const el = document.querySelector(`[data-step="${sid}"]`); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 30); return;
+  }
+});
 
+const stat = (n, label, dot, jump) => jump ? `<button class="stat" data-jump="${jump}"><b>${dot ? `<i class="dot" style="background:${dot}"></i>` : ""}${n}</b><span>${label}</span></button>` : `<div class="stat"><b>${dot ? `<i class="dot" style="background:${dot}"></i>` : ""}${n}</b><span>${label}</span></div>`;
 function render(){
   const items = window._items || [];
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
-  const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length, assigned = items.filter(i => (i.owner || "Chris") === me).length;
-  $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span><span>${assigned} on ${me || "me"}</span>`;
+  $("pageTitle").textContent = PAGE_TITLES[view] || "Deal Board";
+  const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
+  if (view === "worklist") $("strip").innerHTML = stat(stale, "Chase", "var(--warn)", "chase") + stat(proposed, "Confirm", "var(--prop)", "confirm") + stat(mine, "Ours", "var(--accent)", "ours") + stat(items.length, "Open", "");
+  else if (view === "deals") { const ld = liveDeals(), st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
+    $("strip").innerHTML = stat(ld.length, "Deals", "var(--ok)") + stat(`${st[0]}<small style="font-size:14px;color:var(--muted)">/${st[1]}</small>`, "Steps", "var(--accent)") + stat(items.filter(i => i.deal_id).length, "Waiting", "") + stat(items.filter(i => i.deal_id && i._stale && !i._me).length, "Chase", "var(--warn)"); }
+  else if (view === "people") $("strip").innerHTML = stat(new Set(items.filter(i => !i._me).map(i => i.waiting_on)).size, "People", "") + stat(stale, "Chase", "var(--warn)") + stat(items.filter(i => !i._me).length, "Asks", "") + stat((window._contacts || []).length, "Contacts", "var(--c-call)");
+  else $("strip").innerHTML = "";
   if (view === "leads") {
     const Ls = window._leads || [];
     const cnt = f => Ls.filter(f).length;
-    $("strip").innerHTML = `<span>${Ls.length} in the list</span><span><i class="dot" style="background:#8A8A92"></i>${cnt(l => l.status === "new" || l.status === "ready")} not contacted</span><span><i class="dot" style="background:#3E9BA6"></i>${cnt(l => ["contacted","replied","qualified","deal"].includes(l.status))} contacted</span><span><i class="dot d-ok"></i>${cnt(l => ["replied","qualified"].includes(l.status))} replied</span>`;
-    $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap <b>Import WhatsApp chat</b>.</div></div>` : "") + dirHtml();
+    $("strip").innerHTML = stat(Ls.length, "Leads", "") + stat(cnt(l => l.status === "new" || l.status === "ready"), "New", "#8A8A92") + stat(cnt(l => ["contacted","replied","qualified","deal"].includes(l.status)), "Contacted", "#3E9BA6") + stat(cnt(l => ["replied","qualified"].includes(l.status)), "Replied", "var(--ok)");
+    $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap the green import icon.</div></div>` : "") + dirHtml();
     $("foot").textContent = (me ? me + " · " : "") + "app v" + APP_VERSION;
     $("addBtn").classList.add("hidden");
     return;
@@ -855,32 +567,33 @@ function render(){
     const groups = {};
     for (const it of items) if (!it._me) (groups[it.waiting_on || "Unknown"] ||= []).push(it);
     const order = Object.entries(groups).sort((a,b) => Math.min(...a[1].map(i=>i.priority||2)) - Math.min(...b[1].map(i=>i.priority||2)) || Math.max(...b[1].map(i=>i._days)) - Math.max(...a[1].map(i=>i._days)));
+    if (order.length) html += `<h2 style="margin-top:6px">Waiting on people</h2>`;
     for (const [name, arr] of order) {
       arr.sort(byPrioThenAge);
       const oldest = Math.max(...arr.map(i => i._days));
       const anyStale = arr.some(i => i._stale);
-      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest}d</span></div><button data-botperson="${esc(name)}">Bot</button><button data-wa="${esc(name)}">WhatsApp list</button></div>`;
+      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest} day${oldest === 1 ? "" : "s"}</span></div>${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp the whole list")}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask the bot to prep this chase")}</div>`;
       const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
-      html += cs.length ? `<div class="cstrip">${cs.map(c => `<span>${esc(firstName(c.name))} ${esc(c.phone || "+" + c.whatsapp)}</span>${c.phone ? `<button data-call="${esc(c.phone)}">Call</button>` : ""}<button data-wa1="${esc(c.whatsapp || toWa(c.phone))}">WhatsApp</button>`).join("")}</div>`
-                       : `<div class="cstrip"><span>No number saved</span><button data-cnew="${esc(firstName(name))}">Add contact</button></div>`;
+      html += cs.length ? `<div class="cstrip">${cs.map(c => `<span style="flex:1">${esc(firstName(c.name))} · ${esc(c.phone || "+" + c.whatsapp)}</span>${c.phone ? ib("phone", "call", `data-call="${esc(c.phone)}"`, "Call " + esc(firstName(c.name))) : ""}${ib("chat", "wa", `data-wa1="${esc(c.whatsapp || toWa(c.phone))}"`, "WhatsApp " + esc(firstName(c.name)))}`).join("")}</div>`
+                       : `<div class="cstrip"><span style="flex:1">No number saved yet</span><button data-cnew="${esc(firstName(name))}">${ic("userplus")}Add</button></div>`;
       arr.forEach((it, i) => html += rowHtml(it, i+1));
       html += `</div>`;
     }
     if (!order.length) html = `<div class="empty">Nothing waiting on anyone.</div>`;
     const contacts = window._contacts || [];
-    html += `<div class="h2row" id="contactsHead"><h2>Contacts — ${contacts.length}</h2><button data-cnew="">+ Contact</button></div>`;
+    html += `<div class="h2row" id="contactsHead"><h2>Contacts · ${contacts.length}</h2><button data-cnew="">${ic("userplus")}Contact</button></div>`;
     if (newContact) html += `<div class="ccard">${contactFormHtml(newContact)}</div>`;
     contacts.forEach(c => html += contactHtml(c));
-    if (!contacts.length) html += `<div class="quiet">No contacts saved yet. Tap + Contact, or tell the bot someone's number.</div>`;
+    if (!contacts.length) html += `<div class="quiet">No contacts saved yet. Tap Contact, or tell the bot someone's number.</div>`;
   } else if (view === "worklist") {
     html = todayHtml(items);
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
-      <div class="ask"><textarea id="q" placeholder="e.g. What is still missing on the chrome deal? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
-      <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
-      <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
+    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes – you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+      <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}</button></div>
+      <div class="acts"><button data-bot="brief">${ic("brief")}Daily brief</button><button data-bot="clear">${ic("drop")}Clear chat</button></div>
+      <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
         <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
-        <div class="acts" style="margin:8px 0 0"><button class="primary" data-bot="savekey">Save key</button></div>
+        <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
         <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>`;
   } else {
     html = dealsViewHtml();
@@ -889,6 +602,12 @@ function render(){
   $("addBtn").classList.toggle("hidden", !me || view === "bot");
   $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
 }
+// Stat tiles on Today jump to their section
+$("strip").addEventListener("click", e => {
+  const b = e.target.closest("button[data-jump]"); if (!b) return;
+  const k = "today:" + b.dataset.jump; openKeys.delete("-" + k); saveOpen(); render();
+  const el = document.getElementById("tsec-" + b.dataset.jump); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
+});
 
 // ---------- Back: tab changes, jumps and opened cards can be undone (header button and phone back) ----------
 const navStack = [];
@@ -897,8 +616,8 @@ function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); d
 function navPush(){ navStack.push(navSnap()); if (navStack.length > 40) navStack.shift(); try { history.pushState({ db: navStack.length }, ""); } catch(e){} updBack(); }
 window.navPush = navPush;
 window.addEventListener("popstate", () => {
-  const cs = $("chatSheet");
-  if (cs && !cs.classList.contains("hidden")) { cs.classList.add("hidden"); try { history.pushState({ db: navStack.length }, ""); } catch(e){} return; }
+  const cs = [$("chatSheet"), $("menuSheet")].find(x => x && !x.classList.contains("hidden"));
+  if (cs) { cs.classList.add("hidden"); try { history.pushState({ db: navStack.length }, ""); } catch(e){} return; }
   const s = navStack.pop(); updBack(); if (!s) return;
   view = s.view; try{ localStorage.setItem("view", view) }catch(e){}
   openKeys = new Set(s.keys); saveOpen(); openStep = s.openStep; dealFilter = s.dealFilter;
@@ -1232,8 +951,8 @@ $("addForm").onsubmit = async e => {
   if (error) { $("addMsg").textContent = "Failed: " + error.message; return; }
   e.target.reset(); $("fDeal").value = ""; $("addMsg").textContent = ""; $("addBtn").click(); load();
 };
-$("refreshBtn").onclick = () => location.reload();
-$("outBtn").onclick = async () => { await sb.auth.signOut(); me = ""; show(); };
+$("refreshBtn").onclick = () => { closeMenu(); location.reload(); };
+$("outBtn").onclick = async () => { closeMenu(); await sb.auth.signOut(); me = ""; show(); };
 
 $("loginForm").onsubmit = async e => {
   e.preventDefault();

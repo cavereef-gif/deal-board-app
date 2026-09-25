@@ -91,40 +91,41 @@ function queueHtml() {
   const done = all.filter(t => t.status === "done").sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""));
   const gates = (window._gates || []).slice().sort((a, b) => a.sort - b.sort);
   const k = "dq", opn = isOpen(k, true);
-  let h = `<div class="deal dq"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="1" aria-expanded="${opn}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Next up — buyer search</div><div class="ds">${open.length} ready · ${gated.length} waiting on a gate${later.length ? ` · ${later.length} later` : ""}</div></div><span class="chev">${opn ? "▾" : "▸"}</span></div>`;
+  let h = `<div class="deal dq"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="1" aria-expanded="${opn}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Next up – buyer search</div><div class="ds">${open.length} ready · ${gated.length} waiting on a gate${later.length ? ` · ${later.length} later` : ""}</div></div><span class="chev"></span></div>`;
   if (opn) {
     h += `<div class="deal-b"><div class="sec-b">${open.slice(0, 5).map((t, i) => taskHtml(t, i + 1)).join("") || `<div class="quiet">Nothing ready. Clear a gate or add a step.</div>`}</div>`;
     h += `<div class="gates">${gates.filter(g => g.major).map(g => gateHtml(g, all)).join("")}</div>`;
-    const sub = (key, title, arr, fn) => arr.length ? `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="dq:${key}" data-dflt="0"><span class="st">${title}</span><span class="cnt">${arr.length}</span><span class="chev">${isOpen("dq:" + key, false) ? "▾" : "▸"}</span></div>${isOpen("dq:" + key, false) ? `<div class="sec-b">${arr.map(fn).join("")}</div>` : ""}</div>` : "";
+    const sub = (key, title, arr, fn) => arr.length ? `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="dq:${key}" data-dflt="0" aria-expanded="${isOpen("dq:" + key, false)}"><span class="st">${title}</span><span class="cnt">${arr.length}</span><span class="chev"></span></div>${isOpen("dq:" + key, false) ? `<div class="sec-b">${arr.map(fn).join("")}</div>` : ""}</div>` : "";
     h += sub("more", "Rest of the ready queue", open.slice(5), t => taskHtml(t, 0));
     h += sub("later", "Coming up (dated)", later, t => taskHtml(t, 0));
     h += sub("gated", "Waiting on a gate", gated, t => taskHtml(t, 0));
     h += sub("blocked", "Blocked", blocked, t => taskHtml(t, 0));
     h += sub("minor", "Smaller gates", gates.filter(g => !g.major), g => gateHtml(g, all));
     h += sub("done", "Done", done.slice(0, 30), t => taskHtml(t, 0));
-    h += `<div class="sec-b"><div class="acts0"><button data-dtasknew="">+ Add a step</button></div>${dForm && dForm.type === "task" && !dForm.lead ? taskFormHtml("") : ""}</div></div>`;
+    h += `<div class="sec-b"><div class="acts0"><button data-dtasknew="">${ic("plus")}Add a step</button></div>${dForm && dForm.type === "task" && !dForm.lead ? taskFormHtml("") : ""}</div></div>`;
   }
   return h + `</div>`;
 }
 function gateHtml(g, all) {
   const n = all.filter(t => t.status === "open" && (t.gates || []).includes(g.key)).length;
-  return `<div class="gate"><i class="dot" style="background:${g.status === "open" ? "#D9A03F" : "#4FA88A"}"></i><div class="gt"><div class="gn">${esc(g.title)}</div><div class="gs">${g.status === "open" ? "Open" : "Cleared"}${g.note ? " · " + esc(g.note) : ""}${n && g.status === "open" ? ` · holds ${n} step${n > 1 ? "s" : ""}` : ""}</div><div class="gs">Unblocks: ${esc(g.unblocks)}</div></div><button data-dgate="${g.key}">${g.status === "open" ? "Mark cleared" : "Reopen"}</button></div>`;
+  return `<div class="gate"><i class="dot" style="background:${g.status === "open" ? "var(--warn)" : "var(--ok)"}"></i><div class="gt"><div class="gn">${esc(g.title)}</div><div class="gs">${g.status === "open" ? "Open" : "Cleared"}${g.note ? " · " + esc(g.note) : ""}${n && g.status === "open" ? ` · holds ${n} step${n > 1 ? "s" : ""}` : ""}</div><div class="gs">Unblocks: ${esc(g.unblocks)}</div></div>${g.status === "open" ? ib("check", "ok", `data-dgate="${g.key}"`, "Mark cleared") : ib("undo", "mute", `data-dgate="${g.key}"`, "Reopen")}</div>`;
 }
 function taskHtml(t, n) {
   const ls = (t.lead_ids || []).map(leadById).filter(Boolean);
   const gated = t.status === "open" && taskBlocked(t);
   const done = t.status === "done";
-  let h = `<div class="task${done ? " done" : ""}"><div class="tl">${n ? `<span class="tn">${n}</span>` : ""}<span class="score" title="Value × ease">${t.score}</span><div class="tt">${esc(t.task)}</div></div>
-    <div class="tm">${t.kind ? `<span class="pill">${esc(t.kind)}</span>` : ""}${gated ? `<span class="pill"><i class="dot" style="background:#D9A03F"></i>Waits: ${(t.gates || []).filter(gateOpen).map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(", ")}</span>` : ""}${t.not_before && !done ? `<span class="pill">From ${fmtDay(t.not_before)}</span>` : ""}${ls.slice(0, 4).map(l => `<button class="chip" data-dgo="${l.id}">${esc(l.name.length > 24 ? l.name.slice(0, 22) + "…" : l.name)}</button>`).join("")}${ls.length > 4 ? `<span class="pill">+${ls.length - 4} more</span>` : ""}${dTaskDone === t.id ? "" : done || t.status !== "open" ? `<button class="chip tb" data-dtaskact="${t.id}" data-v="reopen">Reopen</button>` : `<button class="chip tb" data-dtaskdone="${t.id}">Done / update</button>`}${t.status === "blocked" ? `<span class="pill"><i class="dot d-high"></i>Blocked${t.blocked_note ? ": " + esc(t.blocked_note) : ""}</span>` : ""}${done ? `<span class="pill"><i class="dot d-ok"></i>${esc(t.done_by || "")} ${t.done_at ? fmtDay(t.done_at) : ""}${t.outcome ? " — " + esc(t.outcome) : ""}</span>` : ""}</div>`;
-  if (dTaskDone === t.id) h += `<div class="step-p"><input id="tOut" placeholder="What happened? (one line)" maxlength="300"><div class="acts0"><button class="primary" data-dtaskact="${t.id}" data-v="done">Done ✓</button><button data-dtaskact="${t.id}" data-v="block">Blocked</button><button data-dtaskact="${t.id}" data-v="drop">Drop</button><button data-dtaskdone="">Cancel</button></div></div>`;
+  const act = dTaskDone === t.id ? "" : (done || t.status !== "open") ? ib("undo", "mute", `data-dtaskact="${t.id}" data-v="reopen"`, "Reopen") : ib("check", "ok", `data-dtaskdone="${t.id}"`, "Done or update");
+  let h = `<div class="task${done ? " done" : ""}"><div class="tl">${n ? `<span class="tn">${n}</span>` : ""}<span class="score" title="Value × ease">${t.score}</span><div class="tt">${esc(t.task)}</div>${act}</div>
+    <div class="tm">${t.kind ? `<span class="pill">${esc(t.kind)}</span>` : ""}${gated ? `<span class="tw"><i class="dot" style="background:var(--warn)"></i>Waits: ${(t.gates || []).filter(gateOpen).map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(", ")}</span>` : ""}${t.not_before && !done ? `<span class="pill">From ${fmtDay(t.not_before)}</span>` : ""}${ls.slice(0, 4).map(l => `<button class="lk" data-dgo="${l.id}">${ic("user")}${esc(l.name.length > 24 ? l.name.slice(0, 22) + "…" : l.name)}</button>`).join("")}${ls.length > 4 ? `<span class="pill">+${ls.length - 4} more</span>` : ""}${t.status === "blocked" ? `<span class="pill"><i class="dot d-high"></i>Blocked${t.blocked_note ? ": " + esc(t.blocked_note) : ""}</span>` : ""}${done ? `<span class="pill"><i class="dot d-ok"></i>${esc(t.done_by || "")} ${t.done_at ? fmtDay(t.done_at) : ""}${t.outcome ? " — " + esc(t.outcome) : ""}</span>` : ""}</div>`;
+  if (dTaskDone === t.id) h += `<div class="step-p"><label class="fld" style="margin-top:0"><span>What happened? (one line)</span><input id="tOut" maxlength="300"></label><div class="acts0"><button class="primary" data-dtaskact="${t.id}" data-v="done">${ic("check")}Done</button><button data-dtaskact="${t.id}" data-v="block">${ic("pause")}Blocked</button><button data-dtaskact="${t.id}" data-v="drop">${ic("drop")}Drop</button><button data-dtaskdone="">Cancel</button></div></div>`;
   return h + `</div>`;
 }
 function taskFormHtml(leadId) {
-  return `<div class="step-p"><div class="lbl">Next step</div><input id="ntTask" maxlength="300" placeholder="e.g. Call and ask for the buyer's name and email">
-    <div class="two"><div><div class="lbl">Value</div><select id="ntVal"><option value="3">3 – unblocks / big</option><option value="2" selected>2 – named / plausible</option><option value="1">1 – unknown</option></select></div>
-    <div><div class="lbl">Ease</div><select id="ntEase"><option value="3">3 – under 10 min</option><option value="2" selected>2 – a call or lookup</option><option value="1">1 – long / costs money</option></select></div></div>
-    <div class="lbl">Waits for</div><select id="ntGate"><option value="">Nothing – can do now</option><option value="mine">Mine confirmation</option><option value="itac">ITAC (chrome)</option><option value="mine,itac">Mine + ITAC</option></select>
-    <div class="acts0"><button class="primary" data-dtasksave="${leadId}">Add step</button><button data-dtasknew="${leadId}">Cancel</button></div></div>`;
+  return `<div class="step-p"><label class="fld" style="margin-top:0"><span>Next step</span><input id="ntTask" maxlength="300" placeholder="e.g. Call and ask for the buyer's name and email"></label>
+    <div class="two"><label class="fld"><span>Value</span><select id="ntVal"><option value="3">3 – unblocks / big</option><option value="2" selected>2 – named / plausible</option><option value="1">1 – unknown</option></select></label>
+    <label class="fld"><span>Ease</span><select id="ntEase"><option value="3">3 – under 10 min</option><option value="2" selected>2 – a call or lookup</option><option value="1">1 – long / costs money</option></select></label></div>
+    <label class="fld"><span>Waits for</span><select id="ntGate"><option value="">Nothing – can do now</option><option value="mine">Mine confirmation</option><option value="itac">ITAC (chrome)</option><option value="mine,itac">Mine + ITAC</option></select></label>
+    <div class="acts0"><button class="primary" data-dtasksave="${leadId}">${ic("plus")}Add step</button><button data-dtasknew="${leadId}">Cancel</button></div></div>`;
 }
 
 // ---------- list ----------
@@ -147,15 +148,15 @@ function dirHtml() {
   const segCount = s => (window._leads || []).filter(l => inSeg(l, s)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
   let h = queueHtml();
-  h += `<div class="dtools"><input id="dQ" type="search" placeholder="Search name, company, number, grade…" value="${esc(dQ)}" autocomplete="off">
+  h += `<div class="dtools"><h2 style="margin:18px 4px 8px">The list</h2><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search name, company, number, grade…" value="${esc(dQ)}" autocomplete="off"></div>
     <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>`;
   const total = base.length || 1;
   h += `<div class="pipe" aria-hidden="true">${Object.keys(ST).filter(s => counts[s]).map(s => `<i style="width:${counts[s] / total * 100}%;background:${ST[s][1]}"></i>`).join("")}</div>`;
   const notyet = (counts.new || 0) + (counts.ready || 0), touched = ["contacted", "replied", "qualified", "deal", "bounced"].reduce((a, s) => a + (counts[s] || 0), 0);
   const chips = [["any", "Any", base.length], ["notyet", "Not contacted yet", notyet], ["done", "Contacted", touched], ...Object.keys(ST).filter(s => counts[s]).map(s => [s, ST[s][0], counts[s]])];
-  h += `<div class="hscroll">${chips.map(([k, t, n]) => `<button class="seg sm${dStat === k ? " on" : ""}" data-dstat="${k}">${ST[k] ? `<i class="dot" style="background:${ST[k][1]}"></i>` : ""}${t} <span>${n}</span></button>`).join("")}</div>
-    <div class="drow2"><select id="dCountry"><option value="">All countries (${countries.length})</option>${countries.map(c => `<option${c === dCountry ? " selected" : ""}>${esc(c)}</option>`).join("")}</select><button data-dnew="1">${dNewLead ? "Close" : "+ Lead"}</button></div></div>`;
-  if (dNewLead) h += `<div class="deal"><div class="sec-b">${leadFormHtml({ side: "buyer", country: "", priority: 2 })}</div></div>`;
+  h += `<div class="hscroll" style="padding-top:8px">${chips.map(([k, t, n]) => `<button class="seg sm${dStat === k ? " on" : ""}" data-dstat="${k}">${ST[k] ? `<i class="dot" style="background:${ST[k][1]}"></i>` : ""}${t} <span>${n}</span></button>`).join("")}</div>
+    <div class="drow2"><label class="fld"><span>Country</span><select id="dCountry"><option value="">All countries (${countries.length})</option>${countries.map(c => `<option${c === dCountry ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label><button data-dnew="1">${dNewLead ? "Close" : ic("plus") + "Lead"}</button></div></div>`;
+  if (dNewLead) h += `<div class="deal"><div class="sec-b" style="padding-top:10px">${leadFormHtml({ side: "buyer", country: "", priority: 2 })}</div></div>`;
   if (dCountry) { const cn = (window._library || []).find(x => x.kind === "country" && (x.title === dCountry || x.title.split(/ \/ /).includes(dCountry))); if (cn) h += `<div class="cnote"><div class="lbl" style="margin-top:0">Country notes · ${esc(cn.title)}</div>${esc(cn.body)}${cn.meta && cn.meta.key ? `<div class="gs">Key names: ${esc(cn.meta.key)}</div>` : ""}</div>`; }
   h += `<div class="lcount">${list.length} shown</div><div class="llist">`;
   h += list.slice(0, dLimit).map(leadRowHtml).join("") || `<div class="empty">Nothing matches. Clear the search or pick another group.</div>`;
@@ -166,44 +167,48 @@ function dirHtml() {
 function leadRowHtml(l) {
   const open = dOpen === l.id;
   const sub = [l.person, l.kind, [l.location, l.country].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
-  const hasP = numbersOf(l).length, hasE = !!emailOf(l), nt = tasksOf(l.id).filter(t => t.status === "open").length;
+  const hasP = numbersOf(l).length, hasE = !!emailOf(l), hasW = !!waOf(l), nt = tasksOf(l.id).filter(t => t.status === "open").length;
   return `<div class="lead p${Math.min(l.priority, 3)}${open ? " open" : ""}" id="lead-${l.id}"><div class="lr" role="button" tabindex="0" data-dopen="${l.id}" aria-expanded="${open}">
     <span class="av" style="box-shadow:0 0 0 2px ${SIDE_COL[l.side] || "#6B6B72"}">${esc(initials(l.name))}</span>
     <div class="lm"><div class="ln">${esc(l.name)}${l.flag ? ` <span class="flagm" title="Warning">⚑</span>` : ""}</div><div class="ls">${esc(sub)}</div>
-      <div class="lt">${commTile(l.commodity)}${stPill(l.status)}${l.priority <= 1 ? `<span class="pill"><i class="dot d-high"></i>${PRIO_W[l.priority]}</span>` : ""}${hasP ? `<span class="pill">☎</span>` : ""}${hasE ? `<span class="pill">@</span>` : ""}${nt ? `<span class="pill">${nt} step${nt > 1 ? "s" : ""}</span>` : ""}</div></div>
-    <span class="chev">${open ? "▾" : "▸"}</span></div>${open ? leadCardHtml(l) : ""}</div>`;
+      <div class="lt">${commTile(l.commodity)}${stPill(l.status)}${l.priority <= 1 ? `<span class="pill"><i class="dot d-high"></i>${PRIO_W[l.priority]}</span>` : ""}${hasP ? `<span class="gl t-call" title="Phone saved">${ic("phone")}</span>` : ""}${hasW ? `<span class="gl t-wa" title="WhatsApp">${ic("chat")}</span>` : ""}${hasE ? `<span class="gl t-mail" title="Email saved">${ic("mail")}</span>` : ""}${nt ? `<span class="pill">${nt} step${nt > 1 ? "s" : ""}</span>` : ""}</div></div>
+    <span class="chev"></span></div>${open ? leadCardHtml(l) : ""}</div>`;
 }
 function kv(k, v) { return v ? `<div class="kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>` : ""; }
+function lsec(l, key, icon, title, count, dflt, body) {
+  const k = `lc:${l.id}:${key}`, o = isOpen(k, dflt);
+  return `<div class="lsec"><button class="lsec-h" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${o}">${ic(icon)}<span class="st">${title}</span>${count !== "" ? `<span class="cnt">${count}</span>` : ""}<span class="chev"></span></button>${o ? `<div class="lsec-b">${body()}</div>` : ""}</div>`;
+}
 function leadCardHtml(l) {
   const wa = waOf(l), em = emailOf(l), nums = numbersOf(l), c = contactOf(l);
   const deal = l.deal_id ? dealById(l.deal_id) : null;
   const hold = (l.template && l.status !== "contacted") ? (["A", "B", "C", "D", "G"].includes(l.template) || /chrome/i.test(l.commodity) ? ["mine", "itac"] : ["mine"]).filter(gateOpen) : [];
   let h = `<div class="lc">`;
   if (l.flag) h += `<div class="warn"><i class="dot d-high"></i><div>${esc(l.flag)}</div></div>`;
-  h += `<div class="bigacts">${nums.length ? `<button data-call="${esc(nums[0].p)}">Call</button>` : ""}${wa ? `<button data-dwa="${l.id}">WhatsApp</button>` : `<button data-dnowa="${l.id}">WhatsApp</button>`}${em ? `<button data-demail="${l.id}">Email</button>` : ""}<button data-demailme="${l.id}">Email me</button><button data-dbot="${l.id}">Bot</button></div>`;
+  h += `<div class="qrow">${nums.length ? tile("phone", "call", `data-call="${esc(nums[0].p)}"`, "Call") : ""}${wa ? tile("chat", "wa", `data-dwa="${l.id}"`, "WhatsApp") : tile("chat", "wa", `data-dnowa="${l.id}"`, "WhatsApp")}${em ? tile("mail", "mail", `data-demail="${l.id}"`, "Email") : ""}${tile("me", "me", `data-demailme="${l.id}"`, "Email me")}${tile("bot", "bot", `data-dbot="${l.id}"`, "Bot")}</div>`;
   if (window.draftHtml) h += draftHtml("lead", l.id, wa);
   if (hold.length) h += `<div class="quiet">Hold rule: ${hold.map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(" and ")} still open – check before sending an offer.</div>`;
   const NEXT_ST = { new: ["contacted", "bounced", "skip"], ready: ["contacted", "bounced", "skip"], contacted: ["replied", "contacted", "bounced", "parked"], replied: ["qualified", "deal", "contacted", "parked"], qualified: ["deal", "parked"], deal: ["parked"], parked: ["new", "contacted"], bounced: ["new", "contacted"], skip: ["new"], dnd: ["new"] }[l.status] || ["contacted"];
-  h += `<div class="lbl">Status</div><div class="acts0">${stPill(l.status)}${NEXT_ST.map(s => `<button data-dst="${l.id}" data-v="${s}">${s === "contacted" && ["contacted", "replied"].includes(l.status) ? "Contacted again" : ST[s][0]}</button>`).join("")}<select data-dstsel="${l.id}" aria-label="Other status"><option value="">Other…</option>${Object.keys(ST).filter(s => s !== l.status).map(s => `<option value="${s}">${ST[s][0]}</option>`).join("")}</select></div>`;
-  if (dForm && dForm.type === "status" && dForm.id === l.id) h += `<div class="step-p"><div class="lbl">${ST[dForm.status][0]} — how and what happened?</div><select id="stVia">${VIA.map(v => `<option>${v}</option>`).join("")}</select><input id="stOut" placeholder="One line, e.g. Wants 40% spec + price FOB Durban" maxlength="300"><div class="acts0"><button class="primary" data-dstsave="${l.id}">Save</button><button data-dstcancel="1">Cancel</button></div></div>`;
-  if (l.outcome) h += `<div class="quiet">Last: ${esc(l.outcome)}${l.contacted_at ? ` · contacted ${fmtDay(l.contacted_at)}${l.contacted_via ? " by " + esc(l.contacted_via) : ""}` : ""}${l.replied_at ? ` · replied ${fmtDay(l.replied_at)}` : ""}</div>`;
+  h += `<div class="lbl">Status</div><div class="stbox">${stPill(l.status)}<span class="quiet" style="padding:0">Move to:</span></div><div class="chips" style="margin-top:8px">${NEXT_ST.map(s => `<button class="seg sm" data-dst="${l.id}" data-v="${s}"><i class="dot" style="background:${ST[s][1]}"></i>${s === "contacted" && ["contacted", "replied"].includes(l.status) ? "Contacted again" : ST[s][0]}</button>`).join("")}</div>
+    <label class="fld"><span>Or pick any status</span><select data-dstsel="${l.id}" aria-label="Other status"><option value="">Choose…</option>${Object.keys(ST).filter(s => s !== l.status).map(s => `<option value="${s}">${ST[s][0]}</option>`).join("")}</select></label>`;
+  if (dForm && dForm.type === "status" && dForm.id === l.id) h += `<div class="step-p" style="margin-top:10px"><div class="lbl" style="margin-top:0">${ST[dForm.status][0]} – how and what happened?</div><label class="fld"><span>How</span><select id="stVia">${VIA.map(v => `<option>${v}</option>`).join("")}</select></label><label class="fld"><span>What happened</span><input id="stOut" placeholder="One line, e.g. Wants 40% spec + price FOB Durban" maxlength="300"></label><div class="acts0"><button class="primary" data-dstsave="${l.id}">${ic("check")}Save</button><button data-dstcancel="1">Cancel</button></div></div>`;
+  if (l.outcome) h += `<div class="quiet" style="margin-top:10px">Last: ${esc(l.outcome)}${l.contacted_at ? ` · contacted ${fmtDay(l.contacted_at)}${l.contacted_via ? " by " + esc(l.contacted_via) : ""}` : ""}${l.replied_at ? ` · replied ${fmtDay(l.replied_at)}` : ""}</div>`;
   const ts = tasksOf(l.id).filter(t => t.status !== "dropped");
-  h += `<div class="lbl">Next steps</div>${ts.map(t => taskHtml(t, 0)).join("") || `<div class="quiet">${suggestNext(l)}</div>`}<div class="acts0"><button data-dtasknew="${l.id}">+ Next step</button></div>${dForm && dForm.type === "task" && dForm.lead === l.id ? taskFormHtml(l.id) : ""}`;
-  h += `<div class="lbl">Details</div>` + kv("Type", [l.kind, l.side].filter(Boolean)[0]) + kv("Commodity", l.commodity) + kv("Wants / offers", l.grade) + kv("Volume", l.volume) + kv("Price / terms", l.terms) +
+  h += lsec(l, "next", "list", "Next steps", ts.filter(t => t.status === "open").length || "", true, () => `${ts.map(t => taskHtml(t, 0)).join("") || `<div class="quiet">${suggestNext(l)}</div>`}<div class="acts0"><button data-dtasknew="${l.id}">${ic("plus")}Next step</button></div>${dForm && dForm.type === "task" && dForm.lead === l.id ? taskFormHtml(l.id) : ""}`);
+  h += lsec(l, "det", "info", "Details", "", false, () => kv("Type", [l.kind, l.side].filter(Boolean)[0]) + kv("Commodity", l.commodity) + kv("Wants / offers", l.grade) + kv("Volume", l.volume) + kv("Price / terms", l.terms) +
     kv("Where", [l.location, l.country].filter(Boolean).join(", ")) + kv("Phone", c ? c.phone : l.phone) + kv("Email", c ? c.email : l.email) + kv("Website", l.website) + kv("Call window", l.call_window) +
     kv("Contact quality", EVID[l.evidence]) + kv("Priority", PRIO_W[l.priority]) + kv("Reply via", l.board_ref) + kv("Template", l.template) + kv("Personal line", l.personal_line) +
-    kv("Checks needed", l.checks_needed) + kv("What was checked", l.checked) + kv("Source", [l.source, l.source_date].filter(Boolean).join(" · ")) + kv("Owner", l.owner) + kv("Deal", deal ? deal.name : "");
-  if (l.source_url) h += `<div class="acts0"><a class="btnlink" href="${esc(l.source_url)}" target="_blank" rel="noopener">Open source</a>${em ? `<a class="btnlink" href="https://mail.google.com/mail/u/0/#search/${encodeURIComponent(em)}" target="_blank" rel="noopener">Find in Gmail</a>` : ""}</div>`;
-  else if (em) h += `<div class="acts0"><a class="btnlink" href="https://mail.google.com/mail/u/0/#search/${encodeURIComponent(em)}" target="_blank" rel="noopener">Find in Gmail</a></div>`;
-  if (l.about) h += `<div class="lbl">Research notes</div><div class="about">${esc(l.about)}</div>`;
+    kv("Checks needed", l.checks_needed) + kv("What was checked", l.checked) + kv("Source", [l.source, l.source_date].filter(Boolean).join(" · ")) + kv("Owner", l.owner) + kv("Deal", deal ? deal.name : "") +
+    `<div class="acts0">${l.source_url ? `<a class="btnlink" href="${esc(l.source_url)}" target="_blank" rel="noopener">${ic("globe")}Open source</a>` : ""}${em ? `<a class="btnlink" href="https://mail.google.com/mail/u/0/#search/${encodeURIComponent(em)}" target="_blank" rel="noopener">${ic("search")}Find in Gmail</a>` : ""}</div>`);
+  if (l.about) h += lsec(l, "about", "book", "Research notes", "", false, () => `<div class="about">${esc(l.about)}</div>`);
   const ps = peopleOf(l.id);
-  h += `<div class="lbl">People (${ps.length})</div>${ps.map(p => personHtml(l, p)).join("")}<div class="acts0"><button data-dpnew="${l.id}">+ Person</button></div>${dPersonForm && dPersonForm.lead === l.id ? personFormHtml(l.id, dPersonForm.p || {}) : ""}`;
-  const k = "lead:" + l.id, ns = leadNotes(l.id), fN = attsFor("lead", l.id).length;
-  h += `<div class="acts0"><button data-panel="${k}"${openPanels.has(k) ? ' style="background:var(--tab-on)"' : ""}>Notes ${ns.length} · Files ${fN}</button><button data-dchat="lead:${l.id}">Import WhatsApp chat</button><button data-dedit="${l.id}">${dEditLead === l.id ? "Close edit" : "Edit"}</button><select data-dleaddeal="${l.id}" aria-label="Deal"><option value="">${deal ? "Remove from deal" : "Link to a deal…"}</option>${liveDeals().map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select></div>`;
-  if (openPanels.has(k)) h += `<div class="npanel" style="margin-left:0"><div class="lbl">Notes</div>${notesBlock(ns, "lead", l.id)}<div class="lbl">Files</div>${filesHtml("lead", l.id)}</div>`;
-  if (dEditLead === l.id) h += `<div class="step-p">${leadFormHtml(l)}</div>`;
+  h += lsec(l, "ppl", "user", "People", ps.length || "", ps.length > 0 && ps.length <= 2, () => `${ps.map(p => personHtml(l, p)).join("")}<div class="acts0"><button data-dpnew="${l.id}">${ic("userplus")}Person</button></div>${dPersonForm && dPersonForm.lead === l.id ? personFormHtml(l.id, dPersonForm.p || {}) : ""}`);
+  const k = "lead:" + l.id, ns = leadNotes(l.id), fN = attsFor("lead", l.id).length, po = openPanels.has(k);
+  h += `<div class="lsec"><button class="lsec-h" data-panel="${k}" aria-expanded="${po}">${ic("note")}<span class="st">Notes and files</span><span class="cnt">${(ns.length + fN) || ""}</span><span class="chev"></span></button>${po ? `<div class="lsec-b"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(ns, "lead", l.id)}<div class="lbl">Files</div>${filesHtml("lead", l.id)}</div>` : ""}</div>`;
   const hs = leadHist(l.id);
-  if (hs.length) h += `<details class="hdet"><summary>History (${hs.length})</summary>${hs.slice(0, 30).map(e => `<div class="hist">${esc(e.field === "lead:status" ? "Status: " + e.old_value + " → " + e.new_value : e.field.startsWith("lead:") ? `${e.field.slice(5)}: ${(e.old_value || "—").slice(0, 80)} → ${(e.new_value || "—").slice(0, 120)}` : e.new_value || "")}<div class="hm">${esc(e.changed_by)} · ${fmtWhen(e.changed_at)}</div></div>`).join("")}</details>`;
+  if (hs.length) h += lsec(l, "hist", "history", "History", hs.length, false, () => hs.slice(0, 30).map(e => `<div class="hist">${esc(e.field === "lead:status" ? "Status: " + e.old_value + " → " + e.new_value : e.field.startsWith("lead:") ? `${e.field.slice(5)}: ${(e.old_value || "—").slice(0, 80)} → ${(e.new_value || "—").slice(0, 120)}` : e.new_value || "")}<div class="hm">${esc(e.changed_by)} · ${fmtWhen(e.changed_at)}</div></div>`).join(""));
+  h += `<div class="dfoot" style="padding:12px 0 0">${ib("chatin", "wa", `data-dchat="lead:${l.id}"`, "Add a WhatsApp chat")}${ib("edit", "file", `data-dedit="${l.id}"${dEditLead === l.id ? ' class="on"' : ""}`, dEditLead === l.id ? "Close edit" : "Edit this lead")}<label class="fld"><span>Deal</span><select data-dleaddeal="${l.id}" aria-label="Deal"><option value="">${deal ? "Remove from deal" : "Not linked – choose a deal…"}</option>${liveDeals().map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label></div>`;
+  if (dEditLead === l.id) h += `<div class="step-p" style="margin-top:12px">${leadFormHtml(l)}</div>`;
   return h + `</div>`;
 }
 function suggestNext(l) {
@@ -218,32 +223,32 @@ function personHtml(l, p) {
   const wa = p.whatsapp || (looksMobile(toWa(p.phone)) ? toWa(p.phone) : "");
   return `<div class="person"><span class="av sm">${esc(initials(p.name))}</span><div class="pm"><div class="pn">${esc(p.name)}${p.priority === 0 ? ` <span class="pill"><i class="dot d-high"></i>Top</span>` : ""}</div><div class="ls">${esc(p.title)}</div>
     ${p.email ? `<div class="ls">${esc(p.email)}</div>` : ""}${p.phone ? `<div class="ls">${esc(p.phone)}</div>` : ""}${p.email_note ? `<div class="ls">${esc(p.email_note)}</div>` : ""}${p.note ? `<div class="ls">${esc(p.note)}</div>` : ""}
-    <div class="acts0">${p.phone ? `<button data-call="${esc(p.phone)}">Call</button>` : ""}${wa ? `<button data-dpwa="${p.id}">WhatsApp</button>` : ""}${p.email ? `<button data-dpmail="${p.id}">Email</button>` : ""}<button data-dpedit="${p.id}">Edit</button></div></div></div>`;
+    <div class="tools">${p.phone ? ib("phone", "call", `data-call="${esc(p.phone)}"`, "Call " + esc(p.name)) : ""}${wa ? ib("chat", "wa", `data-dpwa="${p.id}"`, "WhatsApp " + esc(p.name)) : ""}${p.email ? ib("mail", "mail", `data-dpmail="${p.id}"`, "Email " + esc(p.name)) : ""}${ib("edit", "file", `data-dpedit="${p.id}"`, "Edit")}</div></div></div>`;
 }
 function personFormHtml(leadId, p) {
-  const f = (k, lbl, t) => `<div class="lbl">${lbl}</div><input class="pf-${k}" type="${t || "text"}" value="${esc(p[k] || "")}" autocomplete="off">`;
+  const f = (k, lbl, t) => `<label class="fld"><span>${lbl}</span><input class="pf-${k}" type="${t || "text"}" value="${esc(p[k] || "")}" autocomplete="off"></label>`;
   return `<div class="step-p">${f("name", "Name")}${f("title", "Title / role")}${f("email", "Email", "email")}${f("phone", "Phone", "tel")}${f("note", "Note")}
-    <div class="acts0"><button class="primary" data-dpsave="${p.id || ""}" data-lead="${leadId}">Save person</button>${p.id ? `<button data-dprm="${p.id}">Remove</button>` : ""}<button data-dpnew="">Cancel</button>${"contacts" in navigator ? `<button data-dpick="pf">Pick from phone</button>` : ""}</div></div>`;
+    <div class="acts0"><button class="primary" data-dpsave="${p.id || ""}" data-lead="${leadId}">${ic("check")}Save person</button>${p.id ? `<button data-dprm="${p.id}">${ic("drop")}Remove</button>` : ""}<button data-dpnew="">Cancel</button>${"contacts" in navigator ? `<button data-dpick="pf">${ic("user")}From phone</button>` : ""}</div></div>`;
 }
 function leadFormHtml(l) {
-  const f = (k, lbl, t) => `<div class="lbl">${lbl}</div><input class="lf-${k}" type="${t || "text"}" value="${esc(l[k] ?? "")}" autocomplete="off">`;
-  const sel = (k, lbl, opts) => `<div class="lbl">${lbl}</div><select class="lf-${k}">${opts.map(([v, t]) => `<option value="${v}"${String(l[k]) === String(v) ? " selected" : ""}>${t}</option>`).join("")}</select>`;
+  const f = (k, lbl, t) => `<label class="fld"><span>${lbl}</span><input class="lf-${k}" type="${t || "text"}" value="${esc(l[k] ?? "")}" autocomplete="off"></label>`;
+  const sel = (k, lbl, opts) => `<label class="fld"><span>${lbl}</span><select class="lf-${k}">${opts.map(([v, t]) => `<option value="${v}"${String(l[k]) === String(v) ? " selected" : ""}>${t}</option>`).join("")}</select></label>`;
   return `${f("name", "Name (company or person)")}${f("person", "Contact person")}
-    <div class="two"><div>${sel("side", "Side", [["buyer", "Buyer"], ["supplier", "Supplier"], ["broker", "Broker"], ["service", "Service"], ["network", "Network"], ["competitor", "Competitor"], ["other", "Other"]])}</div><div>${sel("priority", "Priority", [[0, "Top"], [1, "High"], [2, "Medium"], [3, "Low"]])}</div></div>
-    <div class="two"><div>${f("country", "Country")}</div><div>${f("commodity", "Commodity")}</div></div>
+    <div class="two">${sel("side", "Side", [["buyer", "Buyer"], ["supplier", "Supplier"], ["broker", "Broker"], ["service", "Service"], ["network", "Network"], ["competitor", "Competitor"], ["other", "Other"]])}${sel("priority", "Priority", [[0, "Top"], [1, "High"], [2, "Medium"], [3, "Low"]])}</div>
+    <div class="two">${f("country", "Country")}${f("commodity", "Commodity")}</div>
     ${f("phone", "Phone(s) – separate with /", "tel")}${f("email", "Email", "email")}${f("grade", "Wants / offers (grade)")}${f("volume", "Volume")}${f("terms", "Price / terms")}${f("source", "Where it came from")}
-    <div class="lbl">Research notes</div><textarea class="lf-about">${esc(l.about || "")}</textarea>
-    <div class="acts0"><button class="primary" data-dsave="${l.id || ""}">Save</button>${"contacts" in navigator ? `<button data-dpick="lf">Pick from phone</button>` : ""}</div><div class="msg" id="lfMsg"></div>`;
+    <label class="fld"><span>Research notes</span><textarea class="lf-about">${esc(l.about || "")}</textarea></label>
+    <div class="acts0"><button class="primary" data-dsave="${l.id || ""}">${ic("check")}Save</button>${"contacts" in navigator ? `<button data-dpick="lf">${ic("user")}From phone</button>` : ""}</div><div class="msg" id="lfMsg"></div>`;
 }
 function libraryHtml() {
   const L = window._library || [];
-  const grp = (kind, title, fn) => { const arr = L.filter(x => x.kind === kind).sort((a, b) => a.sort - b.sort); const k = "lib:" + kind, o = isOpen(k, false);
-    return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0"><span class="st">${title}</span><span class="cnt">${arr.length}</span><span class="chev">${o ? "▾" : "▸"}</span></div>${o ? `<div class="sec-b">${arr.map(fn).join("")}</div>` : ""}</div>`; };
-  const item = x => `<details class="libi"><summary>${esc(x.title)}${x.meta && x.meta.code && x.meta.code.length === 1 ? ` <span class="pill">${esc(x.meta.code)}</span>` : ""}</summary><div class="about">${x.meta && x.meta.subject ? "Subject: " + esc(x.meta.subject) + "\n\n" : ""}${esc(x.body)}</div>${x.kind === "script" ? `<div class="acts0"><button data-dcopy="${x.id}">Copy</button><button data-demailme-lib="${x.id}">Email me</button></div>` : ""}</details>`;
-  const site = x => `<details class="libi"><summary>${esc(x.title)}${x.meta.status ? ` <span class="pill">${esc(x.meta.status)}</span>` : ""}</summary><div class="about">${esc(x.body)}${x.meta.cost ? "\nCost: " + esc(x.meta.cost) : ""}${x.meta.notes ? "\n" + esc(x.meta.notes) : ""}${x.meta.group ? "\n" + esc(x.meta.group) : ""}</div>${x.meta.link ? `<div class="acts0"><a class="btnlink" href="${esc(x.meta.link)}" target="_blank" rel="noopener">Open site</a></div>` : ""}</details>`;
+  const grp = (kind, icon, title, fn) => { const arr = L.filter(x => x.kind === kind).sort((a, b) => a.sort - b.sort); const k = "lib:" + kind, o = isOpen(k, false);
+    return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${o}">${ic(icon)}<span class="st">${title}</span><span class="cnt">${arr.length}</span><span class="chev"></span></div>${o ? `<div class="sec-b">${arr.map(fn).join("")}</div>` : ""}</div>`; };
+  const item = x => `<details class="libi"><summary>${esc(x.title)}${x.meta && x.meta.code && x.meta.code.length === 1 ? ` <span class="pill">${esc(x.meta.code)}</span>` : ""}</summary><div class="about">${x.meta && x.meta.subject ? "Subject: " + esc(x.meta.subject) + "\n\n" : ""}${esc(x.body)}</div>${x.kind === "script" ? `<div class="acts0" style="margin:0 0 12px">${ib("copy", "file", `data-dcopy="${x.id}"`, "Copy")}${ib("me", "me", `data-demailme-lib="${x.id}"`, "Email me")}</div>` : ""}</details>`;
+  const site = x => `<details class="libi"><summary>${esc(x.title)}${x.meta.status ? ` <span class="pill">${esc(x.meta.status)}</span>` : ""}</summary><div class="about">${esc(x.body)}${x.meta.cost ? "\nCost: " + esc(x.meta.cost) : ""}${x.meta.notes ? "\n" + esc(x.meta.notes) : ""}${x.meta.group ? "\n" + esc(x.meta.group) : ""}</div>${x.meta.link ? `<div class="acts0" style="margin:0 0 12px"><a class="btnlink" href="${esc(x.meta.link)}" target="_blank" rel="noopener">${ic("open")}Open site</a></div>` : ""}</details>`;
   const ctry = x => `<details class="libi"><summary>${esc(x.title)} <span class="pill">${esc(x.meta.companies || 0)} on list</span></summary><div class="about">${esc(x.meta.focus)}\n${esc(x.body)}\nKey names: ${esc(x.meta.key)}</div></details>`;
-  const chk = x => `<div class="hist">${esc(x.meta.date)} · ${esc(x.title)} — ${esc(x.body)}<div class="hm">${esc(x.meta.how)} · ${esc(x.meta.where)}</div></div>`;
-  return `<div class="deal libx"><div class="sec-b" style="padding-top:12px"><div class="dn">Playbook</div><div class="ds">From your buyer list: how it works, scripts, countries, sites, checks. The deal kit is also at the bottom of Deals.</div></div>${grp("kit", "Deal kit – the South African way", item)}${grp("rule", "How this list works (rules)", item)}${grp("script", "Scripts and templates", item)}${grp("country", "Country notes", ctry)}${grp("site", "Sites and sign-ups", site)}${grp("check", "Checks log", chk)}</div>`;
+  const chk = x => { const nd = /not done/i.test(x.meta.date || ""); return `<div class="chk"><span class="when${nd ? " nd" : ""}">${esc(nd ? "To do" : x.meta.date || "")}</span><div><div>${esc(x.title)}${x.body ? ` — <span style="color:var(--muted)">${esc(x.body)}</span>` : ""}</div>${x.meta.how || x.meta.where ? `<div class="hm">${esc([x.meta.how, x.meta.where].filter(Boolean).join(" · "))}</div>` : ""}</div></div>`; };
+  return `<h2>Playbook</h2><div class="deal libx"><div class="sec-b" style="padding-top:14px"><div class="dn">How we work</div><div class="ds">Deal kit, rules, scripts, countries, sites and the checks log.</div></div>${grp("kit", "guide", "Deal kit – the South African way", item)}${grp("rule", "book", "How this list works (rules)", item)}${grp("script", "chat", "Scripts and templates", item)}${grp("country", "globe", "Country notes", ctry)}${grp("site", "open", "Sites and sign-ups", site)}${grp("check", "list", "Checks log", chk)}</div>`;
 }
 window.dirHtml = dirHtml;
 window.dirSnap = () => ({ dSeg, dStat, dQ, dCountry, dOpen, dLimit });
