@@ -290,7 +290,8 @@ function transportCalcHtml() {
       ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client pays per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
       ${f("lp100", "Diesel use, litres per 100 km (optional)", "e.g. 45")}${f("diesel", "Diesel price per litre (optional)", "e.g. 22.50")}</div>
     <div class="cres" id="trRes">${tripResults()}</div>
-    <div class="acts0"><button data-trsave="1">${ic("note")}Save to deal notes</button><button data-trcopy="1">${ic("copy")}Copy</button></div>
+    <label class="fld"><span>Save on</span><select id="trSaveOn"><option value="">The notice board</option>${liveDeals().map(d => `<option value="${d.id}"${TR.deal === d.id ? " selected" : ""}>Deal: ${esc(d.name)}</option>`).join("")}</select></label>
+    <div class="acts0"><button data-trsave="1">${ic("note")}Save</button><button data-trcopy="1">${ic("copy")}Copy</button></div>
     <div class="quiet">Distance from OpenStreetMap (free); it is the car route, so check the truck route and toll gates. Rates stay yours to type.</div></div>`;
 }
 const EK_NAME = { "C": "Clear", "⌫": "Delete last", "%": "Percent", "÷": "Divide", "×": "Times", "−": "Minus", "+": "Plus", "=": "Equals", ".": "Point", "+VAT": "Add 15% VAT" };
@@ -344,11 +345,12 @@ document.addEventListener("click", async e => {
   if (e.target.closest("button[data-trgo]")) { tripFind(); return; }
   if (e.target.closest("button[data-trcopy]")) { try { await navigator.clipboard.writeText(tripText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }
   if (e.target.closest("button[data-trsave]")) {
-    const ds = liveDeals(); if (!ds.length) { toast("No deal to save to – copy it instead."); return; }
-    const pick = ds.find(d => d.kind === "transport") || ds[0];
+    // saves where the user chose: the deal picked under "Save on", or the notice board
+    const sel = $("trSaveOn"), did = sel ? sel.value : "", pick = did ? dealById(did) : null;
     if (DEMO) { toast("Saved (demo – not saved)."); return; }
-    const { error } = await sb.from("events").insert({ field: "note", deal_id: pick.id, new_value: tripText(), source: "app" });
-    toast(error ? "Could not save: " + error.message : "Saved to the notes of " + pick.name + "."); if (!error) load(); return;
+    const r = pick ? await sb.from("events").insert({ field: "note", deal_id: pick.id, new_value: tripText(), source: "app" })
+                   : await sb.rpc("add_post", { p_body: tripText(), p_deal: null, p_kind: "check" });
+    toast(r.error ? "Could not save: " + r.error.message : pick ? "Saved to the notes of " + pick.name + "." : "Saved on the notice board."); if (!r.error) load(); return;
   }
 });
 document.addEventListener("input", e => {
@@ -362,8 +364,9 @@ document.addEventListener("change", e => {
     const d = dealById(e.target.value); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
     if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
     const p = (d && d.params) || {}; const cr = String(p.client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TR.client = cr[0];
-    TR.km = null; TR.geo = null; render();
+    TR.deal = e.target.value; TR.km = null; TR.geo = null; render();
   }
+  if (e.target.id === "trSaveOn") TR.deal = e.target.value;
 });
 function tripText() {
   const lines = [`Transport costing – ${TR.from || "?"} to ${TR.to || "?"} (${fmtWhen(new Date())})`];
