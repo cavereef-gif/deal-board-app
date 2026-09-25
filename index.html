@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Deal Board</title>
+<meta name="theme-color" content="#1C1C1E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#1C1C1E; --card:#2A2A2D; --line:#3A3A3E; --text:#E4E4E4; --muted:#A6A6AB;
+  --btn:#34343A; --btn-text:#E4E4E4;
+  --dot-ok:#4FA88A; --dot-stale:#D9A03F; --dot-prop:#7A7A82; --dot-done:#5C7FB8;
+}
+:root[data-theme="light"]{
+  --bg:#F4F1EA; --card:#FFFFFF; --line:#DDD8CC; --text:#1F1F1F; --muted:#5E5E62;
+  --btn:#ECE8DE; --btn-text:#1F1F1F;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:400 18px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:0 16px 96px;max-width:640px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 0 10px}
+h1{font-size:22px;font-weight:500;margin:0;letter-spacing:.2px}
+.icon-btn{background:var(--btn);color:var(--btn-text);border:0;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px}
+.strip{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px;color:var(--muted);font-size:16px}
+.strip span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block}
+.d-ok{background:var(--dot-ok)} .d-stale{background:var(--dot-stale)} .d-prop{background:var(--dot-prop)} .d-done{background:var(--dot-done)}
+h2{font-size:15px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 14px 12px;margin-bottom:10px}
+.top{display:flex;align-items:flex-start;gap:10px}
+.top .dot{margin-top:6px}
+.who{flex:1;font-size:20px;font-weight:500}
+.days{font-size:20px;font-weight:500;min-width:44px;text-align:right}
+.for{margin:2px 0 0 24px}
+.meta{margin:6px 0 0 24px;color:var(--muted);font-size:16px}
+.meta b{font-weight:500;color:var(--text)}
+.pill{display:inline-flex;align-items:center;gap:6px;margin:8px 0 0 24px;font-size:14px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0 24px}
+.actions button{background:var(--btn);color:var(--btn-text);border:0;border-radius:10px;padding:10px 12px;font:inherit;font-size:15px;min-height:44px}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:17px}
+.primary{margin-top:14px;width:100%;background:var(--btn);color:var(--btn-text);border:1px solid var(--line);border-radius:12px;padding:14px;font:inherit;font-weight:500}
+.msg{color:var(--muted);font-size:15px;margin-top:10px;min-height:20px}
+.fab{position:fixed;right:16px;bottom:20px;background:var(--btn);color:var(--btn-text);border:1px solid var(--line);border-radius:28px;padding:14px 20px;font:inherit;font-weight:500;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.hidden{display:none!important}
+.foot{color:var(--muted);font-size:13px;margin-top:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Deal Board</h1>
+  <div>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark">Light</button>
+    <button class="icon-btn hidden" id="refreshBtn">Refresh</button>
+  </div>
+</header>
+
+<section id="login" class="hidden">
+  <form id="loginForm">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" placeholder="you@example.com" required>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" minlength="8" required>
+    <button class="primary" type="submit">Sign in</button>
+    <button class="primary" type="button" id="signupBtn">First time: create login</button>
+    <div class="msg" id="loginMsg"></div>
+  </form>
+</section>
+
+<section id="board" class="hidden">
+  <div class="strip" id="strip"></div>
+  <form id="addForm" class="hidden">
+    <label for="fProject">Project</label>
+    <select id="fProject"><option>Transport</option><option>Chrome</option><option>Buyer search</option><option>Other</option></select>
+    <label for="fOn">Waiting on (person)</label><input id="fOn" required>
+    <label for="fFor">Waiting for (what)</label><input id="fFor" required>
+    <label for="fBlocks">Blocks (what can't move)</label><input id="fBlocks">
+    <label for="fNext">My next step</label><input id="fNext">
+    <button class="primary" type="submit">Add</button>
+    <div class="msg" id="addMsg"></div>
+  </form>
+  <div id="list"></div>
+  <div class="foot" id="foot"></div>
+</section>
+
+<button class="fab hidden" id="addBtn">+ Add wait</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
+const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
+const DEMO = new URLSearchParams(location.search).has("demo");
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+const $ = id => document.getElementById(id);
+
+// theme
+function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "Dark" : "Light";
+  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F4F1EA" : "#1C1C1E";
+  try{ localStorage.setItem("theme", t) }catch(e){} }
+let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
+setTheme(saved);
+$("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+
+function daysSince(d){ if(!d) return 0; const ms = Date.now() - new Date(d).getTime(); return Math.max(0, Math.floor(ms/86400000)); }
+function esc(s){ return (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+async function load(){
+  let items;
+  if (DEMO) {
+    items = [
+      {id:"1",project:"Transport",waiting_on:"Lazarus",waiting_for:"Permits",blocks:"Maize loads",next_action:"Chase Lazarus",state:"Proposed",nudge_after_days:3,last_chased:null,created_at:new Date(Date.now()-4*864e5).toISOString()},
+      {id:"2",project:"Transport",waiting_on:"Lazarus",waiting_for:"Bonded store answer (is RIB needed?)",blocks:"Maize load routing",next_action:"Chase Lazarus",state:"Confirmed",nudge_after_days:3,last_chased:new Date().toISOString(),created_at:new Date().toISOString()},
+      {id:"3",project:"Chrome",waiting_on:"Piet",waiting_for:"NDNCA",blocks:"ICPO, then stockpile test",next_action:"Chase Piet",state:"Proposed",nudge_after_days:3,last_chased:null,created_at:new Date(Date.now()-1*864e5).toISOString()}
+    ];
+  } else {
+    const { data, error } = await sb.from("items").select("*").neq("state","Done").order("project").order("created_at");
+    if (error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(error.message)}</div>`; return; }
+    items = data;
+  }
+  render(items);
+}
+
+function render(items){
+  const byProj = {};
+  let stale = 0, proposed = 0;
+  for (const it of items) {
+    it._days = daysSince(it.last_chased || it.created_at);
+    it._stale = it._days >= (it.nudge_after_days || 3);
+    if (it._stale) stale++; if (it.state === "Proposed") proposed++;
+    (byProj[it.project] ||= []).push(it);
+  }
+  $("strip").innerHTML =
+    `<span>${items.length} open</span>` +
+    `<span><i class="dot d-stale"></i>${stale} need a chase</span>` +
+    `<span><i class="dot d-prop"></i>${proposed} to confirm</span>`;
+  if (!items.length) { $("list").innerHTML = `<div class="empty">Nothing waiting. Tap + Add wait.</div>`; return; }
+  let html = "";
+  for (const [proj, arr] of Object.entries(byProj)) {
+    arr.sort((a,b) => b._days - a._days);
+    html += `<h2>${esc(proj)}</h2>`;
+    for (const it of arr) {
+      const dotCls = it._stale ? "d-stale" : "d-ok";
+      const dotLabel = it._stale ? "Needs a chase" : "On track";
+      html += `<div class="card">
+        <div class="top"><i class="dot ${dotCls}" title="${dotLabel}" aria-label="${dotLabel}"></i>
+          <div class="who">Waiting on ${esc(it.waiting_on || "—")}</div>
+          <div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
+        <div class="for">${esc(it.waiting_for)}</div>
+        ${it.blocks ? `<div class="meta">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
+        ${it.next_action ? `<div class="meta">Next: ${esc(it.next_action)}</div>` : ""}
+        <div class="pill"><i class="dot ${it.state==="Proposed"?"d-prop":"d-ok"}"></i>${it.state === "Proposed" ? "Proposed — not yet confirmed by you" : "Confirmed"} · ${dotLabel}</div>
+        <div class="actions">
+          <button data-a="chased" data-id="${it.id}">Chased today</button>
+          <button data-a="nudge" data-id="${it.id}">WhatsApp nudge</button>
+          ${it.state === "Proposed" ? `<button data-a="confirm" data-id="${it.id}">Confirm</button>` : ""}
+          <button data-a="done" data-id="${it.id}">Received ✓</button>
+        </div></div>`;
+    }
+  }
+  $("list").innerHTML = html;
+  $("foot").textContent = "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  window._items = items;
+}
+
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const it = (window._items || []).find(x => x.id === b.dataset.id); if (!it) return;
+  if (b.dataset.a === "nudge") {
+    const text = `Hi ${it.waiting_on || ""}, just checking in on the ${it.waiting_for}. Any update?`;
+    location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+    return;
+  }
+  if (DEMO) { alert("Demo mode"); return; }
+  b.disabled = true; b.textContent = "…";
+  const { error } = await sb.rpc("item_action", { p_id: it.id, p_action: b.dataset.a, p_value: null });
+  if (error) { b.textContent = "Failed"; console.error(error); return; }
+  load();
+});
+
+$("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); $("addBtn").textContent = $("addForm").classList.contains("hidden") ? "+ Add wait" : "Close"; };
+$("addForm").onsubmit = async e => {
+  e.preventDefault();
+  const { error } = await sb.rpc("add_item", { p_project: $("fProject").value, p_waiting_on: $("fOn").value, p_waiting_for: $("fFor").value, p_blocks: $("fBlocks").value, p_next: $("fNext").value });
+  if (error) { $("addMsg").textContent = "Failed: " + error.message; return; }
+  e.target.reset(); $("addMsg").textContent = "Added."; $("addBtn").click(); load();
+};
+$("refreshBtn").onclick = load;
+
+$("loginForm").onsubmit = async e => {
+  e.preventDefault();
+  $("loginMsg").textContent = "Signing in…";
+  const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("pw").value });
+  if (error) { $("loginMsg").textContent = /confirm/i.test(error.message) ? "Login not activated yet. Open the confirm link in your Gmail, or tell Claude “activate my login”." : error.message; return; }
+  show();
+};
+$("signupBtn").onclick = async () => {
+  if ($("pw").value.length < 8) { $("loginMsg").textContent = "Pick a password of at least 8 characters first."; return; }
+  const { error } = await sb.auth.signUp({ email: $("email").value.trim(), password: $("pw").value });
+  $("loginMsg").textContent = error ? error.message : "Login created. Open the confirm link in your Gmail, or tell Claude “activate my login”. Then tap Sign in.";
+};
+
+async function show(){
+  let signedIn = DEMO;
+  if (!DEMO) { const { data } = await sb.auth.getSession(); signedIn = !!data.session; }
+  $("login").classList.toggle("hidden", signedIn);
+  $("board").classList.toggle("hidden", !signedIn);
+  $("addBtn").classList.toggle("hidden", !signedIn);
+  $("refreshBtn").classList.toggle("hidden", !signedIn);
+  if (signedIn) load();
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
+show();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
