@@ -710,3 +710,54 @@ body.typing .composer{bottom:calc(10px + env(safe-area-inset-bottom))}
 .hg-l span:first-child{flex:1}
 .hg-c{font-size:14px}
 .hlist .bline{margin:14px 0 0}
+
+/* ---------- v17 step 1: easy-read guides, Speak buttons, voice note, checks, three calculators ---------- */
+.easy{white-space:normal;font-size:16px;line-height:1.5;color:var(--text);padding:2px 0 12px;overflow-wrap:anywhere}
+.easy .ez-p{margin:0 0 10px}
+.easy .ez-h{font-size:18px;font-weight:500;margin:14px 0 6px}
+.easy .ez-step{margin:0 0 10px;padding:10px 12px;border-radius:var(--r3);background:var(--card2)}
+.libi .easy .ez-step,.step-p .easy .ez-step{background:var(--raise);background:color-mix(in srgb,var(--raise) 55%,transparent)}
+.easy .ez-t{display:flex;gap:10px;align-items:flex-start;font-weight:500}
+.easy .ez-n{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;margin-top:-2px;border-radius:14px;background:var(--raise-2);color:var(--text);font-size:14px;font-weight:500}
+.easy .ez-m{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.easy .ez-step.n>.ez-m,.easy .ez-step.n>.ez-p{margin-left:38px}
+.easy .ez-step.n>.ez-ul{margin-left:16px}
+.easy .ez-ul{margin:6px 0 0;padding-left:22px}
+.easy>.ez-ul{margin:0 0 10px}
+.easy .ez-ul li{margin:4px 0}
+.easy .ez-step .ez-p{margin:6px 0 0}
+.step-p .sd .easy{padding-bottom:0}
+.micwrap{display:flex;gap:8px;align-items:center;min-width:0}
+.micwrap>input,.micwrap>textarea{flex:1;min-width:0}
+.micwrap.ta{align-items:flex-end}
+.ask .micwrap,.crow .micwrap{flex:1}
+.ask .micwrap .mic{margin-bottom:2px}
+.fld .micwrap>input,.fld .micwrap>textarea{margin-top:2px}
+.mic{flex:none}
+.mic.on{outline:2px solid var(--ic,var(--primary));outline-offset:-2px}
+#vnAudio audio{width:100%;margin-top:10px}
+#vnRecBtn{margin-top:12px}
+#vnSheet .row2{margin-top:12px}
+a.pkrow{display:flex;text-decoration:none;color:var(--text);border-radius:var(--r3);min-height:44px}
+#ckBody .seg2{margin-bottom:6px}
+.calctabs{grid-template-columns:repeat(3,1fr);padding:0 0 12px}
+.calctabs .dtab{flex-direction:column;gap:4px;padding:8px 4px;min-height:64px;font-size:14px;text-align:center;white-space:normal;line-height:1.2}
+.calcc{padding:14px}
+.calcc .acts0{margin-top:12px}
+.trmap{height:220px;border-radius:var(--r3);margin-top:12px;overflow:hidden;background:var(--card2)}
+.trmap .leaflet-control-attribution{font-size:14px}
+.ecd{min-height:24px;text-align:right;font-size:16px;color:var(--muted);overflow-wrap:anywhere}
+.ecv{text-align:right;font-size:24px;font-weight:500;margin:4px 0 12px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ecgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ecgrid button{min-height:56px;font-size:18px;padding:6px 4px}
+.ecgrid button.op{background:var(--raise-2)}
+/* board message box: the text box gets the full width; File · Speak · Send sit under it */
+.composer .crow{flex-wrap:wrap}
+.composer .crow textarea{order:-1;flex:1 1 100%}
+.composer .crow .send{margin-left:auto}
+body.boardview{padding-bottom:calc(290px + env(safe-area-inset-bottom))}
+.kitline button{min-height:44px}
+#ndSheet{z-index:26}
+.bigmic{margin-top:12px;min-height:56px;font-size:18px}
+.bigmic .ibw{font-size:18px;color:inherit}
+.bigmic svg.i{width:24px;height:24px}

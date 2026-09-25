@@ -85,7 +85,8 @@
       <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
       <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
-      <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Deal calculator</button>
+      <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
+      <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Calculators</button>
       <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search the archive</button>
       <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
     </div>
@@ -113,6 +114,36 @@
     <div class="msg" id="tsMsg"></div>
   </div>
 </div>
+<div id="vnSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="vnTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="vnTitle">Voice note</span><button id="vnClose" type="button">Close</button></div>
+    <div class="quiet" id="vnSpeakHint"></div>
+    <label class="fld"><span>What you said (you can fix words here)</span><textarea id="vnText" rows="4" placeholder="Tap Speak, or type"></textarea></label>
+    <button class="wide" id="vnRecBtn" type="button" data-ico="mic">Record sound (keeps the recording as a file)</button>
+    <div id="vnAudio"></div>
+    <label class="fld"><span>Save it on</span><select id="vnFor"></select></label>
+    <div class="row2"><button id="vnSave" type="button" data-ico="note">Save as note</button><button class="primary" id="vnTasks" type="button" data-ico="bot">Make tasks from it</button></div>
+    <div class="quiet">"Make tasks from it" sends the words to the bot. It suggests tasks; you accept or drop them.</div>
+    <div class="msg" id="vnMsg"></div>
+  </div>
+</div>
+<div id="ckSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="ckTitle">Checks</span><button id="ckClose" type="button">Close</button></div>
+    <div id="ckBody"></div>
+  </div>
+</div>
+<div id="ndSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="ndsTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="ndsTitle">New deal</span><button id="ndsClose" type="button">Close</button></div>
+    <label class="fld"><span>Deal name</span><input id="ndsName" maxlength="120" autocomplete="off" placeholder="e.g. Chrome – Example stockpile → Example buyer"></label>
+    <label class="fld"><span>Type</span><select id="ndsKind"></select></label>
+    <label class="fld"><span>Area</span><select id="ndsArea"></select></label>
+    <button class="wide primary" id="ndsAdd" type="button" data-ico="check">Create deal</button>
+    <div class="quiet">It gets the deal kit checklist (local sale by truck for minerals). Change the route on the deal's page.</div>
+    <div class="msg" id="ndsMsg"></div>
+  </div>
+</div>
 <div id="pickSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="pkTitle">
   <div class="sheet-b">
     <div class="sheet-h"><span id="pkTitle">Whose WhatsApp chat?</span><button id="pkClose" type="button">Close</button></div>
@@ -128,7 +159,7 @@
     <div class="sheet-h"><span>More</span><button id="menuClose" type="button">Close</button></div>
     <div class="menu">
       <button class="mi" type="button" data-mview="archive" data-ico="archive">Archive – have we used them before?</button>
-      <button class="mi" type="button" data-mview="calc" data-ico="calc">Deal calculator</button>
+      <button class="mi" type="button" data-mview="calc" data-ico="calc">Calculators – transport, chrome, everyday</button>
       <button class="mi" type="button" data-mview="bot" data-ico="bot">Ask the bot</button>
       <button class="mi" type="button" data-mview="guides" data-ico="book">Guides – how we work, deal kit, scripts</button>
       <button class="mi" type="button" data-mview="settings" data-ico="info">Settings – light or dark, bot key, sign out</button>
@@ -243,7 +274,7 @@ let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 fillIcons();
-const PAGE_TITLES = { worklist: "Today", leads: "Contacts", deals: "Deals", people: "Contacts", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculator", guides: "Guides", settings: "Settings" };
+const PAGE_TITLES = { worklist: "Today", leads: "Contacts", deals: "Deals", people: "Contacts", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings" };
 function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
 window.goView = goView;
 function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
@@ -268,6 +299,7 @@ $("addSheet").addEventListener("click", e => {
   if (a === "lead") { dNewLead = true; goView("leads"); setTimeout(() => { const f = document.querySelector(".lf-name"); if (f) { f.scrollIntoView({ block: "center" }); f.focus(); } }, 80); return; }
   if (a === "calc" || a === "archive") { goView(a); return; }
   if (a === "chat") { openPickSheet(); return; }
+  if (a === "voice") { if (window.openVoiceNote) openVoiceNote(); return; }
 });
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -464,7 +496,7 @@ function contactHtml(c){
     <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
     ${c.notes ? `<div class="k" style="color:var(--muted)">${esc(c.notes)}</div>` : ""}
     ${window.draftHtml ? draftHtml("contact", c.id, wa) : ""}
-    <div class="tools">${ib("note", "note", `data-panel="contact:${c.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}${ib("chatin", "wa", `data-dchat="contact:${c.id}"`, "Add a WhatsApp chat")}${ib("me", "me", `data-emailcontact="${c.id}"`, "Email me this contact")}${ib("edit", "file", `data-cedit="${c.id}"${edit ? ' class="on"' : ""}`, "Edit")}${ib("bot", "bot", `data-botcontact="${esc(c.name)}"`, "Ask the bot")}</div>
+    <div class="tools">${ib("note", "note", `data-panel="contact:${c.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}${ib("chatin", "wa", `data-dchat="contact:${c.id}"`, "Add a WhatsApp chat")}${ib("me", "me", `data-emailcontact="${c.id}"`, "Email me this contact")}${ib("edit", "file", `data-cedit="${c.id}"${edit ? ' class="on"' : ""}`, "Edit")}${ib("bot", "bot", `data-botcontact="${esc(c.name)}"`, "Ask the bot")}${window.checksButton ? checksButton(c.company || c.name, "contact:" + c.id) : ""}</div>
     ${open ? `<div class="npanel"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
     ${edit ? contactFormHtml(c) : ""}
     <div class="meta">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
@@ -529,7 +561,7 @@ function stepHtml(s, isNext){
   const o = openStep === s.id;
   return `<div class="step ${s.status}${isNext ? " next" : ""}">${isNext ? `<div class="nexttag">Next step</div>` : ""}<div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-expanded="${o}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}${s.status === "open" && s.closes_with && !o ? `<span class="step-c">Done when: ${esc(s.closes_with)}</span>` : ""}</span><span class="chev"></span></div>
     ${s.status !== "open" ? `<div class="step-m">${esc(s.done_by || "")}${s.done_at ? " · " + fmtDay(s.done_at) : ""}${s.evidence ? " — " + esc(s.evidence) : ""}</div>` : ""}
-    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<label class="fld" style="margin-top:0"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
+    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<label class="fld" style="margin-top:0"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
 }
 function checklistHtml(d, pg){
   let h = pg.stages.map(g => {
@@ -696,6 +728,7 @@ function render(){
     $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap the green import icon.</div></div>` : "") + dirHtml();
     $("foot").textContent = (me ? me + " · " : "") + "app v" + APP_VERSION;
     $("addBtn").classList.add("hidden");
+    (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
     return;
   }
   let html = "";
@@ -704,7 +737,7 @@ function render(){
   } else if (view === "deal") {
     html = dealPageHtml(dp);
   } else if (view === "guides") {
-    html = (window.libraryHtml ? libraryHtml() : "") + (window.kitLibHtml ? kitLibHtml() : "");
+    html = window.libraryHtml ? libraryHtml() : "";   // the deal kit is the first group in it (no second copy)
   } else if (view === "settings") {
     html = settingsHtml();
   } else if (view === "board") {
@@ -750,7 +783,7 @@ function navSnap(){ return { view, dealPage, y: window.scrollY, keys: [...openKe
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
 // Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
 let sheetHist = false, ignorePop = false;
-const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet")].filter(x => x && !x.classList.contains("hidden"));
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet")].filter(x => x && !x.classList.contains("hidden"));
 function syncSheetHist(){
   const any = openSheets().length > 0 || !!window._sheetItem;
   if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
@@ -768,6 +801,9 @@ window.navPush = navPush;
 window.addEventListener("popstate", () => {
   if (ignorePop) { ignorePop = false; return; }
   const cs = openSheets(), had = sheetHist;
+  // a small sheet opened on top of another (New deal over New task): Back closes only the top one
+  const top = cs.length > 1 || window._sheetItem ? cs.find(x => x.id === "ndSheet") : null;
+  if (top) { top.classList.add("hidden"); sheetHist = false; setTimeout(syncSheetHist, 0); return; }
   cs.forEach(x => x.classList.add("hidden")); sheetHist = false;
   if (window._sheetItem) { window._sheetItem = null; if (had) render(); }
   if (had) return;
@@ -833,7 +869,7 @@ $("list").addEventListener("click", async e => {
     toast("Deal created with its checklist."); load(); return;
   }
   const sr = e.target.closest("[data-step]");
-  if (sr) { openStep = openStep === sr.dataset.step ? null : sr.dataset.step; render(); const ev = openStep && document.querySelector(`input[data-evid="${openStep}"]`); if (ev) ev.focus({ preventScroll: true }); return; }
+  if (sr) { openStep = openStep === sr.dataset.step ? null : sr.dataset.step; render(); return; }
   const ss = e.target.closest("button[data-setstep]");
   if (ss) {
     const id = ss.dataset.setstep, st = (window._steps || []).find(s => s.id === id); if (!st) return;
@@ -1151,6 +1187,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="board.js?v=17"></script>
 <script src="calc.js?v=17"></script>
 <script src="archive.js?v=17"></script>
+<script src="extras.js?v=17"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>

@@ -61,6 +61,16 @@ async def run(p, dev, theme, results, errors):
     await js("goTo('deal:' + ((window._deals||[])[0]||{}).id)"); await snap("deal-page"); await snap("deal-page-full", True)
     for t in ["numbers", "notes"]:
         await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':" + t + "')); if (b) b.click(); })()"); await snap("deal-" + t)
+    # step 1 (v17): step details as short points, calculators, voice note, checks, guides opened
+    await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':steps')); if (b) b.click(); })()")
+    await js("(() => { const s = document.querySelector('.step.next [data-step]') || document.querySelector('[data-step]'); if (s) { s.click(); setTimeout(() => s.scrollIntoView({block:'start'}), 50); } })()"); await snap("deal-step")
+    await js("openKeys.add('+lib:kit'); openKeys.add('+lib:rule'); goView('guides'); document.querySelectorAll('.libi').forEach((d, i) => { if (i < 3) d.open = true; })"); await snap("guides-open"); await snap("guides-open-full", True)
+    for t in ["chrome", "everyday", "transport"]:
+        await js(f"goView('calc'); (document.querySelector('[data-calctab=\"{t}\"]') || {{click(){{}}}}).click()"); await snap("calc-" + t)
+    await js("Object.assign(window._trip, {from:'Middelburg', to:'City Deep', km:169, rkm:'28', toll:'450', client:'350', loads:'20'}); render()"); await snap("calc-transport-filled", True)
+    await js("openVoiceNote()"); await snap("voice-note"); await js("document.getElementById('vnClose').click()")
+    await js("openChecks('Example Mining (Pty) Ltd', 'contact:c1')"); await snap("checks"); await js("document.getElementById('ckClose').click()")
+    await js("openTaskSheet()"); await snap("new-task-mics"); await js("document.getElementById('tsClose').click()")
     await b.close()
 
 async def main():

@@ -1,6 +1,6 @@
 # Deal Board – build plan for Claude Code
 
-Status 26 Sep 2026: batches 0–1 done on `v16` (preview PR #1). Batches 2–6 built as a v17 prototype on branch `prototype` (see docs/BUILD-LOG.md) – continue from `prototype`, not `v16`.
+Status 26 Sep 2026: batches 0–1 done on `v16` (preview PR #1). Batches 2–6 and automation step 1 built as a v17 prototype on branch `prototype` (see docs/BUILD-LOG.md) – continue from `prototype`, not `v16`.
 
 Source: docs/AUDIT-2026-09-25.md (usability audit, 25 Sep 2026). Starting point: branch `v16` (app v16 in the root files; on the preview link, not live).
 Work one batch at a time. Each batch: build → test at 360x780 and 375x667, dark and light → preview PR → Chris checks on the preview link → next batch. Record every batch in docs/BUILD-LOG.md.
@@ -69,5 +69,11 @@ Done when: every screen is reachable in ≤ 2 taps from Home; search is the firs
 ## After batch 2 (or when Chris says): promote to live as v17
 Follow "Going live" in CLAUDE.md. Promotion is its own PR; Chris merges it.
 
-## Not approved yet (do NOT build)
-Automation from docs/API-STUDY-2026-09-25.md (photo reading, email-in, reminders, voice notes, WhatsApp, company/sanctions checks, routes). Wait for Chris's answers there.
+## Automation steps (approved by Chris 26 Sep 2026: "everything you suggested except the whatsapp")
+Built on branch `prototype`, shown on the prototype link after each step.
+1. Free, no new supplier – DONE 26 Sep (see BUILD-LOG): guides and step details as short points; "+ New deal" in every deal list; three calculators (Transport: road distance to money, Chrome and ore, Everyday with VAT); Speak buttons on text boxes; voice-note sheet; company and sanctions check links.
+2. Claude reading (Anthropic usage only, about R60 a month): photo of notes or cards → suggested tasks and contacts; PDF / photo documents → deal terms; WhatsApp quote decoder (paste a quote → a tidy card); voice note → tasks. Always a review sheet – a person ticks what to save.
+3. Berthing schedule: the free Transnet berth plans (Richards Bay and Durban) plus ship-tracking links. The paid live feed is NOT approved.
+4. Email in (a Gmail label) and the morning email, via Google Apps Script in Chris's own Gmail.
+5. Phone reminders (web push).
+Not approved: automatic WhatsApp reading (coexistence); any paid feed or paid check without Chris's OK.

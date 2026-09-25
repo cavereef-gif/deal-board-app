@@ -9,7 +9,7 @@ A phone web app (PWA) for two business partners in Durban, South Africa: Chris a
 ## Start here
 1. Read docs/PLAN.md (what to build, in order, with "done when" checks and the default decisions).
 2. Skim docs/AUDIT-2026-09-25.md (why), docs/DATABASE.md (data and rules), docs/BUILD-LOG.md (history).
-3. docs/API-STUDY-2026-09-25.md is a study only – do NOT build any of it until Chris approves.
+3. docs/API-STUDY-2026-09-25.md: on 26 Sep 2026 Chris approved everything in it EXCEPT automatic WhatsApp reading (coexistence). The paid live ship feed (about R1,680 a month) is not approved. Build order is in docs/PLAN.md "Automation steps".
 
 ## Talking to Chris
 - He wants no red tape: make sensible choices yourself, follow the defaults in docs/PLAN.md, record choices in the build log, and ask only when truly blocked or when something is on the "Never" list below.
@@ -17,8 +17,8 @@ A phone web app (PWA) for two business partners in Durban, South Africa: Chris a
 - Before saying something works, test it and say how you tested it.
 
 ## Files
-index.html (page, main script, demo data) · app.css (all styles) · ui.js (icons, buttons, progress rings) · today.js (Home) · board.js (notice board) · calc.js (calculator) · archive.js (archive + "used before" hints) · directory.js / directory2.js (directory, next-up queue, playbook, WhatsApp chat import) · dealkit.js + kitdata.js (South African deal kit) · sw.js (service worker, root only) · manifest.webmanifest, icons · version.txt.
-tools/make_preview.py (builds preview/ from the root files) · tools/screens.py + tools/metrics.js (screenshots + readability numbers) · supabase/functions/ask/index.ts (record copy of the bot; deploying needs Supabase access) · docs/db/ (proposed database changes).
+index.html (page, main script, demo data) · app.css (all styles) · ui.js (icons, buttons, progress rings) · today.js (Home) · board.js (notice board) · calc.js (calculator) · archive.js (archive + "used before" hints) · directory.js / directory2.js (directory, next-up queue, playbook, WhatsApp chat import) · dealkit.js + kitdata.js (South African deal kit) · task.js (new-task sheet, due dates, typing mode) · extras.js (easy-read guides, + New deal, Speak buttons, voice note, checks, three calculators) · sw.js (service worker, root only) · manifest.webmanifest, icons · version.txt.
+tools/make_preview.py (builds preview/ from the root files) · tools/screens.py + tools/metrics.js (screenshots + readability numbers) · tools/flows.py (everyday jobs walked through, PASS/FAIL) · supabase/functions/ask/index.ts (record copy of the bot; deploying needs Supabase access) · docs/db/ (proposed database changes).
 
 ## Run and test
 - Serve the repo folder (e.g. `python3 -m http.server 8000`) and open http://localhost:8000/index.html?demo – demo mode uses fictional data and saves nothing.

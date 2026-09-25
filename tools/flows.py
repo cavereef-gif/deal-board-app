@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Walk through everyday jobs in demo mode (iPhone 8 size) and print PASS / FAIL for each.
+
+Usage:  python3 tools/flows.py
+Same set-up as tools/screens.py: a temporary copy of the app on 127.0.0.1:8793, index.html?demo
+(fictional data, nothing saved). If the supabase-js CDN is blocked, set SUPABASE_JS=/path/to/supabase.js.
+Add a check here whenever a job changes.
+"""
+import asyncio, subprocess, time, os, sys, shutil, tempfile
+from playwright.async_api import async_playwright
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+LIB = os.environ.get("SUPABASE_JS")
+CDN='<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+res=[]
+def check(name, ok, info=""): res.append(("PASS" if ok else "FAIL", name, info))
+async def main():
+    d=tempfile.mkdtemp()
+    for n in os.listdir(REPO):
+        p=os.path.join(REPO,n)
+        if os.path.isfile(p): shutil.copy(p,d)
+    if LIB:
+        shutil.copy(LIB,os.path.join(d,"supabase.local.js")); h=open(os.path.join(d,"index.html"),encoding="utf-8").read().replace(CDN,'<script src="supabase.local.js"></script>'); open(os.path.join(d,"index.html"),"w",encoding="utf-8").write(h)
+    srv=subprocess.Popen([sys.executable,"-m","http.server","8793","--bind","127.0.0.1"],cwd=d,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL); time.sleep(0.8)
+    errs=[]
+    try:
+        async with async_playwright() as p:
+            b=await p.chromium.launch(); ctx=await b.new_context(viewport={"width":375,"height":667},is_mobile=True,has_touch=True,service_workers="block")
+            pg=await ctx.new_page(); pg.on("pageerror",lambda e: errs.append(str(e)))
+            pg.on("dialog", lambda dd: asyncio.ensure_future(dd.dismiss()))
+            U="http://127.0.0.1:8793/index.html?demo"
+            await pg.goto(U,wait_until="networkidle"); await pg.evaluate("()=>{try{localStorage.clear()}catch(e){}}"); await pg.goto(U,wait_until="networkidle"); await pg.wait_for_timeout(400)
+            ev=pg.evaluate; W=lambda ms=300: pg.wait_for_timeout(ms)
+            taps=0
+            async def tap(sel):
+                nonlocal taps; await pg.locator(sel).first.click(); taps+=1; await W()
+            # 1 Accept all
+            n0=await ev("window._items.filter(i=>i.state==='Proposed' && (i.owner||'Chris')==='Chris').length")
+            await tap("button[data-qa=acceptall]")
+            n1=await ev("window._items.filter(i=>i.state==='Proposed' && (i.owner||'Chris')==='Chris').length")
+            check("Accept all confirms Chris's suggestions", n0>0 and n1==0, f"{n0}->{n1}")
+            # 2 open a task, Back closes the sheet
+            await tap(".hlist .hrow .hr-main"); s1=await pg.locator(".isheet").count()
+            await pg.go_back(); await W(); s2=await pg.locator(".isheet").count()
+            check("Task sheet opens and phone Back closes it", s1==1 and s2==0)
+            # 3 new task for Annemarie due tomorrow
+            taps=0
+            await tap("#plusBtn"); await tap("button[data-add=task]")
+            await pg.fill("#tsWhat","Send the truck list"); await tap("[data-towner=Annemarie]"); await tap("[data-tdue='1']"); await tap("#tsAdd")
+            added=await ev("window._items.find(i=>i.waiting_for==='Send the truck list')")
+            check("New task: Our job for Annemarie due tomorrow in <=5 taps", bool(added) and added['owner']=='Annemarie' and added['due_on'] and taps<=5, f"taps={taps} due={added and added['due_on']}")
+            await tap("[data-who=Annemarie]")
+            txt=await ev("[...document.querySelectorAll('.hgrp')].map(g=>g.innerText).join(' | ')")
+            check("It shows under Tomorrow on Annemarie's list", "Tomorrow" in txt and "Send the truck list" in txt.split("Tomorrow")[1])
+            await tap("[data-who=Chris]")
+            # 4 deal page and tick next step
+            taps=0
+            await tap(".tabs button[data-v=deals]"); await tap(".dcard")
+            title=await ev("document.getElementById('pageTitle').textContent")
+            nid=await ev("(()=>{const d=dealById(dealPage); const pg=dealProgress(d.id); return pg.next && pg.next.id})()")
+            await tap(f"[data-step='{nid}']"); await tap(f"button[data-setstep='{nid}'][data-v=done]")
+            st=await ev(f"(window._steps.find(s=>s.id==='{nid}')||{{}}).status")
+            check("Deal opens as its own page and next step ticks in <=4 taps", st=="done" and taps<=4 and "Deals"!=title, f"title={title} taps={taps} status={st}")
+            for t in ["numbers","notes","steps"]:
+                await ev(f"[...document.querySelectorAll('[data-dtab]')].find(x=>x.dataset.dtab.endsWith(':{t}')).click()"); await W(200)
+            tabs=await ev("[...document.querySelectorAll('.dtabs4 .dtab')].map(b=>{const r=b.getBoundingClientRect(); return r.right<=innerWidth && r.left>=0}).every(Boolean)")
+            check("All deal tabs visible without sideways scroll", tabs)
+            await pg.go_back(); await W(); v=await ev("view")
+            check("Back from a deal page returns to the deals list", v=="deals", v)
+            # 5 contacts search
+            await tap(".tabs button[data-v=leads]")
+            await pg.fill("#dQ","Lee"); await W(700)
+            t=await ev("document.getElementById('list').innerText")
+            check("Contacts: search is first and finds the person we wait on", "Sam & Lee" in t, "")
+            await ev("setDirSeg('saved'); render()"); await W()
+            t=await ev("document.getElementById('list').innerText")
+            check("Contacts: Saved contacts shows the saved card", "Lee (demo)" in t)
+            await pg.fill("#dQ",""); await W(500)
+            # 6 chat picker
+            await tap("#plusBtn"); await tap("button[data-add=chat]")
+            await pg.fill("#pkQ","Lee"); await W()
+            await tap("#pkRes [data-pick]")
+            cs=await ev("!document.getElementById('chatSheet').classList.contains('hidden') && document.getElementById('csFor').textContent")
+            check("WhatsApp chat: 'Whose chat?' picker opens the import sheet for that person", bool(cs) and "Lee" in cs, str(cs))
+            await pg.go_back(); await W(); c2=await ev("document.getElementById('chatSheet').classList.contains('hidden')")
+            check("Back closes the chat sheet", c2)
+            # 7 typing mode on the board
+            await tap(".tabs button[data-v=board]"); await pg.focus("#cText"); await W(300)
+            nokb=await ev("getComputedStyle(document.querySelector('.tabs')).display!=='none'")
+            await ev("Object.defineProperty(window,'innerHeight',{value:667,configurable:true}); Object.defineProperty(window,'visualViewport',{value:{height:380,addEventListener(){}},configurable:true}); updTyping()")
+            hid=await ev("getComputedStyle(document.querySelector('.tabs')).display==='none'")
+            await ev("Object.defineProperty(window,'visualViewport',{value:{height:667,addEventListener(){}},configurable:true}); updTyping()")
+            back=await ev("getComputedStyle(document.querySelector('.tabs')).display!=='none'")
+            await pg.evaluate("document.activeElement.blur()"); await W(300)
+            check("Bottom bar hides only while the keyboard is open", nokb and hid and back, f"{nokb} {hid} {back}")
+            # 8 More -> Settings theme toggle, Guides
+            await tap("#menuBtn"); await tap("button[data-mview=settings]")
+            th0=await ev("document.documentElement.dataset.theme"); await tap("button[data-set=theme]"); th1=await ev("document.documentElement.dataset.theme")
+            check("Settings switches light/dark", th0!=th1, f"{th0}->{th1}")
+            await tap("#menuBtn"); await tap("button[data-mview=guides]")
+            g=await ev("document.getElementById('list').innerText.length")
+            check("Guides page shows the playbook", g>200, str(g))
+            # 9 due date on a task
+            await ev("goView('worklist')"); await W()
+            await ev("openItemSheet('2')"); await W()
+            await ev("document.querySelector('.isheet .duerow button[data-v]').click()"); await W()
+            du=await ev("window._items.find(i=>i.id==='2').due_on")
+            check("Due date can be set from the task sheet", bool(du), str(du))
+            # ---- step 1 (v17): easy guides, + New deal, calculators, Speak, voice note, checks ----
+            # 10 "+ New deal" from inside the new-task form keeps the form and picks the new deal
+            await ev("window._sheetItem=null; goView('worklist')"); await W()
+            await tap("#plusBtn"); await tap("button[data-add=task]"); await pg.fill("#tsWhat", "Book the trucks")
+            await ev("document.querySelector('#taskSheet .tsmore').open = true"); await W(200)
+            await pg.select_option("#tsDeal", "__newdeal"); await W()
+            both=await ev("!document.getElementById('ndSheet').classList.contains('hidden') && !document.getElementById('taskSheet').classList.contains('hidden')")
+            await pg.fill("#ndsName", "Maize – Example farm → Example mill"); await ev("document.getElementById('ndsKind').value='transport'"); await tap("#ndsAdd")
+            nd=await ev("(() => { const d = (window._deals||[]).find(x => x.name === 'Maize – Example farm → Example mill'); return { id: d && d.id, sel: document.getElementById('tsDeal').value, what: document.getElementById('tsWhat').value, open: !document.getElementById('taskSheet').classList.contains('hidden'), nd: document.getElementById('ndSheet').classList.contains('hidden') }; })()")
+            check("+ New deal from the task form: small sheet on top, the new deal is picked, typed text kept", both and nd['id'] and nd['sel']==nd['id'] and nd['what']=="Book the trucks" and nd['open'] and nd['nd'], str(nd))
+            await tap("#tsClose")
+            # 11 "+ New deal" in a task's own deal list does not unlink the task, and phone Back closes only the small sheet
+            await ev("openItemSheet('2')"); await W()
+            d0=await ev("window._items.find(i=>i.id==='2').deal_id")
+            await pg.select_option(".isheet select[data-dealsel]", "__newdeal"); await W()
+            d1=await ev("window._items.find(i=>i.id==='2').deal_id"); o1=await ev("!document.getElementById('ndSheet').classList.contains('hidden')")
+            await pg.go_back(); await W()
+            o2=await ev("document.getElementById('ndSheet').classList.contains('hidden') && !!document.querySelector('.isheet')")
+            check("+ New deal in a task's deal list keeps its deal; Back closes only the New deal sheet", d0==d1 and o1 and o2, f"{d0}->{d1} {o1} {o2}")
+            await ev("window._sheetItem=null; render()"); await W()
+            # 12 everyday calculator
+            await ev("goView('calc')"); await W(); await tap("button[data-calctab=everyday]")
+            async def keys(seq):
+                for k in seq: await ev(f"document.querySelector('button[data-ek=\"{k}\"]').click()"); await W(60)
+                return await ev("document.getElementById('ecVal').textContent")
+            v1=await keys(["C","1","2","0","0","+VAT"]); v2=await keys(["C","2","+","3","×","4","="]); v3=await keys(["C","1","0","0","÷","0","="]); v4=await keys(["C","1","1","5","0","-VAT"])
+            check("Everyday calculator: 1200 + VAT, 2+3×4, divide by 0, remove VAT", v1.replace("\u00a0"," ")=="1 380" and v2=="14" and "divide" in v3 and v4.replace("\u00a0"," ")=="1 000", f"{v1} | {v2} | {v3} | {v4}")
+            # 13 transport calculator: kilometres to money
+            await tap("button[data-calctab=transport]")
+            for k,v in [("km","169"),("rkm","28"),("toll","450"),("client","350"),("loads","20")]:
+                await pg.fill(f"input[data-tr={k}]", v)
+            r=await ev("document.getElementById('trRes').innerText.replace(/\u00a0/g,' ')")
+            check("Transport calculator: 169 km at R28/km + R450 tolls, client R350/t", "R 9 914" in r and "R 292 a ton" in r and "R 58 a ton" in r and "R 39 720" in r, r.replace("\n"," | ")[:200])
+            await tap("button[data-calctab=chrome]"); ch=await ev("!!document.getElementById('calcDealSel')")
+            check("Chrome and ore calculator is its own tab", ch)
+            # 14 guides read as short points
+            await ev("openKeys.add('+lib:kit'); goView('guides')"); await W()
+            await ev("document.querySelector('#lib-kit .libi').open = true"); await W()
+            ez=await ev("({ steps: document.querySelectorAll('#lib-kit .easy .ez-step').length, pts: document.querySelectorAll('#lib-kit .easy li').length, kitTwice: document.querySelectorAll('#kitlib').length })")
+            check("Guides: numbered stages with short points, deal kit shown once", ez['steps']>=3 and ez['pts']>=5 and ez['kitTwice']==0, str(ez))
+            # 15 step details as points, and opening a step does not pop up the keyboard
+            await ev("goTo('deal:dm1')"); await W()
+            nid=await ev("dealProgress('dm1').next.id"); await tap(f"[data-step='{nid}']")
+            sd=await ev("({ pts: document.querySelectorAll('.step-p .sd .easy li, .step-p .sd .easy .ez-p').length, focus: document.activeElement && document.activeElement.tagName })")
+            check("Step details read as points; opening a step does not focus a text box", sd['pts']>=1 and sd['focus'] not in ("INPUT","TEXTAREA"), str(sd))
+            # 16 voice note
+            await tap("#plusBtn"); await tap("button[data-add=voice]")
+            vn=await ev("({ open: !document.getElementById('vnSheet').classList.contains('hidden'), speak: !!document.querySelector('#vnSheet .bigmic'), rec: !!document.getElementById('vnRecBtn') })")
+            await pg.fill("#vnText", "Call the mill about Tuesday"); await tap("#vnSave")
+            vc=await ev("document.getElementById('vnSheet').classList.contains('hidden')")
+            check("+ › Voice note: Speak, type, Save closes the sheet", vn['open'] and vn['speak'] and vn['rec'] and vc, str(vn))
+            await tap("#plusBtn"); await tap("button[data-add=voice]"); await pg.go_back(); await W()
+            check("Back closes the voice-note sheet", await ev("document.getElementById('vnSheet').classList.contains('hidden')"))
+            # 17 Speak buttons beside the text boxes
+            await ev("openTaskSheet()"); await W()
+            m1=await ev("!!document.querySelector('#taskSheet .micwrap #tsWhat') && !!document.querySelector('#taskSheet button[data-mic=\"#tsWhat\"]')"); await tap("#tsClose")
+            await ev("goView('board')"); await W(); m2=await ev("!!document.querySelector('#composer button[data-mic=\"#cText\"]') && document.getElementById('cText').getBoundingClientRect().width > 250")
+            await ev("goView('bot')"); await W(); m3=await ev("!!document.querySelector('button[data-mic=\"#q\"]')")
+            check("Speak button beside the task, board and bot boxes (board box keeps full width)", m1 and m2 and m3, f"{m1} {m2} {m3}")
+            # 18 checks on a saved contact and on a lead
+            await ev("setDirSeg('saved'); goView('leads')"); await W()
+            await tap(".ccard button[data-checks]")
+            ck=await ev("({ open: !document.getElementById('ckSheet').classList.contains('hidden'), links: document.querySelectorAll('#ckBody a.pkrow').length, res: document.querySelectorAll('#ckBody [data-ckres]').length })")
+            await tap("#ckBody [data-ckres]")
+            cc=await ev("document.getElementById('ckSheet').classList.contains('hidden') && document.getElementById('toast').textContent")
+            check("Checks: sheet with 5 free look-ups; the result saves a note (demo) and closes", ck['open'] and ck['links']==5 and ck['res']==2 and bool(cc), str(ck) + " " + str(cc))
+            await b.close()
+    finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
+    for r in res: print(*r)
+    print("PAGE ERRORS:", errs or "none")
+asyncio.run(main())

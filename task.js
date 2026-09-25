@@ -17,7 +17,7 @@ function openTaskSheet(opts) {
   tsKind = opts.kind || "own"; tsOwner = me === "Annemarie" ? "Annemarie" : "Chris"; tsDue = "";
   ["tsWhat", "tsFrom", "tsBlocks", "tsNext", "tsDate"].forEach(id => { $(id).value = ""; });
   $("tsUrgent").checked = false; $("tsMsg").textContent = "";
-  $("tsDeal").innerHTML = `<option value="">No deal</option>` + liveDeals().map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
+  $("tsDeal").innerHTML = `<option value="">No deal</option>` + liveDeals().map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("") + `<option value="__newdeal">+ New deal…</option>`;
   $("tsDeal").value = opts.deal && dealById(opts.deal) ? opts.deal : "";
   const d = dealById($("tsDeal").value); $("tsArea").value = d && PROJECTS.includes(d.area) ? d.area : "Transport";
   document.querySelector("#taskSheet .tsmore").open = !!opts.deal;
