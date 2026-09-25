@@ -295,11 +295,32 @@ header h1{white-space:nowrap;font-size:19px}
 .dl{font-size:13px;color:var(--muted)}
 .dt{font-size:15px;white-space:pre-wrap;margin-top:4px}
 .sec-b .draft,.lc .draft{margin-left:0}
+/* v13: back button, deal kit */
+.backb{padding:6px 12px;min-height:34px;font-size:14px;border-radius:999px;background:var(--card);border:1px solid var(--line);margin-right:8px;white-space:nowrap}
+body.canback header h1{display:none}
+body.canback .backb{margin-right:auto}
+header{gap:6px}
+.step-r,.deal,.trow,.lead,#kitlib,.ccard{scroll-margin-top:84px}
+.step-r .stx{display:flex;flex-direction:column;min-width:0}
+.step-c{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
+.step-p .sd{font-size:15px;line-height:1.5;margin:2px 0 8px}
+.step-p .swho{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14px;margin:0 0 10px}
+.step-p .swho .k{color:var(--muted)}
+.kitban{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0;background:var(--card2)}
+.kitban .kh{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500}
+.kitban .ks,.kg li{font-size:14px;line-height:1.5}
+.kitban .ks{color:var(--muted);margin-top:6px}
+.kitline{display:flex;align-items:center;gap:8px;font-size:14px;margin:10px 0 4px}
+.kitline span{flex:1}
+.kitline button{padding:5px 10px;min-height:32px;font-size:13px}
+.kg ul,.kg ol{margin:4px 0 6px;padding-left:20px}
+.kg li{margin:3px 0}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
 <header>
+  <button id="backBtn" class="backb hidden" aria-label="Back">‹ Back</button>
   <h1><span class="logo">DB</span>Deal Board</h1>
   <div class="hdr-btns">
     <button id="themeBtn" aria-label="Switch light or dark">Light</button>
@@ -360,7 +381,7 @@ header h1{white-space:nowrap;font-size:19px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "12";
+const APP_VERSION = "13";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -377,14 +398,20 @@ const TERMS = {
     ["term", "Contract length", "e.g. 12 months"],
     ["trial", "Trial load", "e.g. 1 x 34 t truck"],
     ["price", "Price", "e.g. USD 180 / t"],
-    ["basis", "Price basis", ["Not agreed", "Mine gate", "FOT", "FCA", "FOB", "CFR", "CIF", "DAP", "Other"]],
-    ["port", "Delivery point / port", "e.g. City Deep, Durban, Maputo"],
+    ["basis", "Incoterm", ["Not agreed", "FOT (define in SPA)", "FCA", "DAP", "DPU", "FOB", "CFR", "CIF", "CPT", "CIP", "EXW (avoid)", "Other"]],
+    ["port", "Named place", "e.g. FCA Mooinooi plant · FOB Richards Bay · DAP City Deep"],
+    ["unit", "Price unit", ["Not agreed", "Per DMT (dry)", "Per WMT (wet)", "US$ per dmtu (manganese)"]],
+    ["dmt", "How DMT is worked out", "e.g. weighbridge tonnes × (1 − moisture %) from inspector's certificate"],
+    ["inspector", "Inspector and who pays", "e.g. SGS Johannesburg, buyer pays"],
+    ["weights", "Which weight counts", "e.g. loading weighbridge, ±0.5% vs delivery · draft survey"],
+    ["final_assay", "Which assay is final", ["Not agreed", "Loading result", "Discharge result", "Average, umpire if outside limit"]],
+    ["umpire", "Umpire lab and splitting limit", "e.g. Bureau Veritas, 0.4% Cr2O3"],
     ["vat", "VAT", ["Not agreed", "Included", "Excluded", "Zero-rated export"]],
     ["seller", "Seller", "Company and contact"],
     ["seller_chain", "Seller-side chain", "Mandates and brokers on the seller side"],
     ["buyer", "Buyer", "Company and end user"],
     ["buyer_chain", "Buyer-side chain", "Mandates and brokers on the buyer side"],
-    ["instrument", "Payment instrument", ["To discuss", "Cash against documents", "Cash on loading", "LC (MT700)", "SBLC (MT760)", "DLC", "Escrow", "Other"]],
+    ["instrument", "Payment instrument", ["To discuss", "Escrow (TradeSafe)", "TT before each batch", "LC (MT700) confirmed by SA bank", "LC (MT700)", "Cash against documents", "Cash on loading", "SBLC (MT760) – backstop only", "Other"]],
     ["commission", "Our commission", "e.g. R40 per DMT"],
     ["other_cuts", "Other parties' cuts", "Who gets what per ton"],
     ["target", "Our target (private)", "Only you and Annemarie see this"],
@@ -493,6 +520,7 @@ function demoExtras(){
                 dm2: [["A. Qualify",["Client and receiver identified (who pays, who receives)","Cargo, route and volumes confirmed in writing","Transporter lined up"]],["B. Paperwork",["NCNDA / non-circumvention signed","Split per ton agreed in writing (who gets what)"]]] };
   window._steps = [];
   for (const [deal, stages] of Object.entries(tpl)) stages.forEach(([stage, titles], si) => titles.forEach((title, ti) => window._steps.push({ id: `${deal}-${si}-${ti}`, deal_id: deal, stage, sort: (si+1)*100 + ti + 1, title, status: deal === "dm1" && si === 0 && ti < 3 ? "done" : "open", done_by: deal === "dm1" && si === 0 && ti < 3 ? "Chris" : null, done_at: deal === "dm1" && si === 0 && ti < 3 ? d(1) : null, evidence: deal === "dm1" && si === 0 && ti === 0 ? "Photos in Files" : null })));
+  if (window.kitDemoSteps) { window._steps = window._steps.filter(s => s.deal_id !== "dm1"); const ks = kitDemoSteps("dm1", "mineral", "local"); ks.slice(0, 3).forEach(s => Object.assign(s, { status: "done", done_by: "Chris", done_at: d(1) })); ks[0].evidence = "Requirement sheet in Files"; window._steps.push(...ks); Object.assign(window._deals[0], { kit: "sa1", kit_route: "local" }); }
   window._hist = [{id:9,deal_id:"dm1",item_id:null,field:"step",old_value:"",new_value:"Material sourced (stockpile or production confirmed) — done (Photos in Files)",changed_by:"Chris",changed_at:d(1)},{id:8,deal_id:"dm1",item_id:null,field:"term:instrument",old_value:null,new_value:"To discuss",changed_by:"Annemarie",changed_at:d(2)}];
 }
 
@@ -634,9 +662,9 @@ function secHtml(d, key, title, count, dflt, content){
 }
 function stepHtml(s){
   const o = openStep === s.id;
-  return `<div class="step ${s.status}"><div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}</span></div>
+  return `<div class="step ${s.status}"><div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}${s.status === "open" && s.closes_with && !o ? `<span class="step-c">Closes with: ${esc(s.closes_with)}</span>` : ""}</span><span class="chev">${o ? "▾" : "›"}</span></div>
     ${s.status !== "open" ? `<div class="step-m">${esc(s.done_by || "")}${s.done_at ? " · " + fmtDay(s.done_at) : ""}${s.evidence ? " — " + esc(s.evidence) : ""}</div>` : ""}
-    ${o ? `<div class="step-p"><input data-evid="${s.id}" placeholder="Proof or note (optional), e.g. signed copy in Files" value="${esc(s.evidence || "")}" maxlength="500"><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">Done ✓</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
+    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Closes with</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<input data-evid="${s.id}" placeholder="${s.closes_with ? "Proof, e.g. " + esc(s.closes_with) : "Proof or note (optional), e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">Done ✓</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
 }
 function checklistHtml(d, pg){
   let h = pg.stages.map(g => {
@@ -703,7 +731,9 @@ function dealHtml(d){
     </div><span class="chev">${open ? "▾" : "▸"}</span></div>`;
   if (open) {
     h += `<div class="deal-b">`;
+    if (window.kitSecHtml) h += `<div class="sec-b" style="padding-bottom:0">${kitSecHtml(d)}</div>`;
     if (pg.total) h += secHtml(d, "check", "Checklist", `${pg.done}/${pg.total}`, true, () => checklistHtml(d, pg));
+    if (d.kind === "mineral" && d.kit && window.kitGuideHtml) h += secHtml(d, "guide", "Guide – Incoterms, tests, red flags", "", false, () => kitGuideHtml(d));
     h += secHtml(d, "waits", "Waiting on", waits.length, true, () => (waits.map(miniHtml).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">+ Add wait for this deal</button></div>`);
     const defs = TERMS[d.kind] || [];
     if (defs.length) h += secHtml(d, "terms", "Deal terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`, false, () => termsHtml(d, defs));
@@ -750,9 +780,11 @@ function dealsViewHtml(){
   let h = `<div class="h2row"><div class="chips" style="margin:0;flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : "+ Deal"}</button></div>`;
   if (newDealOpen) h += `<div class="deal"><div class="sec-b"><div class="lbl">Deal name</div><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Benro" maxlength="120">
       <div class="lbl">Type</div><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select>
+      ${window.KIT ? `<div id="ndRouteBox"><div class="lbl">Route (decides which steps go in the checklist)</div><select id="ndRoute">${kitRouteOpts("local")}</select></div>` : ""}
       <div class="lbl">Area</div><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select>
       <div class="acts0"><button class="primary" data-createdeal="1">Create deal</button><button data-newdeal="1">Cancel</button></div><div class="msg" id="ndMsg"></div></div></div>`;
   h += shown.map(dealHtml).join("") || `<div class="empty">No ${dealFilter === "All" ? "" : dealFilter.toLowerCase() + " "}deals. Tap + Deal.</div>`;
+  if (window.kitLibHtml) h += kitLibHtml();
   const unlinked = (window._items || []).filter(i => !i.deal_id || !dealById(i.deal_id));
   const groups = {};
   for (const it of unlinked) (groups[it.project || "Other"] ||= []).push(it);
@@ -816,14 +848,32 @@ function render(){
   $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
 }
 
+// ---------- Back: tab changes, jumps and opened cards can be undone (header button and phone back) ----------
+const navStack = [];
+function navSnap(){ return { view, y: window.scrollY, keys: [...openKeys], openStep, dealFilter, panels: [...openPanels], dir: window.dirSnap ? dirSnap() : null }; }
+function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
+function navPush(){ navStack.push(navSnap()); if (navStack.length > 40) navStack.shift(); try { history.pushState({ db: navStack.length }, ""); } catch(e){} updBack(); }
+window.navPush = navPush;
+window.addEventListener("popstate", () => {
+  const s = navStack.pop(); updBack(); if (!s) return;
+  view = s.view; try{ localStorage.setItem("view", view) }catch(e){}
+  openKeys = new Set(s.keys); saveOpen(); openStep = s.openStep; dealFilter = s.dealFilter;
+  openPanels.clear(); s.panels.forEach(p => openPanels.add(p));
+  if (s.dir && window.dirRestore) dirRestore(s.dir);
+  render(); requestAnimationFrame(() => window.scrollTo(0, s.y));
+});
+$("backBtn").onclick = () => { if (navStack.length) history.back(); };
+
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("button[data-v]"); if (!b) return;
+  if (b.dataset.v !== view) navPush();
   view = b.dataset.v; try{ localStorage.setItem("view", view) }catch(e){} render();
 });
 
 // Folding trays, sections, stages and one-line rows
 $("list").addEventListener("click", e => {
   const t = e.target.closest("[data-tog]"); if (!t) return;
+  if (/^deal:/.test(t.dataset.tog) && !isOpen(t.dataset.tog, t.dataset.dflt === "1")) navPush();
   toggleKey(t.dataset.tog, t.dataset.dflt === "1"); render();
 });
 $("list").addEventListener("keydown", e => {
@@ -861,7 +911,7 @@ $("list").addEventListener("click", async e => {
     const name = ($("ndName").value || "").trim(); if (!name) { $("ndMsg").textContent = "Give the deal a name."; return; }
     if (DEMO) { $("ndMsg").textContent = "Demo mode — nothing saved"; return; }
     cd.disabled = true; cd.textContent = "…";
-    const { data, error } = await sb.rpc("save_deal", { p_id: null, p_name: name, p_kind: $("ndKind").value, p_area: $("ndArea").value });
+    const { data, error } = await sb.rpc("save_deal", { p_id: null, p_name: name, p_kind: $("ndKind").value, p_area: $("ndArea").value, p_route: $("ndKind").value === "mineral" && $("ndRoute") ? $("ndRoute").value : null });
     if (error) { $("ndMsg").textContent = "Failed: " + error.message; cd.disabled = false; cd.textContent = "Create deal"; return; }
     newDealOpen = false; openKeys.add("+deal:" + data); saveOpen(); if (dealFilter === "Closed") dealFilter = "Active";
     toast("Deal created with its checklist."); load(); return;
@@ -1062,7 +1112,7 @@ $("list").addEventListener("click", async e => {
 async function askBot(question, mode, focus, silent){
   if (botBusy) return;
   if (question) chat.push({ role: "user", text: question });
-  botBusy = true; if (!silent) { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} } render();
+  botBusy = true; if (!silent) { if (view !== "bot") navPush(); view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} } render();
   try {
     if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
     const history = chat.filter(m => m.role !== "sys" && m.role !== "sugg").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
@@ -1111,7 +1161,7 @@ $("list").addEventListener("click", async e => {
     chat.splice(Number(ap.dataset.apply), 1, { role: "sys", text: `Applied to ${where} · ${INFO_LABELS[s.field] || s.field}.` }); render(); load(); return;
   }
 });
-$("botFab").onclick = () => { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, document.body.scrollHeight); };
+$("botFab").onclick = () => { if (view !== "bot") navPush(); view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, document.body.scrollHeight); };
 $("list").addEventListener("click", e => {
   const b = e.target.closest("button[data-bot]"); if (!b) return;
   if (b.dataset.bot === "brief-here") { askBot("", "brief", "", true); return; }
@@ -1177,6 +1227,8 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="directory.js"></script>
 <script src="directory2.js"></script>
 <script src="today.js"></script>
+<script src="kitdata.js"></script>
+<script src="dealkit.js"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>

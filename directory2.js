@@ -71,8 +71,8 @@ $("list").addEventListener("click", async e => {
   if (ds.dseg) { dSeg = ds.dseg; dStat = "any"; dLimit = 40; dCountry = ""; try { localStorage.setItem("dSeg", dSeg); } catch (x) {} render(); return; }
   if (ds.dstat) { dStat = ds.dstat; dLimit = 40; render(); return; }
   if (ds.dmore) { dLimit += 40; render(); return; }
-  if (ds.dopen) { dOpen = dOpen === ds.dopen ? null : ds.dopen; dForm = null; dEditLead = null; dPersonForm = null; render(); const el = document.getElementById("lead-" + ds.dopen); if (el && dOpen) el.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
-  if (ds.dgo) { const l = leadById(ds.dgo); if (!l) return; view = "leads"; try { localStorage.setItem("view", view); } catch (x) {} dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; render(); const el = document.getElementById("lead-" + l.id); if (el) el.scrollIntoView({ block: "start" }); return; }
+  if (ds.dopen) { if (dOpen !== ds.dopen && window.navPush) navPush(); dOpen = dOpen === ds.dopen ? null : ds.dopen; dForm = null; dEditLead = null; dPersonForm = null; render(); const el = document.getElementById("lead-" + ds.dopen); if (el && dOpen) el.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
+  if (ds.dgo) { const l = leadById(ds.dgo); if (!l) return; if (window.navPush) navPush(); view = "leads"; try { localStorage.setItem("view", view); } catch (x) {} dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; render(); const el = document.getElementById("lead-" + l.id); if (el) el.scrollIntoView({ block: "start" }); return; }
   if (ds.dnew) { dNewLead = !dNewLead; render(); return; }
   if (ds.dedit) { dEditLead = dEditLead === ds.dedit ? null : ds.dedit; render(); return; }
   if ("dsave" in ds && t.matches("[data-dsave]")) {
@@ -187,7 +187,7 @@ async function handleChatText(text, fname) {
   const up = await sb.storage.from("files").upload(path, blob, { contentType: "text/plain", upsert: false });
   if (!up.error) await sb.from("attachments").insert({ target_type: type, target_id: String(id), path, name: fname || "WhatsApp chat.txt", size: blob.size, mime: "text/plain" });
   toast("Summarising – this takes about 20 seconds…", 0);
-  view = "bot"; try { localStorage.setItem("view", view); } catch (x) {}
+  if (view !== "bot" && window.navPush) navPush(); view = "bot"; try { localStorage.setItem("view", view); } catch (x) {}
   chat.push({ role: "sys", text: `WhatsApp chat on ${name}: ${info.n} messages (${info.first}–${info.last}). Saved to Files. Summarising…` }); botBusy = true; render();
   try {
     const { data, error } = await sb.functions.invoke("ask", { body: { mode: "chat", question: "", focus: `${type}:${id}`, chat: { text: text.slice(-60000), count: info.n, from: info.first, to: info.last, people: info.who, target_type: type, target_id: id, target_name: name } } });

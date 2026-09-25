@@ -107,11 +107,11 @@ function goTo(ref) {
   if (type === "item") {
     if (view === "worklist" && document.querySelector(`[data-tgo="item:${id}"]`)) { toggleKey("ti:" + id, false); render(); return; }
     const it = (window._items || []).find(i => i.id === id); if (!it) { toast("That item is closed or gone."); return; }
-    view = "worklist"; openKeys.delete("-ti:" + id); openKeys.add("+ti:" + id); saveOpen(); render(); scrollTo(`[data-tgo="item:${id}"]`); return;
+    navPush(); view = "worklist"; openKeys.delete("-ti:" + id); openKeys.add("+ti:" + id); saveOpen(); render(); scrollTo(`[data-tgo="item:${id}"]`); return;
   }
   if (type === "deal") {
     const d = dealById(id); if (!d) { toast("That deal is not on the board."); return; }
-    view = "deals"; try { localStorage.setItem("view", view); } catch (e) {}
+    navPush(); view = "deals"; try { localStorage.setItem("view", view); } catch (e) {}
     if (dealFilter === "Closed" && (d.status === "Active" || d.status === "On hold")) dealFilter = "Active";
     openKeys.delete("-deal:" + id); openKeys.add("+deal:" + id);
     if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { openKeys.delete(`-sec:${id}:check`); openKeys.add(`+stage:${id}:${st.stage}`); openStep = st.id; } }
@@ -119,17 +119,17 @@ function goTo(ref) {
   }
   if (type === "lead") {
     const l = (window._leads || []).find(x => x.id === id); if (!l) { toast("That lead is not in the directory."); return; }
-    view = "leads"; try { localStorage.setItem("view", view); } catch (e) {}
+    navPush(); view = "leads"; try { localStorage.setItem("view", view); } catch (e) {}
     dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; render(); scrollTo(`#lead-${id}`); return;
   }
   if (type === "task") {
-    view = "leads"; try { localStorage.setItem("view", view); } catch (e) {}
+    navPush(); view = "leads"; try { localStorage.setItem("view", view); } catch (e) {}
     openKeys.delete("-dq"); dTaskDone = id; render();
     const inTop = document.querySelector(`[data-dtaskact="${id}"]`);
     if (!inTop) { openKeys.add("+dq:more"); openKeys.add("+dq:gated"); openKeys.add("+dq:later"); saveOpen(); render(); }
     scrollTo("#tOut"); return;
   }
-  if (type === "contact") { view = "people"; openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
+  if (type === "contact") { navPush(); view = "people"; openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
 }
 window.goTo = goTo;
 
