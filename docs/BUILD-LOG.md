@@ -7,12 +7,23 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 25 Sep 2026 – v16 batch 1: easy to read (not live yet)
+- Looks only, no workflow change. One font (Inter; serif headings dropped). Four text sizes: 14 small print, 16 body, 18 headings, 24 page titles and big numbers. Nothing under 14 px, bottom-bar labels included. Main text in dark mode slightly softer (#E3DFD7, still not white); light mode unchanged. Tags no longer in capitals or heavy bold.
+- Every button shows a word: bottom bar Today · Search · + · Deals · Board; header "Ask" and "More" (no "C" circle); icon buttons now say Call, WhatsApp, Notes, Ask, Urgent, Drop, Copy, Edit, Pin, Done, Send, File …
+- Meaning in words: Suggested · Our job · Waiting on them · Overdue · Due today (colour kept only as a dot or rail). "High" priority now reads "Urgent". Buyer-search kinds read Check first / Buyer / Supplier / Send.
+- Dates in words: "Due Sat 26 Sep", "Due tomorrow", "Asked 4 days ago", "Added today", notes "today 18:31". No more "4d" / "2 days" / "overdue 1 day".
+- One word per action: Done, Chased, Accept, Drop. "Got it", "Keep it" and the extra tick on suggestions removed.
+- Crowded rows now wrap (page title under Back, person and contact headers, "Who does it").
+- Checks: `node --check` on every script. tools/screens.py on 40 screens (Home, task sheet, Add, Search, Deals, Board, People, Archive, Calculator, Ask) at 360x780 and 375x667, dark and light, demo mode: pctUnder14 = 0 everywhere; at most 4 text sizes on every screen; icon-only buttons = 0 apart from the + ; colouredText = []; heavyLarge = []; lowest contrast 4.67; no sideways scroll (extra scrollWidth check, test copy only); no console errors. Screenshots looked at.
+- Not changed (later batches): small tap targets (batch 6), Home order and header counts (batch 2).
+- Preview PR: preview-batch-1 → main (link in the PR list). Not live yet.
+
 ## 25 Sep 2026 – v16 batch 0: privacy (not live yet)
 - Demo data (index.html and directory2.js) now uses made-up people, companies, deal names, 555-style phone numbers and example.com emails. Same shapes, so demo mode still shows every feature.
 - Kept on purpose: Chris's own name in the real "Buyer opener" fallback (directory.js) and in the bot's record copy (supabase/functions/ask/index.ts) – that is the owner, not a client. Also left: the two owners' own email addresses behind "Email me" (directory.js) – changing that would change how the button works; Chris to decide.
 - Old commits still contain the real demo data. Removing it from history needs a force-push – Chris's decision only; not done.
 - Checks: `git grep` for every old name, number and email in current app files finds nothing (docs and preview/ excluded – preview/ is rebuilt from these files). `node --check` on every script. tools/screens.py: 40 screens at 360x780 and 375x667, dark and light, demo mode – no console errors; screenshots looked at.
-- Preview PR: see batch 1 entry (batches 0 and 1 shown together). Not live yet.
+- Preview PR: shown together with batch 1 (preview-batch-1). Not live yet.
 
 ## 25 Sep 2026 – handover to Claude Code
 - Branch `v16` created from main + the v15/v16 root commits (not live). Added CLAUDE.md, docs/ (plan, audit, API study, database notes, this log), tools/ (preview builder, readability metrics, screen capture) and a record copy of the bot function.

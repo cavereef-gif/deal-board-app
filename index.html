@@ -9,7 +9,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="app.css?v=16">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="velvetGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#964EC2"/><stop offset="1" stop-color="#FF7BBF"/></linearGradient></defs></svg>
@@ -18,8 +18,8 @@
   <div class="brand"><span class="logo" aria-hidden="true">DB</span><h1 id="pageTitle">Deal Board</h1></div>
   <div class="hdr-btns">
     <button id="addBtn" class="primary addb hidden" aria-label="Add a wait">+ Add</button>
-    <button id="botBtn" class="ib t-bot hidden" aria-label="Ask the bot" title="Ask the bot" data-ico="bot"></button>
-    <button id="menuBtn" class="avatar" aria-label="Menu">DB</button>
+    <button id="botBtn" class="ib t-bot hidden" aria-label="Ask the bot" title="Ask the bot" data-ico="bot"><span class="ibw">Ask</span></button>
+    <button id="menuBtn" class="avatar" aria-label="More">More</button>
   </div>
 </header>
 
@@ -37,11 +37,11 @@
 
 <section id="board" class="hidden">
   <nav class="tabs" aria-label="Main">
-    <button data-v="worklist" aria-label="Home" title="Home" data-ico="home"></button>
-    <button data-v="leads" aria-label="Directory" title="Directory" data-ico="search"></button>
+    <button data-v="worklist" aria-label="Today" title="Today" data-ico="home">Today</button>
+    <button data-v="leads" aria-label="Search" title="Search" data-ico="search">Search</button>
     <button class="plus" id="plusBtn" type="button" aria-label="Add" title="Add" data-ico="plus"></button>
-    <button data-v="deals" aria-label="Deals" title="Deals" data-ico="deals"></button>
-    <button data-v="board" aria-label="Notice board" title="Notice board" data-ico="board"><span class="nb hidden" id="boardDot"></span></button>
+    <button data-v="deals" aria-label="Deals" title="Deals" data-ico="deals">Deals</button>
+    <button data-v="board" aria-label="Notice board" title="Notice board" data-ico="board">Board<span class="nb hidden" id="boardDot"></span></button>
   </nav>
   <div class="strip" id="strip"></div>
   <form id="addForm" class="panel hidden">
@@ -71,7 +71,7 @@
 <button class="fab2 hidden" id="botFab">Bot</button>
 <div id="composer" class="composer hidden">
   <div class="cmode"><button type="button" class="seg sm on" data-cmode="post">Message</button><button type="button" class="seg sm" data-cmode="check">Log a check</button><select id="cDeal" aria-label="Link to a deal"><option value="">No deal</option></select></div>
-  <div class="crow"><button type="button" class="ib t-file" id="cAttach" aria-label="Attach a file or photo" title="Attach a file or photo" data-ico="clip"></button><textarea id="cText" rows="1" placeholder="Message Annemarie…"></textarea><button type="button" class="primary send" id="cSend" aria-label="Send" data-ico="send"></button></div>
+  <div class="crow"><button type="button" class="ib t-file" id="cAttach" aria-label="Attach a file or photo" title="Attach a file or photo" data-ico="clip"><span class="ibw">File</span></button><textarea id="cText" rows="1" placeholder="Message Annemarie…"></textarea><button type="button" class="primary send" id="cSend" aria-label="Send" data-ico="send">Send</button></div>
   <div class="cfile hidden" id="cFile"></div>
 </div>
 <input type="file" id="cFileInput" class="hidden">
@@ -242,8 +242,9 @@ $("addSheet").addEventListener("click", e => {
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
 const isMe = it => /^(me|us|ours|chris|annemarie|chris (&|and) annemarie)$/i.test((it.waiting_on || "").trim());
-const fmtWhen = d => new Date(d).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const fmtDay = d => new Date(d).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
+// Dates in words: "today 18:31", "yesterday 09:05", "Thu 24 Sep 14:10"; plain days: "Sat 26 Sep"
+const fmtWhen = d => { const x = saDate(d); return `${dayWords(d)} ${String(x.getUTCHours()).padStart(2, "0")}:${String(x.getUTCMinutes()).padStart(2, "0")}`; };
+const fmtDay = d => dayName(d);
 const fmtSize = n => n > 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round((n||0)/1024)) + " KB";
 const firstName = n => (n || "").split(/[\s(&,]/)[0];
 const toWa = p => { let d = (p || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); if (d.length === 10 && d[0] === "0") d = "27" + d.slice(1); else if (d.length === 9) d = "27" + d; return d; };
@@ -369,7 +370,7 @@ function filesHtml(type, id){
 }
 function notesBlock(ns, type, id){
   return `${ns.length ? ns.map(n => `<div class="note">${esc(n.new_value)}<div class="nm">${esc(n.changed_by)} · ${fmtWhen(n.changed_at)}</div></div>`).join("") : `<div class="quiet">No notes yet. Anything you write here is seen by both of you.</div>`}
-    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${type}:${id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${type}:${id}" aria-label="Save note">${ic("send")}</button></div>`;
+    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${type}:${id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${type}:${id}" aria-label="Save note">${ic("send")}Save</button></div>`;
 }
 function panelHtml(it){
   return `<div class="npanel"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(notesFor(it.id), "item", it.id)}
@@ -378,8 +379,8 @@ function panelHtml(it){
 
 function rowHtml(it, n){
   const stateDot = it.state === "Proposed" ? "d-prop" : (it._stale ? "d-stale" : "d-ok");
-  const stateWord = it.state === "Proposed" ? "Proposed" : (it._stale ? "Needs a chase" : "On track");
-  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>High</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : "";
+  const stateWord = kindWords(it), due = it.state === "Proposed" ? "" : dueWords(it);
+  const prio = it.priority === 1 ? `<span class="pill"><i class="dot d-high"></i>Urgent</span>` : it.priority === 3 ? `<span class="pill"><i class="dot d-low"></i>Low</span>` : "";
   const owner = it.owner || "Chris", other = owner === "Annemarie" ? "Chris" : "Annemarie";
   const nN = notesFor(it.id).length, fN = attsFor("item", it.id).length, open = openPanels.has("item:" + it.id);
   const deal = it.deal_id ? dealById(it.deal_id) : null;
@@ -387,18 +388,18 @@ function rowHtml(it, n){
   const prop = it.state === "Proposed";
   const canWa = !it._me && contactsFor(it.waiting_on).some(c => c.phone || c.whatsapp);
   return `<div class="row p${it.priority || 2}" data-id="${it.id}">
-    <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}"></i>${n ? `<span class="num">${n}</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
+    <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}"></i>${n ? `<span class="num">${n}</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div></div>
+    <div class="l2">${sinceWords(it)}${due ? " · " + due : ""}</div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
-    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}<span class="pill">${esc(owner)}${owner === me ? " (me)" : ""}</span><span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
+    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${due === "Overdue" || due === "Due today" ? `<span class="pill"><i class="dot d-stale"></i>${due}</span>` : ""}${prio}<span class="pill">${esc(owner)}${owner === me ? " (me)" : ""}</span><span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
     ${window.draftHtml ? (() => { const cs = contactsFor(it.waiting_on).filter(c => c.phone || c.whatsapp); return draftHtml("item", it.id, cs.length ? (cs[0].whatsapp || toWa(cs[0].phone)) : ""); })() : ""}
     <div class="acts">
-      ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Keep it</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Got it</button>${ib("clock", "warn", `data-a="chased"`, "Asked today")}`}
-      ${prop ? (it._me ? ib("check", "ok", `data-a="done"`, "Done") : ib("check", "ok", `data-a="done"`, "Got it") + ib("clock", "warn", `data-a="chased"`, "Asked today")) : ""}
+      ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Accept</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Done</button>${ib("clock", "warn", `data-a="chased"`, "Chased – asked again today")}`}
     </div>
     <div class="whoseg" role="group" aria-label="Who does it">${ic("assign")}<span>Who does it</span>${["Chris", "Annemarie"].map(n => n === owner ? `<button class="seg sm on" type="button" aria-pressed="true">${n}</button>` : `<button class="seg sm" type="button" data-a="assign" data-v="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
     <div class="tools">
-      ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2"`, "High priority – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make high priority")}
+      ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2" class="on"`, "Urgent – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make urgent")}
       ${ib("note", "note", `data-panel="item:${it.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}
       ${canWa ? ib("chat", "wa", `data-wa="${esc(it.waiting_on)}"`, "WhatsApp " + esc(firstName(it.waiting_on))) : ""}
       ${ib("bot", "bot", `data-botitem="${it.id}"`, "Ask the bot")}
@@ -411,7 +412,7 @@ function rowHtml(it, n){
 function miniHtml(it){
   const k = "mini:" + it.id, open = isOpen(k, false);
   const dot = it.state === "Proposed" ? "d-prop" : it._stale ? "d-stale" : "d-ok";
-  return `<div class="mini p${it.priority || 2}" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i><span class="mt">${it._me ? "" : `<span class="mw">${esc(it.waiting_on)}:</span> `}${esc(it.waiting_for)}</span><span class="md">${it._days}d</span><span class="chev"></span></div>${open ? `<div class="mini-b">${rowHtml(it, 0)}</div>` : ""}`;
+  return `<div class="mini p${it.priority || 2}" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i><span class="mt">${it._me ? "" : `<span class="mw">${esc(it.waiting_on)}:</span> `}${esc(it.waiting_for)}</span><span class="md">${it.state === "Proposed" ? "Suggested" : dueWords(it)}</span><span class="chev"></span></div>${open ? `<div class="mini-b">${rowHtml(it, 0)}</div>` : ""}`;
 }
 
 function contactFormHtml(c){
@@ -610,8 +611,8 @@ function render(){
   if (window.boardDot) boardDot();
   if (view === "worklist") $("strip").innerHTML = "";
   else if (view === "deals") { const ld = liveDeals(), st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
-    $("strip").innerHTML = stat(ld.length, "Deals", "var(--ok)") + stat(`${st[0]}<small style="font-size:14px;color:var(--muted)">/${st[1]}</small>`, "Steps", "var(--accent)") + stat(items.filter(i => i.deal_id).length, "Waiting", "") + stat(items.filter(i => i.deal_id && i._stale && !i._me).length, "Chase", "var(--warn)"); }
-  else if (view === "people") $("strip").innerHTML = stat(new Set(items.filter(i => !i._me).map(i => i.waiting_on)).size, "People", "") + stat(stale, "Chase", "var(--warn)") + stat(items.filter(i => !i._me).length, "Asks", "") + stat((window._contacts || []).length, "Contacts", "var(--c-call)");
+    $("strip").innerHTML = stat(ld.length, "Deals", "var(--ok)") + stat(`${st[0]}<small style="font-size:14px;color:var(--muted)">/${st[1]}</small>`, "Steps", "var(--accent)") + stat(items.filter(i => i.deal_id).length, "Waiting", "") + stat(items.filter(i => i.deal_id && i._stale && !i._me).length, "To chase", "var(--warn)"); }
+  else if (view === "people") $("strip").innerHTML = stat(new Set(items.filter(i => !i._me).map(i => i.waiting_on)).size, "People", "") + stat(stale, "To chase", "var(--warn)") + stat(items.filter(i => !i._me).length, "Waiting", "") + stat((window._contacts || []).length, "Contacts", "var(--c-call)");
   else $("strip").innerHTML = "";
   if (view === "leads") {
     const Ls = window._leads || [];
@@ -630,9 +631,9 @@ function render(){
     if (order.length) html += `<h2 style="margin-top:6px">Waiting on people</h2>`;
     for (const [name, arr] of order) {
       arr.sort(byPrioThenAge);
-      const oldest = Math.max(...arr.map(i => i._days));
+      const oldest = arr.reduce((a, i) => i._days > a._days ? i : a, arr[0]);
       const anyStale = arr.some(i => i._stale);
-      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · oldest ${oldest} day${oldest === 1 ? "" : "s"}</span></div>${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp the whole list")}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask the bot to prep this chase")}</div>`;
+      html += `<div class="card"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · first ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></div>${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp the whole list")}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask the bot to prep this chase")}</div>`;
       const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
       html += cs.length ? `<div class="cstrip">${cs.map(c => `<span style="flex:1">${esc(firstName(c.name))} · ${esc(c.phone || "+" + c.whatsapp)}</span>${c.phone ? ib("phone", "call", `data-call="${esc(c.phone)}"`, "Call " + esc(firstName(c.name))) : ""}${ib("chat", "wa", `data-wa1="${esc(c.whatsapp || toWa(c.phone))}"`, "WhatsApp " + esc(firstName(c.name)))}`).join("")}</div>`
                        : `<div class="cstrip"><span style="flex:1">No number saved yet</span><button data-cnew="${esc(firstName(name))}">${ic("userplus")}Add</button></div>`;
@@ -655,7 +656,7 @@ function render(){
     html = window.calcPageHtml ? calcPageHtml() : "";
   } else if (view === "bot") {
     html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes – you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
-      <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}</button></div>
+      <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}Send</button></div>
       <div class="acts"><button data-bot="brief">${ic("brief")}Daily brief</button><button data-bot="clear">${ic("drop")}Clear chat</button></div>
       <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
         <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
@@ -666,7 +667,7 @@ function render(){
   }
   const si = window._sheetItem && items.find(i => i.id === window._sheetItem);
   if (window._sheetItem && !si) window._sheetItem = null;
-  if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our task" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
+  if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our job" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
   $("list").innerHTML = html;
   (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
   if (typeof syncSheetHist === "function") setTimeout(syncSheetHist, 0);
@@ -958,7 +959,7 @@ $("list").addEventListener("click", async e => {
   if (d.emailbrief) { emailMe("Deal Board – today " + new Date().toLocaleDateString("en-ZA"), briefAsText()); return; }
   if (d.emaillist) {
     const its = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === (who || me || "Chris")).sort(byPrioThenAge);
-    emailMe("Deal Board – open list " + new Date().toLocaleDateString("en-ZA"), its.map((i, n) => `${n + 1}. ${i._me ? "" : i.waiting_on + ": "}${i.waiting_for} (${i._days}d${i.next_action ? ", next: " + i.next_action : ""}${i.state === "Proposed" ? ", proposed" : ""})`).join("\n")); return; }
+    emailMe("Deal Board – open list " + new Date().toLocaleDateString("en-ZA"), its.map((i, n) => `${n + 1}. ${i._me ? "" : i.waiting_on + ": "}${i.waiting_for} (${sinceWords(i)}${i.next_action ? ", next: " + i.next_action : ""}${i.state === "Proposed" ? ", proposed" : ""})`).join("\n")); return; }
   if (d.emailcontact) { const c = (window._contacts || []).find(x => x.id === d.emailcontact); if (!c) return;
     emailMe("Contact: " + c.name, [c.name, [c.company, c.role].filter(Boolean).join(" · "), c.phone ? "Phone: " + c.phone : "", c.email ? "Email: " + c.email : "", c.notes, ...contactNotes(c.id).map(n => `${n.changed_by} ${fmtDay(n.changed_at)}: ${n.new_value}`)].filter(Boolean).join("\n")); return; }
   if (d.emaildeal) { const dl = dealById(d.emaildeal); if (!dl) return; const pg = dealProgress(dl.id);
@@ -1074,10 +1075,9 @@ async function show(){
     if (signedIn) {
       const em = data.session.user.email || "";
       me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
-      $("menuBtn").textContent = (me || "D").slice(0, 1).toUpperCase();
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
     }
-  } else { me = "Chris"; $("menuBtn").textContent = "C"; }
+  } else { me = "Chris"; }
   $("login").classList.toggle("hidden", signedIn);
   $("board").classList.toggle("hidden", !signedIn);
   $("addBtn").classList.toggle("hidden", !signedIn);
