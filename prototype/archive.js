@@ -33,7 +33,7 @@ function seenHtml(name, opts) {
       r.notes.length && `${r.notes.length} note${r.notes.length > 1 ? "s" : ""}`, r.posts.length && `${r.posts.length} board message${r.posts.length > 1 ? "s" : ""}`].filter(Boolean);
     if (bits.length) lines.push(`<b style="font-weight:500">${esc(p.replace(/\b\w/g, c => c.toUpperCase()))}</b> used before: ${bits.join(" · ")}`);
   }
-  return lines.length ? `<div class="seen">${lines.join("<br>")}<br><button class="linkb" style="padding:0;min-height:26px" data-archq="${esc(parts[0])}">Open in the archive ›</button></div>` : "";
+  return lines.length ? `<div class="seen">${lines.join("<br>")}<br><button class="linkb" style="padding:0 4px;min-height:44px" data-archq="${esc(parts[0])}">Open in the archive ›</button></div>` : "";
 }
 window.seenHtml = seenHtml;
 function frequentNames() {

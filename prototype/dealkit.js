@@ -47,7 +47,7 @@ function kitLibHtml() {
   const arr = itac ? [...L, itac] : L; if (!arr.length) return "";
   const k = "lib:kit", o = isOpen(k, false);
   return `<div class="deal libx" id="kitlib"><div class="deal-h" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${o}"><i class="dot d-ok"></i><div class="dh"><div class="dn">Deal kit – the South African way</div><div class="ds">Procedure, Incoterms, when to test, documents, red flags, chrome permit status</div></div><span class="chev"></span></div>
-    ${o ? `<div class="sec-b">${arr.map(x => `<details class="libi"><summary>${esc(x.title)}</summary><div class="about">${esc(x.body)}</div></details>`).join("")}</div>` : ""}</div>`;
+    ${o ? `<div class="sec-b">${arr.map(x => `<details class="libi"><summary>${esc(x.title)}</summary>${window.easyText ? easyText(x.body) : `<div class="about">${esc(x.body)}</div>`}</details>`).join("")}</div>` : ""}</div>`;
 }
 window.kitSecHtml = kitSecHtml; window.kitGuideHtml = kitGuideHtml; window.kitLibHtml = kitLibHtml;
 
@@ -65,7 +65,7 @@ $("list").addEventListener("click", async e => {
   const n = e.target.closest("button[data-kitno]");
   if (n) { kitAsk = null; delete kitRoutePick[n.dataset.kitno]; render(); return; }
   const p = e.target.closest("button[data-kitplay]");
-  if (p) { if (window.navPush) navPush(); openKeys.delete("-lib:kit"); openKeys.add("+lib:kit"); saveOpen(); render(); setTimeout(() => { const el = $("kitlib"); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 30); return; }
+  if (p) { openKeys.delete("-lib:kit"); openKeys.add("+lib:kit"); saveOpen(); goView("guides"); setTimeout(() => { const el = $("lib-kit") || $("kitlib"); if (el) el.scrollIntoView({ block: "start" }); }, 30); return; }
   const g = e.target.closest("button[data-kitgo]");
   if (!g) return;
   const d = dealById(g.dataset.kitgo); if (!d) return;

@@ -53,11 +53,14 @@ const ICON = {
   pin: '<path d="M9 3.5h6l-1 5 3 3v2H7v-2l3-3z"/><path d="M12 13.5V20.5"/>',
   checkbox: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
   sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>',
+  shield: '<path d="M12 3.5 19 6v5.5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+  route: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
 };
 const ic = (n, cls) => `<svg class="i${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ""}</svg>`;
 // Icon button. tone: wa | mail | call | me | bot | note | file | ok | warn | bad | link | mute
 // Every icon button also shows one short word (Chris reads words, not pictures).
-const IB_WORD = { copy: "Copy", check: "Done", undo: "Reopen", chatin: "Add chat", edit: "Edit", phone: "Call", chat: "WhatsApp", mail: "Email", me: "Email me", drop: "Drop", clock: "Chased", flag: "Urgent", note: "Notes", bot: "Ask", clip: "Files", refresh: "Refresh", send: "Send", pin: "Pin" };
+const IB_WORD = { copy: "Copy", check: "Done", undo: "Reopen", chatin: "Add chat", edit: "Edit", phone: "Call", chat: "WhatsApp", mail: "Email", me: "Email me", drop: "Drop", clock: "Chased", flag: "Urgent", note: "Notes", bot: "Ask", clip: "Files", refresh: "Refresh", send: "Send", pin: "Pin", shield: "Checks", mic: "Speak" };
 const ibWord = (n, label) => /^Close/.test(label) ? "Close" : /^Remove/.test(label) ? "Remove" : /^Unpin/.test(label) ? "Unpin" : IB_WORD[n] || label;
 const ib = (n, tone, attrs, label, badge) => { let a = attrs || "", on = ""; if (a.includes(' class="on"')) { a = a.replace(' class="on"', ""); on = " on"; }
   return `<button type="button" class="ib t-${tone}${on}" ${a} aria-label="${label}" title="${label}">${ic(n)}<span class="ibw">${ibWord(n, label)}</span>${badge ? `<span class="bdg">${badge}</span>` : ""}</button>`; };
