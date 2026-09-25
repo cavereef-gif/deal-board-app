@@ -54,7 +54,7 @@ h1{font-size:21px;font-weight:500;margin:0}
 .pinfo .k,.ccard .k{margin-top:8px;font-size:15px;white-space:pre-wrap}
 .ccard .k{margin-top:5px}
 .lbl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
-.pinfo textarea,.ccard textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
+.pinfo textarea,.ccard textarea,.sec-b textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:15px;min-height:70px;margin-top:4px}
 .pinfo input,.ccard input,.ccard select{font-size:15px;padding:10px;margin-top:4px}
 .row .l1{display:flex;align-items:flex-start;gap:9px}
 .row .num{color:var(--muted);min-width:20px;font-size:15px;padding-top:2px}
@@ -65,7 +65,7 @@ h1{font-size:21px;font-weight:500;margin:0}
 .pills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0 29px}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
 .acts{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 0 29px}
-.acts button{padding:7px 11px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line)}
+.acts button,.acts select{padding:7px 11px;min-height:36px;font-size:14px;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;width:auto;max-width:100%}
 .acts button.primary{background:var(--btn)}
 .npanel{margin:9px 0 0 29px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px 12px}
 .npanel .lbl:first-child{margin-top:2px}
@@ -95,7 +95,7 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .wide{margin-top:14px;width:100%;padding:14px;font-weight:500;border:1px solid var(--line)}
 .msg{color:var(--muted);font-size:15px;margin-top:10px;min-height:20px}
 .fab{position:fixed;right:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
-.chips{display:flex;gap:6px;margin:0 0 10px}
+.chips{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
 .chips button{padding:7px 12px;min-height:36px;font-size:14px;background:var(--tab)}
 .chips button.on{background:var(--tab-on);font-weight:500}
 .chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
@@ -119,6 +119,55 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 .sugg .acts{margin:8px 0 0}
 .fab2{position:fixed;left:14px;bottom:18px;border-radius:28px;padding:14px 20px;font-weight:500;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:90vw;z-index:5}
+/* Deals */
+.deal{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.deal-h{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;min-height:56px}
+.deal-h .dot{margin-top:6px}
+.dh{flex:1;min-width:0}
+.dn{font-size:18px;font-weight:500;line-height:1.3}
+.ds{color:var(--muted);font-size:14px;margin-top:2px}
+.dx{color:var(--muted);font-size:14px;margin-top:5px}
+.bar{height:7px;background:var(--card2);border:1px solid var(--line);border-radius:4px;margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--dot-ok)}
+.chev{color:var(--muted);font-size:16px;padding-top:2px;flex:none;width:18px;text-align:center}
+.deal-b{border-top:1px solid var(--line)}
+.deal-b .pinfo{border:0;border-top:1px solid var(--line);border-radius:0;margin:0}
+.sec{border-bottom:1px solid var(--line)}
+.sec:last-of-type{border-bottom:0}
+.sec-h{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;min-height:46px;background:var(--card2)}
+.sec-h .st{flex:1;font-size:15px;font-weight:500}
+.cnt{color:var(--muted);font-size:14px}
+.sec-b{padding:6px 14px 12px}
+.sec-b input,.sec-b select{font-size:15px;padding:10px;margin-top:4px}
+.stg{border-bottom:1px solid var(--line)}
+.stg-h{display:flex;align-items:center;gap:9px;padding:9px 0;cursor:pointer;min-height:44px}
+.stg-h .st{flex:1;font-size:15px}
+.sbox{width:14px;height:14px;border-radius:4px;border:2px solid var(--muted);flex:none}
+.sbox.part{border-color:var(--dot-ok);background:linear-gradient(90deg,var(--dot-ok) 50%,transparent 50%)}
+.sbox.full{border-color:var(--dot-ok);background:var(--dot-ok)}
+.step-r{display:flex;align-items:flex-start;gap:10px;padding:8px 0 8px 4px;cursor:pointer;min-height:42px}
+.cbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;color:#1C1C1E;font-weight:600}
+.step.done .cbox{background:var(--dot-ok);border-color:var(--dot-ok)}
+.step.na .cbox{background:var(--dot-low);border-color:var(--dot-low)}
+.stt{flex:1;font-size:15px;line-height:1.35;padding-top:1px}
+.step.done .stt,.step.na .stt{color:var(--muted)}
+.step-m{color:var(--muted);font-size:13px;margin:-4px 0 6px 36px}
+.step-p{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 10px 10px;margin:4px 0 8px}
+.acts0{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.acts0 button,.acts0 select{padding:7px 11px;min-height:38px;font-size:14px;background:var(--card2);border:1px solid var(--line);width:auto;max-width:100%;border-radius:10px;color:var(--text);margin:0}
+.acts0 button.primary{background:var(--btn)}
+.mini{display:flex;align-items:flex-start;gap:9px;padding:9px 4px 9px 8px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px;border-left:5px solid transparent}
+.mini.p1{border-left-color:var(--dot-high)} .mini.p2{border-left-color:var(--rail-normal)} .mini.p3{border-left-color:var(--dot-low)}
+.mini .dot{margin-top:5px}
+.mt{flex:1;font-size:15px;line-height:1.35}
+.mw{color:var(--muted)}
+.md{font-size:15px;font-weight:500;flex:none}
+.mini-b{border:1px solid var(--line);border-radius:12px;margin:6px 0 10px;overflow:hidden}
+.kv{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kv .k{color:var(--muted);flex:0 0 42%}
+.kv .v{flex:1;white-space:pre-wrap;min-width:0;overflow-wrap:anywhere}
+.hist{font-size:14px;padding:6px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.hist .hm{color:var(--muted);font-size:13px}
 .hidden{display:none!important}
 .foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
 </style>
@@ -149,7 +198,7 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
   <div class="tabs">
     <button data-v="worklist" class="on">Worklist</button>
     <button data-v="people">People</button>
-    <button data-v="projects">Projects</button>
+    <button data-v="deals">Deals</button>
     <button data-v="bot">Bot</button>
   </div>
   <div class="strip" id="strip"></div>
@@ -159,9 +208,11 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
     <datalist id="people"></datalist>
     <label for="fBlocks">What does it block?</label><input id="fBlocks" placeholder="e.g. Maize loads">
     <label for="fNext">Next step</label><input id="fNext" placeholder="e.g. WhatsApp on Monday">
+    <label for="fDeal">Deal</label>
+    <select id="fDeal"><option value="">No deal</option></select>
     <div class="two">
-      <div><label for="fProject">Project</label>
-      <select id="fProject"><option>Transport</option><option>Chrome</option><option>Buyer search</option><option>Verve admin</option><option>Other</option></select></div>
+      <div><label for="fProject">Area</label>
+      <select id="fProject"><option>Transport</option><option>Chrome</option><option>Manganese</option><option>Buyer search</option><option>Verve admin</option><option>Other</option></select></div>
       <div><label for="fPrio">Priority</label>
       <select id="fPrio"><option value="1">High</option><option value="2" selected>Normal</option><option value="3">Low</option></select></div>
     </div>
@@ -181,22 +232,76 @@ input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "9";
+const APP_VERSION = "10";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
-const PROJECTS = ["Transport", "Chrome", "Buyer search", "Verve admin", "Other"];
+const PROJECTS = ["Transport", "Chrome", "Manganese", "Buyer search", "Verve admin", "Other"];
+const AREAS = PROJECTS;
+const DEAL_KINDS = { mineral: "Mineral deal (chrome, manganese …)", transport: "Transport deal", general: "General (no checklist)" };
+// Deal terms per deal type: [key, label, options-array or placeholder]
+const TERMS = {
+  mineral: [
+    ["commodity", "Commodity", ["Chrome", "Manganese", "Other"]],
+    ["grade", "Grade / spec", "e.g. Cr2O3 40–42%"],
+    ["form", "Form", ["ROM", "Lumpy", "Concentrate", "Fines", "Other"]],
+    ["volume", "Volume", "e.g. 10,000 t per month"],
+    ["term", "Contract length", "e.g. 12 months"],
+    ["trial", "Trial load", "e.g. 1 x 34 t truck"],
+    ["price", "Price", "e.g. USD 180 / t"],
+    ["basis", "Price basis", ["Not agreed", "Mine gate", "FOT", "FCA", "FOB", "CFR", "CIF", "DAP", "Other"]],
+    ["port", "Delivery point / port", "e.g. City Deep, Durban, Maputo"],
+    ["vat", "VAT", ["Not agreed", "Included", "Excluded", "Zero-rated export"]],
+    ["seller", "Seller", "Company and contact"],
+    ["seller_chain", "Seller-side chain", "Mandates and brokers on the seller side"],
+    ["buyer", "Buyer", "Company and end user"],
+    ["buyer_chain", "Buyer-side chain", "Mandates and brokers on the buyer side"],
+    ["instrument", "Payment instrument", ["To discuss", "Cash against documents", "Cash on loading", "LC (MT700)", "SBLC (MT760)", "DLC", "Escrow", "Other"]],
+    ["commission", "Our commission", "e.g. R40 per DMT"],
+    ["other_cuts", "Other parties' cuts", "Who gets what per ton"],
+    ["target", "Our target (private)", "Only you and Annemarie see this"],
+    ["limit", "Walk-away limit (private)", "Only you and Annemarie see this"],
+  ],
+  transport: [
+    ["cargo", "Cargo", "e.g. Maize"],
+    ["route", "Route", "From → to"],
+    ["distance", "Distance", "e.g. 169 km one way"],
+    ["trucks", "Trucks", "Number and type"],
+    ["client_rate", "Client rate", "e.g. R350/t"],
+    ["haulier_rate", "Transporter rate", "e.g. R200/t"],
+    ["cuts", "Other parties' cuts", "Who gets what per ton"],
+    ["commission", "Our margin", "Per ton"],
+    ["loads", "Loads", "Per day / week / month"],
+    ["payment", "Payment terms", "e.g. 50% up front, 50% on delivery"],
+    ["extras", "Extras / inclusions", "e.g. diesel"],
+    ["vat", "VAT", ["Not agreed", "Included", "Excluded"]],
+    ["target", "Our target (private)", "Only you and Annemarie see this"],
+    ["limit", "Walk-away limit (private)", "Only you and Annemarie see this"],
+  ],
+  general: [],
+};
+const INFO_LABELS = { name: "Name", area: "Area", status: "Status", summary: "Summary", stage: "Status note", key_facts: "Key facts", contacts: "Contacts", next_milestone: "Next milestone" };
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 const $ = id => document.getElementById(id);
 let view = "worklist"; try { view = localStorage.getItem("view") || "worklist"; } catch(e){}
 if (view === "todo") view = "worklist";
+if (view === "projects") view = "deals";
 let who = ""; try { who = localStorage.getItem("who") || "" } catch(e){}
+let dealFilter = "Active"; try { dealFilter = localStorage.getItem("dealFilter") || "Active"; } catch(e){}
 let chat = []; let botBusy = false;
 let me = "";
-const openPanels = new Set();   // "item:<id>", "contact:<id>", "project:<name>"
+const openPanels = new Set();   // item notes/files panels and contact/project file panels
 let editContact = null;         // contact id being edited
 let newContact = null;          // {} or {name} when the new-contact form is open
 let pendingAttach = null;       // {type, id} waiting for a file pick
+let openStep = null;            // checklist step whose tick panel is open
+let addStepFor = null;          // deal id with the add-step form open
+let editTerms = null, editInfo = null, newDealOpen = false;
+// Folding: remembers only what differs from each tray's default
+let openKeys = new Set(); try { openKeys = new Set(JSON.parse(localStorage.getItem("open") || "[]")); } catch(e){}
+function isOpen(k, dflt){ if (openKeys.has("+" + k)) return true; if (openKeys.has("-" + k)) return false; return !!dflt; }
+function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openKeys].slice(-300))); } catch(e){} }
+function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "Dark" : "Light";
   document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F4F1EA" : "#1C1C1E";
@@ -209,23 +314,37 @@ const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<"
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
 const isMe = it => /^(me|us|chris & annemarie)$/i.test((it.waiting_on || "").trim());
 const fmtWhen = d => new Date(d).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const fmtDay = d => new Date(d).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" });
 const fmtSize = n => n > 1048576 ? (n/1048576).toFixed(1) + " MB" : Math.max(1, Math.round((n||0)/1024)) + " KB";
 const firstName = n => (n || "").split(/[\s(&,]/)[0];
 const toWa = p => { let d = (p || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); if (d.length === 10 && d[0] === "0") d = "27" + d.slice(1); else if (d.length === 9) d = "27" + d; return d; };
 const notesFor = id => (window._notes || []).filter(n => n.item_id === id);
+const dealNotes = id => (window._notes || []).filter(n => n.deal_id === id && !n.item_id);
 const attsFor = (type, id) => (window._atts || []).filter(a => a.target_type === type && String(a.target_id) === String(id));
 const contactsFor = name => { const low = (name || "").toLowerCase(); return (window._contacts || []).filter(c => { const cn = (c.name || "").toLowerCase(); const f = firstName(cn); return low === cn || (f.length > 2 && new RegExp("\\b" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b").test(low)); }); };
+const dealById = id => (window._deals || []).find(d => d.id === id);
+const liveDeals = () => (window._deals || []).filter(d => d.status === "Active" || d.status === "On hold");
+const stepsOf = id => (window._steps || []).filter(s => s.deal_id === id).sort((a,b) => a.sort - b.sort);
+const itemsOf = id => (window._items || []).filter(i => i.deal_id === id);
+const histOf = id => (window._hist || []).filter(e => e.deal_id === id);
+const termLabel = k => { for (const kind of ["mineral", "transport"]) { const t = TERMS[kind].find(x => x[0] === k); if (t) return t[1]; } return k; };
+function dealProgress(id){
+  const st = stepsOf(id), stages = [];
+  for (const s of st) { const l = stages[stages.length - 1]; if (l && l.name === s.stage) l.steps.push(s); else stages.push({ name: s.stage, steps: [s] }); }
+  const cur = stages.find(g => g.steps.some(s => s.status === "open")) || null;
+  return { total: st.length, done: st.filter(s => s.status !== "open").length, stages, cur, next: cur ? cur.steps.find(s => s.status === "open") : null };
+}
 let toastT; function toast(msg, ms){ $("toast").textContent = msg; $("toast").classList.remove("hidden"); clearTimeout(toastT); if (ms !== 0) toastT = setTimeout(() => $("toast").classList.add("hidden"), ms || 3000); }
 
 function demoItems(){
   const d = n => new Date(Date.now() - n*864e5).toISOString();
   return [
-    {id:"1",project:"Transport",waiting_on:"Jan & Lazarus",waiting_for:"Permits",blocks:"Maize loads",next_action:"Chase",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(4)},
-    {id:"2",project:"Transport",waiting_on:"Jan & Lazarus",waiting_for:"VAT: is R350/t including or excluding VAT?",blocks:"The whole split",next_action:"Ask in writing",state:"Confirmed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:d(1),created_at:d(1)},
-    {id:"3",project:"Transport",waiting_on:"Adrian",waiting_for:"Truck packs, spreadsheet, tracker logins",blocks:"Client onboarding",next_action:"After contract",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(0)},
-    {id:"4",project:"Chrome",waiting_on:"Piet",waiting_for:"NDNCA",blocks:"ICPO, then stockpile test",next_action:"Chase Piet",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(1)},
-    {id:"5",project:"Verve admin",waiting_on:"Me",waiting_for:"Logo file into site header + Formspree ID",blocks:"Website go-live",next_action:"Upload logo",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(2)},
-    {id:"6",project:"Verve admin",waiting_on:"Annemarie",waiting_for:"Add Chris as CIPC director",blocks:"Bank FICA",next_action:"File CoR39",state:"Proposed",priority:2,owner:"Annemarie",nudge_after_days:3,last_chased:null,created_at:d(0)}
+    {id:"1",project:"Transport",deal_id:"dm2",waiting_on:"Jan & Lazarus",waiting_for:"Permits",blocks:"Maize loads",next_action:"Chase",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(4)},
+    {id:"2",project:"Transport",deal_id:"dm2",waiting_on:"Jan & Lazarus",waiting_for:"VAT: is R350/t including or excluding VAT?",blocks:"The whole split",next_action:"Ask in writing",state:"Confirmed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:d(1),created_at:d(1)},
+    {id:"3",project:"Transport",deal_id:"dm2",waiting_on:"Adrian",waiting_for:"Truck packs, spreadsheet, tracker logins",blocks:"Client onboarding",next_action:"After contract",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(0)},
+    {id:"4",project:"Chrome",deal_id:"dm1",waiting_on:"Piet",waiting_for:"NCNDA",blocks:"ICPO, then stockpile test",next_action:"Chase Piet",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(1)},
+    {id:"5",project:"Verve admin",deal_id:null,waiting_on:"Me",waiting_for:"Logo file into site header + Formspree ID",blocks:"Website go-live",next_action:"Upload logo",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(2)},
+    {id:"6",project:"Verve admin",deal_id:null,waiting_on:"Annemarie",waiting_for:"Add Chris as CIPC director",blocks:"Bank FICA",next_action:"File CoR39",state:"Proposed",priority:2,owner:"Annemarie",nudge_after_days:3,last_chased:null,created_at:d(0)}
   ];
 }
 function demoExtras(){
@@ -234,9 +353,18 @@ function demoExtras(){
     {id:"c1",name:"Lazarus",phone:"078 219 5810",whatsapp:"27782195810",email:"",company:"",role:"Client-side intermediary (with Jan)",project:"Transport",notes:"Unverified.",created_by:"claude",updated_at:d(1)},
     {id:"c2",name:"Piet (Pieter)",phone:"",whatsapp:"",email:"",company:"",role:"NDNCA pending",project:"Chrome",notes:"",created_by:"claude",updated_at:d(2)}
   ];
-  window._notes = [{id:1,item_id:"1",new_value:"Lazarus says the permit office wants the truck list first.",changed_by:"Annemarie",changed_at:d(1),source:"app"},{id:2,item_id:"1",new_value:"Asked Jan for the reference number.",changed_by:"Chris",changed_at:d(2),source:"app"}];
+  window._notes = [{id:1,item_id:"1",deal_id:null,new_value:"Lazarus says the permit office wants the truck list first.",changed_by:"Annemarie",changed_at:d(1),source:"app"},{id:2,item_id:"1",deal_id:null,new_value:"Asked Jan for the reference number.",changed_by:"Chris",changed_at:d(2),source:"app"},{id:3,item_id:null,deal_id:"dm1",new_value:"Dolly wants the ICPO to go through SKATRADE.",changed_by:"Chris",changed_at:d(1),source:"app"}];
   window._atts = [{id:"a1",target_type:"item",target_id:"1",path:"demo",name:"Permit application scan.pdf",size:234000,uploaded_by:"Annemarie",created_at:d(1)}];
   window._urls = { demo: "#" };
+  window._deals = [
+    {id:"dm1",name:"Chrome – Piet stockpile → Dolly / SKATRADE",kind:"mineral",area:"Chrome",status:"Active",summary:"Demo mineral deal.",stage:"Paperwork — waiting on Piet's NCNDA",key_facts:"Dolly wants 20,000–50,000 t/month",contacts:"Piet — seller\nDolly — buyer",next_milestone:"NCNDA → ICPO → stockpile test",params:{commodity:"Chrome",form:"ROM",volume:"20,000–50,000 t per month",instrument:"To discuss",target:"R45 per DMT"},sort:20,updated_at:d(0),updated_by:"claude"},
+    {id:"dm2",name:"Maize haulage – Giants Canning",kind:"transport",area:"Transport",status:"Active",summary:"Demo transport deal.",stage:"Qualifying",key_facts:"Client rate R350/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",params:{cargo:"Maize",client_rate:"R350/t",vat:"Not agreed"},sort:10,updated_at:d(0),updated_by:"claude"}
+  ];
+  const tpl = { dm1: [["A. Sourcing",["Material sourced (stockpile or production confirmed)","Seller identified (company and contact person)","Buyer identified (company and end user)","Mandate chain written down, both sides"]],["B. Paperwork",["NCNDA signed by all parties","IMFPA / commission agreement signed"]],["C. Buyer intent",["LOI or ICPO issued by the buyer","FCO / offer received from the seller","Price, spec, volume and delivery basis agreed"]],["D. Seller checks",["Proof of ownership of the material","Mining right or permit seen"]]],
+                dm2: [["A. Qualify",["Client and receiver identified (who pays, who receives)","Cargo, route and volumes confirmed in writing","Transporter lined up"]],["B. Paperwork",["NCNDA / non-circumvention signed","Split per ton agreed in writing (who gets what)"]]] };
+  window._steps = [];
+  for (const [deal, stages] of Object.entries(tpl)) stages.forEach(([stage, titles], si) => titles.forEach((title, ti) => window._steps.push({ id: `${deal}-${si}-${ti}`, deal_id: deal, stage, sort: (si+1)*100 + ti + 1, title, status: deal === "dm1" && si === 0 && ti < 3 ? "done" : "open", done_by: deal === "dm1" && si === 0 && ti < 3 ? "Chris" : null, done_at: deal === "dm1" && si === 0 && ti < 3 ? d(1) : null, evidence: deal === "dm1" && si === 0 && ti === 0 ? "Photos in Files" : null })));
+  window._hist = [{id:9,deal_id:"dm1",item_id:null,field:"step",old_value:"",new_value:"Material sourced (stockpile or production confirmed) — done (Photos in Files)",changed_by:"Chris",changed_at:d(1)},{id:8,deal_id:"dm1",item_id:null,field:"term:instrument",old_value:null,new_value:"To discuss",changed_by:"Annemarie",changed_at:d(2)}];
 }
 
 async function checkVersion(){
@@ -249,17 +377,21 @@ async function checkVersion(){
 async function load(){
   checkVersion();
   let items;
-  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
-    const [r1, r2, r3, r4, r5] = await Promise.all([
+    const [r1, r2, r3, r4, r5, r6, r7, r8] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
       sb.from("projects").select("*"),
       sb.from("contacts").select("*").order("name"),
-      sb.from("events").select("id,item_id,new_value,changed_by,changed_at,source").eq("field","note").order("changed_at", { ascending: false }).limit(400),
-      sb.from("attachments").select("*").order("created_at", { ascending: false })
+      sb.from("events").select("id,item_id,deal_id,new_value,changed_by,changed_at,source").eq("field","note").order("changed_at", { ascending: false }).limit(500),
+      sb.from("attachments").select("*").order("created_at", { ascending: false }),
+      sb.from("deals").select("*").order("sort").order("created_at"),
+      sb.from("deal_steps").select("*").order("sort"),
+      sb.from("events").select("id,item_id,deal_id,field,old_value,new_value,changed_by,changed_at").not("deal_id", "is", null).neq("field", "note").order("changed_at", { ascending: false }).limit(400)
     ]);
     if (r1.error) { $("list").innerHTML = `<div class="empty">Could not load: ${esc(r1.error.message)}</div>`; return; }
     items = r1.data; window._projects = r2.data || []; window._contacts = r3.data || []; window._notes = r4.data || []; window._atts = r5.data || [];
+    window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || [];
     window._urls = window._urls || {};
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
@@ -280,6 +412,9 @@ async function load(){
   window._items = items;
   const names = [...new Set(items.map(i => i.waiting_on).filter(Boolean))].sort();
   $("people").innerHTML = ["Me", ...names.filter(n => !/^me$/i.test(n))].map(n => `<option value="${esc(n)}">`).join("");
+  const keepDeal = $("fDeal").value;
+  $("fDeal").innerHTML = `<option value="">No deal</option>` + liveDeals().map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
+  $("fDeal").value = keepDeal && dealById(keepDeal) ? keepDeal : "";
   render();
 }
 // Signed links expire after an hour; refresh them so old links do not go dead while the app stays open.
@@ -289,14 +424,15 @@ const byPrioThenAge = (a,b) => (a.priority||2) - (b.priority||2) || b._days - a.
 
 function filesHtml(type, id){
   const arr = attsFor(type, id);
-  return `<div class="files">${arr.map(a => `<div class="file"><span class="fn">${window._urls[a.path] ? `<a href="${esc(window._urls[a.path])}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} ${new Date(a.created_at).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" })}</span><button data-rmfile="${a.id}" aria-label="Remove file">Remove</button></div>`).join("") || `<div class="quiet">No files yet.</div>`}
+  return `<div class="files">${arr.map(a => `<div class="file"><span class="fn">${window._urls[a.path] ? `<a href="${esc(window._urls[a.path])}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} ${fmtDay(a.created_at)}</span><button data-rmfile="${a.id}" aria-label="Remove file">Remove</button></div>`).join("") || `<div class="quiet">No files yet.</div>`}
     <div class="acts" style="margin:8px 0 0"><button data-attach="${type}:${esc(String(id))}">Attach file or photo</button></div></div>`;
 }
+function notesBlock(ns, type, id){
+  return `${ns.length ? ns.map(n => `<div class="note">${esc(n.new_value)}<div class="nm">${esc(n.changed_by)} · ${fmtWhen(n.changed_at)}</div></div>`).join("") : `<div class="quiet">No notes yet. Anything you write here is seen by both of you.</div>`}
+    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${type}:${id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${type}:${id}">Save</button></div>`;
+}
 function panelHtml(it){
-  const ns = notesFor(it.id);
-  return `<div class="npanel"><div class="lbl">Notes</div>
-    ${ns.length ? ns.map(n => `<div class="note">${esc(n.new_value)}<div class="nm">${esc(n.changed_by)} · ${fmtWhen(n.changed_at)}</div></div>`).join("") : `<div class="quiet">No notes yet. Anything you write here is seen by both of you.</div>`}
-    <div class="nadd"><input placeholder="Add a note…" data-noteinput="${it.id}" maxlength="2000" enterkeyhint="send"><button class="primary" data-note="${it.id}">Save</button></div>
+  return `<div class="npanel"><div class="lbl">Notes</div>${notesBlock(notesFor(it.id), "item", it.id)}
     <div class="lbl">Files</div>${filesHtml("item", it.id)}</div>`;
 }
 
@@ -307,11 +443,13 @@ function rowHtml(it, n){
   const own = `<span class="pill">${esc(it.owner || "Chris")}${(it.owner || "Chris") === me ? " (me)" : ""}</span>`;
   const other = (it.owner || "Chris") === "Annemarie" ? "Chris" : "Annemarie";
   const nN = notesFor(it.id).length, fN = attsFor("item", it.id).length, open = openPanels.has("item:" + it.id);
+  const deal = it.deal_id ? dealById(it.deal_id) : null;
+  const dealOpts = [...liveDeals(), ...(deal && !liveDeals().includes(deal) ? [deal] : [])];
   return `<div class="row p${it.priority || 2}" data-id="${it.id}">
     <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}" style="margin-top:6px"></i>${n ? `<span class="num">${n}.</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div><div class="days" aria-label="${it._days} days since last chase">${it._days}d</div></div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
-    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}${own}<span class="pill">${esc(it.project)}</span></div>
+    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${prio}${own}<span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
     <div class="acts">
       ${it.state === "Proposed" ? `<button class="primary" data-a="confirm">OK, keep</button><button data-a="drop">Drop</button>` : ""}
       ${it._me ? `<button class="primary" data-a="done">Done ✓</button>` : `<button data-a="chased">Asked today</button><button class="primary" data-a="done">Got it ✓</button>`}
@@ -320,7 +458,14 @@ function rowHtml(it, n){
       <button data-panel="item:${it.id}"${open ? ' style="background:var(--tab-on)"' : ""}>Notes${nN ? " " + nN : ""}${fN ? " · Files " + fN : ""}</button>
       <button data-botitem="${it.id}">Bot</button>
       ${it.state !== "Proposed" ? `<button data-a="drop">Drop</button>` : ""}
+      <select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Link to a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select>
     </div>${open ? panelHtml(it) : ""}</div>`;
+}
+// One-line row that opens into the full row
+function miniHtml(it){
+  const k = "mini:" + it.id, open = isOpen(k, false);
+  const dot = it.state === "Proposed" ? "d-prop" : it._stale ? "d-stale" : "d-ok";
+  return `<div class="mini p${it.priority || 2}" role="button" tabindex="0" data-tog="${k}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i><span class="mt">${it._me ? "" : `<span class="mw">${esc(it.waiting_on)}:</span> `}${esc(it.waiting_for)}</span><span class="md">${it._days}d</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="mini-b">${rowHtml(it, 0)}</div>` : ""}`;
 }
 
 function contactFormHtml(c){
@@ -346,12 +491,145 @@ function contactHtml(c){
     <div class="s" style="margin-top:8px;font-size:13px">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
 }
 
+// ---------- Deals ----------
+function secHtml(d, key, title, count, dflt, content){
+  const k = `sec:${d.id}:${key}`, open = isOpen(k, dflt);
+  return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${open}"><span class="st">${title}</span><span class="cnt">${count}</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="sec-b">${content()}</div>` : ""}</div>`;
+}
+function stepHtml(s){
+  const o = openStep === s.id;
+  return `<div class="step ${s.status}"><div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}</span></div>
+    ${s.status !== "open" ? `<div class="step-m">${esc(s.done_by || "")}${s.done_at ? " · " + fmtDay(s.done_at) : ""}${s.evidence ? " — " + esc(s.evidence) : ""}</div>` : ""}
+    ${o ? `<div class="step-p"><input data-evid="${s.id}" placeholder="Proof or note (optional), e.g. signed copy in Files" value="${esc(s.evidence || "")}" maxlength="500"><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">Done ✓</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
+}
+function checklistHtml(d, pg){
+  let h = pg.stages.map(g => {
+    const done = g.steps.filter(s => s.status !== "open").length;
+    const isCur = !!(pg.cur && pg.cur.name === g.name);
+    const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
+    return `<div class="stg"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="sbox ${done === g.steps.length ? "full" : done ? "part" : ""}"></span><span class="st">${esc(g.name)}</span><span class="cnt">${done}/${g.steps.length}</span><span class="chev">${open ? "▾" : "▸"}</span></div>${open ? g.steps.map(stepHtml).join("") : ""}</div>`;
+  }).join("");
+  if (addStepFor === d.id) h += `<div class="step-p"><div class="lbl">New step</div><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"><div class="lbl">Stage</div><select id="nsStage">${pg.stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${pg.stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select><div class="acts0"><button class="primary" data-savestep="${d.id}">Add step</button><button data-addstep="">Cancel</button></div></div>`;
+  else h += `<div class="acts0"><button data-addstep="${d.id}">+ Add a step</button></div>`;
+  return h;
+}
+function termsHtml(d, defs){
+  const p = d.params || {};
+  if (editTerms === d.id) {
+    return defs.map(([k, label, opt]) => `<div class="lbl">${esc(label)}</div>` + (Array.isArray(opt)
+      ? `<select class="t-${k}"><option value="">—</option>${[...opt, ...(p[k] && !opt.includes(p[k]) ? [p[k]] : [])].map(o => `<option${p[k] === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`
+      : `<input class="t-${k}" value="${esc(p[k] || "")}" placeholder="${esc(opt)}" autocomplete="off">`)).join("") +
+      `<div class="acts0"><button class="primary" data-saveterms="${d.id}">Save terms</button><button data-editterms="">Cancel</button></div>`;
+  }
+  const filled = defs.filter(([k]) => p[k]), empty = defs.filter(([k]) => !p[k]);
+  return (filled.length ? filled.map(([k, label]) => `<div class="kv"><span class="k">${esc(label)}</span><span class="v">${esc(p[k])}</span></div>`).join("") : `<div class="quiet">No terms written down yet.</div>`) +
+    (empty.length ? `<div class="quiet" style="margin-top:6px">Not set yet: ${empty.map(x => esc(x[1].replace(" (private)", ""))).join(", ")}</div>` : "") +
+    `<div class="acts0"><button data-editterms="${d.id}">Edit terms</button></div>`;
+}
+function infoHtml(d){
+  if (editInfo === d.id) {
+    const f = (k, big) => `<div class="lbl">${INFO_LABELS[k]}</div>` + (big ? `<textarea class="i-${k}"${k === "key_facts" ? ' style="min-height:140px"' : ""}>${esc(d[k] || "")}</textarea>` : `<input class="i-${k}" value="${esc(d[k] || "")}">`);
+    return f("name") + `<div class="lbl">Area</div><select class="i-area">${[...AREAS, ...(AREAS.includes(d.area) ? [] : [d.area])].map(a => `<option${d.area === a ? " selected" : ""}>${esc(a)}</option>`).join("")}</select>` +
+      f("stage") + f("summary", true) + f("key_facts", true) + f("contacts", true) + f("next_milestone") +
+      `<div class="acts0"><button class="primary" data-saveinfo="${d.id}">Save</button><button data-editinfo="">Cancel</button></div>`;
+  }
+  return `${d.stage ? `<div class="kv"><span class="k">Status note</span><span class="v">${esc(d.stage)}</span></div>` : ""}
+    ${d.summary ? `<div class="lbl">Summary</div><div class="pinfo-k" style="white-space:pre-wrap;font-size:15px">${esc(d.summary)}</div>` : ""}
+    ${d.key_facts ? `<div class="lbl">Key facts</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.key_facts)}</div>` : ""}
+    ${d.contacts ? `<div class="lbl">Contacts</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.contacts)}</div>` : ""}
+    ${d.next_milestone ? `<div class="lbl">Next milestone</div><div style="white-space:pre-wrap;font-size:15px">${esc(d.next_milestone)}</div>` : ""}
+    <div class="quiet" style="margin-top:8px">Updated ${d.updated_at ? fmtWhen(d.updated_at) : ""} by ${esc(d.updated_by || "")}</div>
+    <div class="acts0"><button data-editinfo="${d.id}">Edit background</button></div>`;
+}
+function histLine(e){
+  const f = e.field || "";
+  let t;
+  if (f === "deal" && e.item_id) { const it = (window._items || []).find(i => i.id === e.item_id); t = `Wait ${it ? `"${it.waiting_for}" ` : ""}moved: ${e.old_value || "no deal"} → ${e.new_value || "no deal"}`; }
+  else if (f === "deal" || f === "step") t = e.new_value;
+  else if (f.startsWith("term:")) t = `${termLabel(f.slice(5))}: ${e.old_value || "—"} → ${e.new_value || "—"}`;
+  else if (f === "deal:status" || f === "deal:name" || f === "deal:area") t = `${INFO_LABELS[f.slice(5)]}: ${e.old_value || "—"} → ${e.new_value || "—"}`;
+  else if (f.startsWith("deal:")) t = `${INFO_LABELS[f.slice(5)] || f.slice(5)} edited`;
+  else t = `${f}: ${e.new_value || ""}`;
+  return `<div class="hist">${esc(t)}<div class="hm">${esc(e.changed_by)} · ${fmtWhen(e.changed_at)}</div></div>`;
+}
+function dealHtml(d){
+  const pg = dealProgress(d.id), waits = itemsOf(d.id).sort(byPrioThenAge);
+  const stale = waits.filter(i => i._stale && !i._me).length;
+  const closed = d.status === "Won" || d.status === "Lost";
+  const dot = closed ? "d-low" : d.status === "On hold" ? "d-prop" : stale ? "d-stale" : "d-ok";
+  const open = isOpen("deal:" + d.id, false);
+  const pct = pg.total ? Math.round(pg.done / pg.total * 100) : 0;
+  let h = `<div class="deal" data-deal="${d.id}"><div class="deal-h" role="button" tabindex="0" data-tog="deal:${d.id}" data-dflt="0" aria-expanded="${open}"><i class="dot ${dot}"></i>
+    <div class="dh"><div class="dn">${esc(d.name)}</div>
+      <div class="ds">${esc(d.area)} · ${esc(d.status)}${pg.total ? ` · ${pg.done}/${pg.total} ticked` : ""}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</div>
+      ${pg.total ? `<div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Checklist ${pct}% done"><i style="width:${pct}%"></i></div>` : ""}
+      ${pg.total ? `<div class="dx">${pg.cur ? `${esc(pg.cur.name)} · next: ${esc(pg.next.title)}` : "Checklist complete"}</div>` : (d.next_milestone ? `<div class="dx">Next: ${esc(d.next_milestone)}</div>` : "")}
+    </div><span class="chev">${open ? "▾" : "▸"}</span></div>`;
+  if (open) {
+    h += `<div class="deal-b">`;
+    if (pg.total) h += secHtml(d, "check", "Checklist", `${pg.done}/${pg.total}`, true, () => checklistHtml(d, pg));
+    h += secHtml(d, "waits", "Waiting on", waits.length, true, () => (waits.map(miniHtml).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">+ Add wait for this deal</button></div>`);
+    const defs = TERMS[d.kind] || [];
+    if (defs.length) h += secHtml(d, "terms", "Deal terms", `${defs.filter(([k]) => (d.params || {})[k]).length}/${defs.length}`, false, () => termsHtml(d, defs));
+    h += secHtml(d, "info", "Background", "", false, () => infoHtml(d));
+    const ns = dealNotes(d.id);
+    h += secHtml(d, "notes", "Notes", ns.length, false, () => notesBlock(ns, "deal", d.id));
+    h += secHtml(d, "files", "Files", attsFor("deal", d.id).length, false, () => filesHtml("deal", d.id));
+    const hs = histOf(d.id);
+    h += secHtml(d, "hist", "History", hs.length, false, () => hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
+    h += `<div class="sec-b"><div class="acts0"><button data-botdeal="${d.id}">Bot: review this deal</button><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></div></div></div>`;
+  }
+  return h + `</div>`;
+}
+function areaInfoHtml(p){
+  const fN = attsFor("project", p.name).length, open = openPanels.has("project:" + p.name);
+  return `<div class="pinfo" data-p="${esc(p.name)}"><div class="t"><div class="n" style="font-size:16px">About ${esc(p.name)}</div><button data-botproj="${esc(p.name)}">Bot</button><button data-edit="${esc(p.name)}">Edit info</button></div>
+    <div class="s">${esc(p.stage) || "Stage not set"}</div>
+    <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
+    ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
+    ${p.contacts ? `<div class="lbl">Contacts</div><div class="k">${esc(p.contacts)}</div>` : ""}
+    ${p.next_milestone ? `<div class="lbl">Next milestone</div><div class="k">${esc(p.next_milestone)}</div>` : ""}
+    <div class="acts" style="margin:10px 0 0"><button data-panel="project:${esc(p.name)}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button></div>
+    ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("project", p.name)}</div>` : ""}
+    ${p.updated_at ? `<div class="s" style="margin-top:8px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
+    <div class="edit hidden"><div class="lbl">Stage</div><input class="e-stage" value="${esc(p.stage)}">
+    <div class="lbl">Summary</div><textarea class="e-summary">${esc(p.summary)}</textarea>
+    <div class="lbl">Key facts (one per line)</div><textarea class="e-facts" style="min-height:140px">${esc(p.key_facts)}</textarea>
+    <div class="lbl">Contacts (one per line)</div><textarea class="e-contacts">${esc(p.contacts)}</textarea>
+    <div class="lbl">Next milestone</div><input class="e-next" value="${esc(p.next_milestone)}">
+    <div class="acts" style="margin-left:0"><button class="primary" data-save="${esc(p.name)}">Save</button><button data-cancel="${esc(p.name)}">Cancel</button></div></div></div>`;
+}
+function areaHtml(name, arr){
+  const p = (window._projects || []).find(x => x.name === name) || { name, summary: "", stage: "", key_facts: "", contacts: "", next_milestone: "" };
+  const k = "area:" + name, open = isOpen(k, false);
+  const stale = arr.filter(i => i._stale && !i._me).length;
+  return `<div class="deal"><div class="deal-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="0" aria-expanded="${open}"><i class="dot ${stale ? "d-stale" : "d-ok"}"></i><div class="dh"><div class="dn">${esc(name)}</div><div class="ds">General · ${arr.length} waiting${stale ? `, ${stale} to chase` : ""}</div>${p.stage ? `<div class="dx">${esc(p.stage)}</div>` : ""}</div><span class="chev">${open ? "▾" : "▸"}</span></div>
+    ${open ? `<div class="deal-b"><div class="sec-b">${arr.sort(byPrioThenAge).map(miniHtml).join("") || `<div class="quiet">Nothing waiting here.</div>`}</div>${areaInfoHtml(p)}</div>` : ""}</div>`;
+}
+function dealsViewHtml(){
+  const all = window._deals || [];
+  const shown = all.filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
+  let h = `<div class="h2row"><div class="chips" style="margin:0;flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : "+ Deal"}</button></div>`;
+  if (newDealOpen) h += `<div class="deal"><div class="sec-b"><div class="lbl">Deal name</div><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Benro" maxlength="120">
+      <div class="lbl">Type</div><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select>
+      <div class="lbl">Area</div><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select>
+      <div class="acts0"><button class="primary" data-createdeal="1">Create deal</button><button data-newdeal="1">Cancel</button></div><div class="msg" id="ndMsg"></div></div></div>`;
+  h += shown.map(dealHtml).join("") || `<div class="empty">No ${dealFilter === "All" ? "" : dealFilter.toLowerCase() + " "}deals. Tap + Deal.</div>`;
+  const unlinked = (window._items || []).filter(i => !i.deal_id || !dealById(i.deal_id));
+  const groups = {};
+  for (const it of unlinked) (groups[it.project || "Other"] ||= []).push(it);
+  const order = (window._projects || []).map(p => p.name);
+  const names = Object.keys(groups).sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99) || a.localeCompare(b));
+  if (names.length) h += `<h2>General — not tied to a deal</h2>` + names.map(n => areaHtml(n, groups[n])).join("");
+  return h;
+}
+
 function render(){
   const items = window._items || [];
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === view));
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length, assigned = items.filter(i => (i.owner || "Chris") === me).length;
   $("strip").innerHTML = `<span>${items.length} open</span><span><i class="dot d-stale"></i>${stale} to chase</span><span><i class="dot d-prop"></i>${proposed} to confirm</span><span>${mine} to-do</span><span>${assigned} on ${me || "me"}</span>`;
-  if (!items.length && view !== "people" && view !== "bot") { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
+  if (!items.length && view === "worklist") { $("list").innerHTML = `<div class="empty">Nothing open. Tap + Add.</div>`; return; }
   let html = "";
   if (view === "people") {
     const groups = {};
@@ -394,43 +672,15 @@ function render(){
     }
     if (!list.length) html += `<div class="empty">Nothing on ${who === "All" ? "anyone" : (who || "you")}. Tap + Add.</div>`;
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.project)} · ${esc(m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
-      <div class="ask"><textarea id="q" placeholder="e.g. What should I chase first today? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
+    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}<div class="acts"><button class="primary" data-apply="${i}">Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes — you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+      <div class="ask"><textarea id="q" placeholder="e.g. What is still missing on the chrome deal? Save Piet's number 082 123 4567. Draft a message to Adrian."></textarea><button class="primary" data-bot="ask">Ask</button></div>
       <div class="acts" style="margin:10px 0 0"><button data-bot="brief">Daily brief</button><button data-bot="clear">Clear</button></div>
       <details class="keybox"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} — tap to set or change</summary>
         <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
         <div class="acts" style="margin:8px 0 0"><button class="primary" data-bot="savekey">Save key</button></div>
         <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>`;
   } else {
-    const byProj = {};
-    for (const it of items) (byProj[it.project] ||= []).push(it);
-    const pinfo = window._projects || [];
-    const names = [...new Set([...pinfo.map(p => p.name), ...Object.keys(byProj)])];
-    names.sort((a,b) => ((pinfo.find(p => p.name === a) || {sort:999}).sort) - ((pinfo.find(p => p.name === b) || {sort:999}).sort) || a.localeCompare(b));
-    for (const proj of names) {
-      const arr = (byProj[proj] || []).sort(byPrioThenAge);
-      const p = pinfo.find(x => x.name === proj) || {name: proj, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:""};
-      const fN = attsFor("project", proj).length, open = openPanels.has("project:" + proj);
-      html += `<div class="pinfo" data-p="${esc(proj)}"><div class="t"><div class="n">${esc(proj)}</div><button data-botproj="${esc(proj)}">Bot</button><button data-edit="${esc(proj)}">Edit info</button></div>
-        <div class="s">${esc(p.stage) || "Stage not set"}</div>
-        <div class="view">${p.summary ? `<div class="k">${esc(p.summary)}</div>` : ""}
-        ${p.key_facts ? `<div class="lbl">Key facts</div><div class="k">${esc(p.key_facts)}</div>` : ""}
-        ${p.contacts ? `<div class="lbl">Contacts</div><div class="k">${esc(p.contacts)}</div>` : ""}
-        ${p.next_milestone ? `<div class="lbl">Next milestone</div><div class="k">${esc(p.next_milestone)}</div>` : ""}
-        <div class="acts" style="margin:10px 0 0"><button data-panel="project:${esc(proj)}"${open ? ' style="background:var(--tab-on)"' : ""}>Files${fN ? " " + fN : ""}</button></div>
-        ${open ? `<div class="npanel" style="margin-left:0"><div class="lbl">Files</div>${filesHtml("project", proj)}</div>` : ""}
-        ${p.updated_at ? `<div class="s" style="margin-top:8px">Info updated ${new Date(p.updated_at).toLocaleDateString()} by ${esc(p.updated_by || "")}</div>` : ""}</div>
-        <div class="edit hidden"><div class="lbl">Stage</div><input class="e-stage" value="${esc(p.stage)}">
-        <div class="lbl">Summary</div><textarea class="e-summary">${esc(p.summary)}</textarea>
-        <div class="lbl">Key facts (one per line)</div><textarea class="e-facts" style="min-height:140px">${esc(p.key_facts)}</textarea>
-        <div class="lbl">Contacts (one per line)</div><textarea class="e-contacts">${esc(p.contacts)}</textarea>
-        <div class="lbl">Next milestone</div><input class="e-next" value="${esc(p.next_milestone)}">
-        <div class="acts" style="margin-left:0"><button class="primary" data-save="${esc(proj)}">Save</button><button data-cancel="${esc(proj)}">Cancel</button></div></div></div>`;
-      if (!arr.length) continue;
-      html += `<h2>${esc(proj)} — ${arr.length} open</h2><div class="card">`;
-      arr.forEach(it => html += rowHtml(it, 0).replace('<div class="txt">', `<div class="txt"><span style="color:var(--muted)">${esc(it.waiting_on)}:</span> `));
-      html += `</div>`;
-    }
+    html = dealsViewHtml();
   }
   $("list").innerHTML = html;
   $("foot").textContent = (me ? me + " · " : "") + "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · app v" + APP_VERSION;
@@ -439,6 +689,15 @@ function render(){
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("button[data-v]"); if (!b) return;
   view = b.dataset.v; try{ localStorage.setItem("view", view) }catch(e){} render();
+});
+
+// Folding trays, sections, stages and one-line rows
+$("list").addEventListener("click", e => {
+  const t = e.target.closest("[data-tog]"); if (!t) return;
+  toggleKey(t.dataset.tog, t.dataset.dflt === "1"); render();
+});
+$("list").addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches('[role="button"]')) { e.preventDefault(); e.target.click(); }
 });
 
 $("list").addEventListener("click", async e => {
@@ -461,6 +720,105 @@ $("list").addEventListener("click", async e => {
   load();
 });
 
+// Deals: checklist, terms, background, status, new deal
+$("list").addEventListener("click", async e => {
+  const fb = e.target.closest("button[data-dealfilter]");
+  if (fb) { dealFilter = fb.dataset.dealfilter; try { localStorage.setItem("dealFilter", dealFilter); } catch(e){} render(); return; }
+  const nd = e.target.closest("button[data-newdeal]");
+  if (nd) { newDealOpen = !newDealOpen; render(); if (newDealOpen && $("ndName")) $("ndName").focus(); return; }
+  const cd = e.target.closest("button[data-createdeal]");
+  if (cd) {
+    const name = ($("ndName").value || "").trim(); if (!name) { $("ndMsg").textContent = "Give the deal a name."; return; }
+    if (DEMO) { $("ndMsg").textContent = "Demo mode — nothing saved"; return; }
+    cd.disabled = true; cd.textContent = "…";
+    const { data, error } = await sb.rpc("save_deal", { p_id: null, p_name: name, p_kind: $("ndKind").value, p_area: $("ndArea").value });
+    if (error) { $("ndMsg").textContent = "Failed: " + error.message; cd.disabled = false; cd.textContent = "Create deal"; return; }
+    newDealOpen = false; openKeys.add("+deal:" + data); saveOpen(); if (dealFilter === "Closed") dealFilter = "Active";
+    toast("Deal created with its checklist."); load(); return;
+  }
+  const sr = e.target.closest("[data-step]");
+  if (sr) { openStep = openStep === sr.dataset.step ? null : sr.dataset.step; render(); const ev = openStep && document.querySelector(`input[data-evid="${openStep}"]`); if (ev) ev.focus({ preventScroll: true }); return; }
+  const ss = e.target.closest("button[data-setstep]");
+  if (ss) {
+    const id = ss.dataset.setstep, st = (window._steps || []).find(s => s.id === id); if (!st) return;
+    const evi = document.querySelector(`input[data-evid="${id}"]`); const evidence = evi ? evi.value.trim() : "";
+    if (DEMO) { Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence }); openStep = null; render(); return; }
+    const before = { ...st };
+    Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence });
+    openStep = null; render();
+    const { error } = await sb.rpc("set_step", { p_id: id, p_status: ss.dataset.v, p_evidence: evidence || null });
+    if (error) { Object.assign(st, before); render(); toast("Could not save the tick: " + error.message, 6000); return; }
+    load(); return;
+  }
+  const as = e.target.closest("button[data-addstep]");
+  if (as) { addStepFor = as.dataset.addstep || null; render(); if (addStepFor && $("nsTitle")) $("nsTitle").focus(); return; }
+  const sv = e.target.closest("button[data-savestep]");
+  if (sv) {
+    const title = ($("nsTitle").value || "").trim(); if (!title) { $("nsTitle").focus(); return; }
+    if (DEMO) { alert("Demo mode — nothing saved"); return; }
+    sv.disabled = true; sv.textContent = "…";
+    const { error } = await sb.rpc("add_step", { p_deal: sv.dataset.savestep, p_stage: $("nsStage").value, p_title: title });
+    if (error) { toast("Could not add the step: " + error.message, 6000); sv.disabled = false; sv.textContent = "Add step"; return; }
+    addStepFor = null; toast("Step added."); load(); return;
+  }
+  const et = e.target.closest("button[data-editterms]");
+  if (et) { editTerms = et.dataset.editterms || null; render(); return; }
+  const st = e.target.closest("button[data-saveterms]");
+  if (st) {
+    const d = dealById(st.dataset.saveterms); if (!d) return;
+    const box = st.closest(".sec-b"); const params = { ...(d.params || {}) };
+    for (const [k] of (TERMS[d.kind] || [])) { const el = box.querySelector(".t-" + k); if (!el) continue; const v = el.value.trim(); if (v) params[k] = v; else delete params[k]; }
+    if (DEMO) { d.params = params; editTerms = null; render(); return; }
+    st.disabled = true; st.textContent = "…";
+    const { error } = await sb.rpc("save_deal", { p_id: d.id, p_params: params });
+    if (error) { toast("Could not save terms: " + error.message, 6000); st.disabled = false; st.textContent = "Save terms"; return; }
+    editTerms = null; toast("Terms saved."); load(); return;
+  }
+  const ei = e.target.closest("button[data-editinfo]");
+  if (ei) { editInfo = ei.dataset.editinfo || null; render(); return; }
+  const si = e.target.closest("button[data-saveinfo]");
+  if (si) {
+    const d = dealById(si.dataset.saveinfo); if (!d) return;
+    const box = si.closest(".sec-b"); const v = k => box.querySelector(".i-" + k).value;
+    const body = { p_id: d.id, p_name: v("name").trim() || d.name, p_area: v("area"), p_stage: v("stage"), p_summary: v("summary"), p_key_facts: v("key_facts"), p_contacts: v("contacts"), p_next_milestone: v("next_milestone") };
+    if (DEMO) { Object.assign(d, { name: body.p_name, area: body.p_area, stage: body.p_stage, summary: body.p_summary, key_facts: body.p_key_facts, contacts: body.p_contacts, next_milestone: body.p_next_milestone }); editInfo = null; render(); return; }
+    si.disabled = true; si.textContent = "…";
+    const { error } = await sb.rpc("save_deal", body);
+    if (error) { toast("Could not save: " + error.message, 6000); si.disabled = false; si.textContent = "Save"; return; }
+    editInfo = null; toast("Saved."); load(); return;
+  }
+  const aw = e.target.closest("button[data-addwait]");
+  if (aw) {
+    const d = dealById(aw.dataset.addwait); if (!d) return;
+    if ($("addForm").classList.contains("hidden")) $("addBtn").click();
+    $("fDeal").value = d.id; if (PROJECTS.includes(d.area)) $("fProject").value = d.area;
+    window.scrollTo({ top: 0, behavior: "smooth" }); $("fFor").focus({ preventScroll: true }); return;
+  }
+  const bd = e.target.closest("button[data-botdeal]");
+  if (bd) { const d = dealById(bd.dataset.botdeal); if (!d) return;
+    askBot(`Review the deal "${d.name}": where it stands, what is still missing on the checklist before the next stage, risks or contradictions, and the next 3 moves.`, "ask", d.id); return; }
+});
+$("list").addEventListener("change", async e => {
+  const ds = e.target.closest("select[data-dealsel]");
+  if (ds) {
+    if (DEMO) { const it = (window._items || []).find(i => i.id === ds.dataset.dealsel); if (it) it.deal_id = ds.value || null; render(); return; }
+    ds.disabled = true;
+    const { error } = await sb.rpc("item_action", { p_id: ds.dataset.dealsel, p_action: "deal", p_value: ds.value || "" });
+    if (error) { toast("Could not move it: " + error.message, 6000); ds.disabled = false; return; }
+    toast(ds.value ? "Linked to the deal." : "Removed from the deal."); load(); return;
+  }
+  const dst = e.target.closest("select[data-dealstatus]");
+  if (dst) {
+    const d = dealById(dst.dataset.dealstatus); if (!d) return;
+    if (DEMO) { d.status = dst.value; render(); return; }
+    dst.disabled = true;
+    const { error } = await sb.rpc("save_deal", { p_id: d.id, p_status: dst.value });
+    if (error) { toast("Could not change status: " + error.message, 6000); dst.disabled = false; return; }
+    toast("Deal marked " + dst.value + "."); load(); return;
+  }
+});
+$("fDeal").addEventListener("change", () => { const d = dealById($("fDeal").value); if (d && PROJECTS.includes(d.area)) $("fProject").value = d.area; });
+
 // Notes, files and contacts
 $("list").addEventListener("click", async e => {
   const pn = e.target.closest("button[data-panel]");
@@ -473,8 +831,10 @@ $("list").addEventListener("click", async e => {
   if (nb) {
     const inp = document.querySelector(`input[data-noteinput="${nb.dataset.note}"]`); const text = ((inp && inp.value) || "").trim(); if (!text) { inp && inp.focus(); return; }
     if (DEMO) { alert("Demo mode — nothing saved"); return; }
+    const [ntype, nid] = nb.dataset.note.split(":");
     nb.disabled = true; nb.textContent = "…";
-    const { error } = await sb.from("events").insert({ item_id: nb.dataset.note, field: "note", new_value: text, source: "app" });
+    const row = { field: "note", new_value: text, source: "app" }; row[ntype === "deal" ? "deal_id" : "item_id"] = nid;
+    const { error } = await sb.from("events").insert(row);
     if (error) { nb.textContent = "Failed"; toast("Could not save note: " + error.message, 5000); nb.disabled = false; return; }
     load(); return;
   }
@@ -529,10 +889,12 @@ $("fileInput").addEventListener("change", async () => {
   if (up.error) { toast("Upload failed: " + up.error.message, 6000); return; }
   const { error } = await sb.from("attachments").insert({ target_type: t.type, target_id: String(t.id), path, name: f.name, size: f.size, mime: f.type || "" });
   if (error) { toast("Uploaded, but could not record it: " + error.message, 6000); return; }
-  openPanels.add(`${t.type}:${t.id}`);
+  if (t.type === "item" || t.type === "contact" || t.type === "project") openPanels.add(`${t.type}:${t.id}`);
+  if (t.type === "deal") { openKeys.delete("-sec:" + t.id + ":files"); openKeys.add("+sec:" + t.id + ":files"); saveOpen(); }
   toast("Saved " + f.name); load();
 });
 
+// General area cards (edit info)
 $("list").addEventListener("click", async e => {
   const ed = e.target.closest("button[data-edit]"), cx = e.target.closest("button[data-cancel]"), sv = e.target.closest("button[data-save]");
   if (!ed && !cx && !sv) return;
@@ -556,7 +918,7 @@ async function askBot(question, mode, focus, silent){
   botBusy = true; if (!silent) { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} } render();
   try {
     if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
-    const history = chat.filter(m => m.role !== "sys").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+    const history = chat.filter(m => m.role !== "sys" && m.role !== "sugg").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
     const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history, focus: focus || "" } });
     if (error) { let msg = error.message || String(error); try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){} throw new Error(msg); }
     chat.push({ role: "assistant", text: data.answer || "(no answer)" });
@@ -575,19 +937,25 @@ $("list").addEventListener("click", async e => {
   if (bi) { const it = (window._items || []).find(x => x.id === bi.dataset.botitem); if (!it) return;
     askBot(`About "${it.waiting_for}" (waiting on ${it.waiting_on}, ${it._days} days): what should I do next, what exactly do I ask, and draft the WhatsApp message. Set the next step if it is missing.`, "ask", it.id); return; }
   if (bp) { askBot(`Prep my chase with ${bp.dataset.botperson}: everything open with them in priority order, what to ask, what not to give away, and one WhatsApp message covering it all.`, "ask"); return; }
-  if (bj) { askBot(`Review the ${bj.dataset.botproj} project: what is missing or contradictory, the top risks, the next 3 moves, and suggest any project-info updates.`, "ask"); return; }
+  if (bj) { askBot(`Review the ${bj.dataset.botproj} area: what is missing or contradictory, the top risks, the next 3 moves, and suggest any info updates.`, "ask"); return; }
   if (dm) { chat.splice(Number(dm.dataset.dismiss), 1); render(); return; }
   if (ap) {
     const m = chat[Number(ap.dataset.apply)]; if (!m || !m.s) return;
-    const p = (window._projects || []).find(x => x.name === m.s.project) || { name: m.s.project, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:"" };
-    const cur = p[m.s.field] || "";
-    const next = (m.s.mode === "append" && (m.s.field === "key_facts" || m.s.field === "contacts")) ? (cur ? cur + "\n" + m.s.text : m.s.text) : m.s.text;
-    const body = { p_name: p.name, p_summary: p.summary || "", p_stage: p.stage || "", p_key_facts: p.key_facts || "", p_contacts: p.contacts || "", p_next_milestone: p.next_milestone || "" };
-    body["p_" + m.s.field] = next;
+    const s = m.s, tgt = String(s.target || s.project || "").trim().toLowerCase();
+    const merge = cur => (s.mode === "append" && (s.field === "key_facts" || s.field === "contacts")) ? (cur ? cur + "\n" + s.text : s.text) : s.text;
+    const deal = (window._deals || []).find(d => d.name.toLowerCase() === tgt);
     ap.disabled = true; ap.textContent = "…";
-    const { error } = await sb.rpc("set_project", body);
-    if (error) { ap.textContent = "Failed"; return; }
-    chat.splice(Number(ap.dataset.apply), 1, { role: "sys", text: `Applied to ${p.name} · ${m.s.field}.` }); render(); load(); return;
+    let error, where;
+    if (deal) { where = deal.name; ({ error } = await sb.rpc("save_deal", { p_id: deal.id, ["p_" + s.field]: merge(deal[s.field] || "") })); }
+    else {
+      const p = (window._projects || []).find(x => x.name.toLowerCase() === tgt) || { name: s.target || s.project, summary:"", stage:"", key_facts:"", contacts:"", next_milestone:"" };
+      where = p.name;
+      const body = { p_name: p.name, p_summary: p.summary || "", p_stage: p.stage || "", p_key_facts: p.key_facts || "", p_contacts: p.contacts || "", p_next_milestone: p.next_milestone || "" };
+      body["p_" + s.field] = merge(p[s.field] || "");
+      ({ error } = await sb.rpc("set_project", body));
+    }
+    if (error) { ap.textContent = "Failed"; toast(error.message, 5000); return; }
+    chat.splice(Number(ap.dataset.apply), 1, { role: "sys", text: `Applied to ${where} · ${INFO_LABELS[s.field] || s.field}.` }); render(); load(); return;
   }
 });
 $("botFab").onclick = () => { view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, document.body.scrollHeight); };
@@ -613,9 +981,9 @@ $("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); $("addBtn
 $("addForm").onsubmit = async e => {
   e.preventDefault();
   if (DEMO) { $("addMsg").textContent = "Demo mode — nothing saved"; return; }
-  const { error } = await sb.rpc("add_item", { p_project: $("fProject").value, p_waiting_on: $("fOn").value.trim(), p_waiting_for: $("fFor").value.trim(), p_blocks: $("fBlocks").value.trim(), p_next: $("fNext").value.trim(), p_priority: Number($("fPrio").value), p_owner: $("fOwner").value });
+  const { error } = await sb.rpc("add_item", { p_project: $("fProject").value, p_waiting_on: $("fOn").value.trim(), p_waiting_for: $("fFor").value.trim(), p_blocks: $("fBlocks").value.trim(), p_next: $("fNext").value.trim(), p_priority: Number($("fPrio").value), p_owner: $("fOwner").value, p_deal: $("fDeal").value || null });
   if (error) { $("addMsg").textContent = "Failed: " + error.message; return; }
-  e.target.reset(); $("addMsg").textContent = ""; $("addBtn").click(); load();
+  e.target.reset(); $("fDeal").value = ""; $("addMsg").textContent = ""; $("addBtn").click(); load();
 };
 $("refreshBtn").onclick = () => location.reload();
 $("outBtn").onclick = async () => { await sb.auth.signOut(); me = ""; show(); };
