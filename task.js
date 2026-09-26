@@ -67,7 +67,7 @@ function dueRowHtml(it) {
   const b = (v, label) => `<button type="button"${d === v ? ' class="on" aria-pressed="true"' : ` data-a="due" data-v="${v}" aria-pressed="false"`}>${label}</button>`;
   return `<div class="lbl">Due</div><div class="seg2 dr-b" role="group" aria-label="Due">${b("", "No date")}${b(t0, "Today")}${b(t1, "Tomorrow")}
     <label class="datepick${other ? " on" : ""}"><span>${other ? esc(dayName(dueDate(it))) : "Pick date"}</span><input type="date" data-duepick="${it.id}" value="${esc(d)}" aria-label="Pick a due date"></label></div>
-    <div class="dr-t">${d ? "Due " + dayWords(dueDate(it)) : `No due date – we chase it ${dayWords(dueDate(it))}`}</div>`;
+    <div class="dr-t">${d ? "Due " + dayWords(dueDate(it)) : dayDiff(dueDate(it)) < 0 ? `No due date – the chase was due ${dayWords(dueDate(it))}` : `No due date – we chase it ${dayWords(dueDate(it))}`}</div>`;
 }
 window.dueRowHtml = dueRowHtml;
 $("list").addEventListener("change", async e => {
