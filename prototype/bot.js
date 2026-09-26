@@ -231,3 +231,10 @@ window.botHelpHtml = function (dflt) {
   return `<div class="bothelp"><button class="bh-h" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${o}">${ic("sparkle")}<span>What you can ask</span><span class="chev"></span></button>${o ? `<div class="bh-b">${BOT_HELP.map(([t, ex]) => `<div class="bh-t">${esc(t)}</div><div class="bh-ex">${ex.map(x => `<button type="button" data-botex="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
     <div class="bh-n">Never on its own: ticking, confirming, completing or deleting; sending messages; showing the private target or walk-away numbers; spending money.</div></div>` : ""}</div>`;
 };
+
+// ---------- the Ask page's Add row (26 Sep: the + button in the bottom bar was replaced by Ask) ----------
+const ASK_ADD = [["task", "checkbox", "Task"], ["deal", "deals", "Deal"], ["contact", "userplus", "Contact"], ["voice", "mic", "Voice note"], ["read", "camera", "Photo or PDF"], ["quote", "chat", "WhatsApp quote"]];
+window.botAddHtml = function () {
+  return `<div class="askadd-h">Add</div><div class="askadd" role="group" aria-label="Add">${ASK_ADD.map(([a, i, t]) => `<button type="button" data-askadd="${a}"><span class="qi">${ic(i)}</span><span class="aa-l">${t}</span></button>`).join("")}</div>`;
+};
+document.addEventListener("click", e => { const b = e.target.closest("button[data-askadd]"); if (b && window.doAdd) doAdd(b.dataset.askadd); });

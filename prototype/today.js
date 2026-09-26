@@ -109,14 +109,17 @@ function homeGroups(items, target) {
 // Tiles on top: tap one to see only those; tap it again (or "Show everything") for the whole list.
 let homeFilter = null;
 const HF = [["urgent", "bad", "Urgent", "flag"], ["overdue", "over", "Overdue", "clock"], ["today", "today", "Today", "sun"], ["week", "week", "This week", "list"]];
+// Today (redesign 26 Sep, on the approved page map): only what needs doing.
+// Greeting and date · who (Chris / Annemarie / Both) · four tiles · the brief in one line · Suggested · tasks by day ·
+// risks. The section switch is pinned in the header. Deals' next steps, the buyer-search queue and the overview live on
+// Deals and People now.
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
   const { mine, list, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
   const hr = SA().getUTCHours();
-  let h = `<section class="hello"><div class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")} · ${dayName(Date.now())}</div></section>`;
-  if (window.secBarHtml) h += secBarHtml();
-  h += `<div class="chips whochips segbar">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
+  let h = `<section class="hello hello2"><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span><span class="hd">${dayName(Date.now())}</span></section>`;
+  h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   const all = target === "All";
   const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, today: g.today.length, week: g.tomorrow.length + g.week.length };
   h += `<div class="htiles" role="group" aria-label="Show only">${HF.map(([k, tone, t, icn]) => `<button class="htile t-${tone}${homeFilter === k ? " on" : ""}" data-hf="${k}" aria-pressed="${homeFilter === k}"><span class="ht-top"><span class="ht-n">${cnt[k]}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`).join("")}</div>`;
@@ -133,6 +136,12 @@ function todayHtml(items) {
     h += `<button class="wide hf-all" data-hf="">Show everything</button></div>`;
     return h;
   }
+  // the brief: one line, tap to read it all
+  const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
+  const bOpen = isOpen("home:brief", false);
+  if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">${ic("brief")}Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
+  else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
+    <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
   // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
   h += hCard("sugg", "prop", "Suggested", sugg.map(i => homeRow(i, all)), { limit: 3, extra: `<button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button>` });
   h += hCard("overdue", "over", "Overdue", R(g.overdue));
@@ -140,49 +149,39 @@ function todayHtml(items) {
   h += hCard("tomorrow", "tmrw", "Tomorrow", R(g.tomorrow));
   h += hCard("week", "week", "Next 7 days", R(g.week));
   h += hCard("later", "later", "Later than a week", R(g.later), { fold: true, dflt: false });
-  // brief: one or two lines, "Read more" opens the rest
-  const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
-  const bOpen = isOpen("home:brief", false);
-  if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
-  else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
-    <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
-  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}. Tap + to add a task.</div>`;
-  // next steps on deals and the buyer search (open where the work is done)
-  const ld = liveDeals().filter(d => !window.inSecDeal || inSecDeal(d));
-  const dealRows = ld.map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next).map(({ d, pg }) => linkRow(`deal:${d.id}:${pg.next.id}`, esc(pg.next.title), `${secTag([d.area])}Next step · ${esc(d.name)}`, "", secColor(d.area)));
-  h += hCard("deals", "deal", "Next step on each deal", dealRows, { fold: true });
-  const td = saKey(Date.now());
-  const gOpen = k => ((window._gates || []).find(x => x.key === k) || {}).status === "open";
-  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(window.isFollowUp && isFollowUp(t)) && (!window.inSecLTask || inSecLTask(t)) && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
-  h += hCard("buyers", "buyer", "Buyer search – next 3", queue.map(t => { const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    const qs = window.secsOfLTask ? secsOfLTask(t) : [];
-    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), secTag(qs) + ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "", qs.length === 1 ? secColor(qs[0]) : "var(--s-all)"); }), { fold: true });
+  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}${typeof section !== "undefined" && section !== "All" ? " in " + esc(section) : ""}. Tap Ask to add a task.</div>`;
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), { fold: true, dflt: false });
   h += `</div>`;
-  // overview below the list: progress rings, deal tiles, this week
+  if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
+  return h;
+}
+// Overview (moved from Today to Deals, 26 Sep): progress rings, deal tiles, this week – for the section being viewed
+function overviewHtml() {
+  const target = who === "All" ? "All" : (who || me || "Chris");
+  const { list, g } = homeGroups(window._items || [], target);
+  const ld = liveDeals().filter(d => !window.inSecDeal || inSecDeal(d)), td = saKey(Date.now());
   const st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
-  const L = window._leads || [], reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
-  const doneWk = (window._done || []).filter(i => (all || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
+  const L = (window._leads || []).filter(l => !window.inSecLead || inSecLead(l)), reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
+  const doneWk = (window._done || []).filter(i => (target === "All" || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
   const oOpen = isOpen("home:overview", true);
-  h += `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
+  let h = `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
   if (oOpen) {
     h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, list.length ? (list.length - g.overdue.length) / list.length : 0])}
       <div class="legend"><div class="lg"><i style="background:var(--ring1-bg)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
       <div class="lg"><i style="background:var(--ring2)"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
       <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${list.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
-    if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">All deals</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
     const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
     const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
     const byDay = {}; for (const it of list) { const k = dayDiff(dueDate(it)) < 0 ? td : saKey(dueDate(it)); (byDay[k] ||= []).push(it); }
     h += `<div class="card week"><div class="wk-m">This week · tasks due each day</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), n = (byDay[k] || []).length;
       return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="wn">${n ? n : ""}</div></div>`; }).join("")}</div></div>`;
   }
-  h += `</section>`;
-  if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
-  return h;
+  return h + `</section>`;
 }
+window.overviewHtml = overviewHtml;
+// tap a tile: only those tasks; tap it again (or Show everything) for the whole list
 $("list").addEventListener("click", e => {
   const f = e.target.closest("button[data-hf]"); if (!f) return;
   const v = f.dataset.hf || null; homeFilter = v && homeFilter !== v ? v : null; render(); window.scrollTo(0, 0);

@@ -168,7 +168,7 @@ function dirHtml() {
   const waitN = new Set((window._items || []).filter(i => !i._me).map(i => i.waiting_on)).size;
   const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).length : (window._leads || []).filter(l => inSeg(l, s)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
-  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>${window.secBarHtml ? secBarHtml() : ""}
+  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
     <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>`;
   if (dSeg === "waiting" || dSeg === "saved") {
     h += `</div>` + (dSeg === "waiting" ? waitingPeopleHtml(dQ) : savedContactsHtml(dQ));

@@ -9,8 +9,8 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
-<link rel="stylesheet" href="app.css?v=17.202609260406">
-<link rel="stylesheet" href="titanium.css?v=17.202609260406">
+<link rel="stylesheet" href="app.css?v=17.202609261633">
+<link rel="stylesheet" href="titanium.css?v=17.202609261633">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -23,6 +23,7 @@
     <button id="botBtn" class="ib t-bot hidden" aria-label="Ask the bot" title="Ask the bot" data-ico="bot"><span class="ibw">Ask</span></button>
     <button id="menuBtn" class="avatar" aria-label="More">More</button>
   </div>
+  <div id="secSlot" class="secslot hidden"></div>
 </header>
 
 <section id="login" class="hidden">
@@ -40,9 +41,9 @@
 <section id="board" class="hidden">
   <nav class="tabs" aria-label="Main">
     <button data-v="worklist" aria-label="Today" title="Today" data-ico="home">Today</button>
-    <button data-v="leads" aria-label="Contacts" title="Contacts" data-ico="people">Contacts</button>
-    <button class="plus" id="plusBtn" type="button" aria-label="Add" title="Add" data-ico="plus"></button>
     <button data-v="deals" aria-label="Deals" title="Deals" data-ico="deals">Deals</button>
+    <button class="plus" data-v="bot" id="askTab" type="button" aria-label="Ask – open, add or change anything" title="Ask" data-ico="sparkle"><span class="pl">Ask</span></button>
+    <button data-v="leads" aria-label="People" title="People" data-ico="people">People</button>
     <button data-v="board" aria-label="Notice board" title="Notice board" data-ico="board">Board<span class="nb hidden" id="boardDot"></span></button>
   </nav>
   <div class="strip" id="strip"></div>
@@ -192,7 +193,7 @@
     <div class="menu">
       <button class="mi" type="button" data-mview="archive" data-ico="archive">Archive – have we used them before?</button>
       <button class="mi" type="button" data-mview="calc" data-ico="calc">Calculators – transport, chrome, everyday</button>
-      <button class="mi" type="button" data-mview="bot" data-ico="bot">Ask the bot</button>
+      <button class="mi" type="button" data-mview="chat" data-ico="chatin">Import a WhatsApp chat – pick whose chat it is</button>
       <button class="mi" type="button" data-mview="guides" data-ico="book">Guides – how we work, deal kit, scripts</button>
       <button class="mi" type="button" data-mview="settings" data-ico="info">Settings – light or dark, bot key, sign out</button>
       <div class="hidden"><button id="themeBtn" type="button">Light mode</button><button id="refreshBtn" type="button">Refresh</button><button id="outBtn" type="button">Sign out</button></div>
@@ -217,7 +218,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609260406"></script>
+<script src="ui.js?v=17.202609261633"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -307,7 +308,7 @@ let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 fillIcons();
-const PAGE_TITLES = { worklist: "Today", leads: "Contacts", deals: "Deals", people: "Contacts", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings" };
+const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings" };
 function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
 window.goView = goView;
 function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
@@ -315,17 +316,18 @@ function closeMenu(){ $("menuSheet").classList.add("hidden"); }
 $("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu;
 $("menuSheet").addEventListener("click", e => {
   if (e.target.id === "menuSheet") { closeMenu(); return; }
-  const mv = e.target.closest("button[data-mview]"); if (mv) { closeMenu(); goView(mv.dataset.mview); }
+  const mv = e.target.closest("button[data-mview]"); if (mv) { closeMenu(); if (mv.dataset.mview === "chat") { openPickSheet(); return; } goView(mv.dataset.mview); }
 });
 $("botBtn").onclick = () => goView("bot");
-$("plusBtn").onclick = () => $("addSheet").classList.remove("hidden");
 $("addClose").onclick = () => $("addSheet").classList.add("hidden");
 $("addSheet").addEventListener("click", e => {
   if (e.target.id === "addSheet") { $("addSheet").classList.add("hidden"); return; }
   const b = e.target.closest("button[data-add]"); if (!b) return;
-  $("addSheet").classList.add("hidden");
-  const a = b.dataset.add;
-  if (a === "task") { openTaskSheet(); return; }
+  $("addSheet").classList.add("hidden"); doAdd(b.dataset.add);
+});
+// Add something (the Ask page's Add row): task · deal · contact · voice note · photo or PDF · WhatsApp quote
+function doAdd(a) {
+  if (a === "task") { if (view === "bot") goView("worklist"); openTaskSheet(); return; }   // the new task opens over Today, where it will show
   if (a === "post" || a === "check") { goView("board"); if (window.setComposerMode) setComposerMode(a); setTimeout(() => $("cText").focus(), 50); return; }
   if (a === "deal") { newDealOpen = true; if (dealFilter === "Closed") dealFilter = "Active"; goView("deals"); setTimeout(() => { const n = $("ndName"); if (n) n.focus(); }, 50); return; }
   if (a === "contact") { newContact = { name: "" }; editContact = null; if (window.setDirSeg) setDirSeg("saved"); goView("leads"); setTimeout(() => { const h = $("contactsHead"); if (h) h.scrollIntoView({ block: "start" }); }, 50); return; }
@@ -334,7 +336,8 @@ $("addSheet").addEventListener("click", e => {
   if (a === "chat") { openPickSheet(); return; }
   if (a === "voice") { if (window.openVoiceNote) openVoiceNote(); return; }
   if (a === "read" || a === "quote") { if (window.openReader) openReader({ kind: a === "quote" ? "quote" : "photo" }); return; }
-});
+}
+window.doAdd = doAdd;
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const daysSince = d => d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime())/86400000)) : 0;
@@ -714,7 +717,7 @@ function areaHtml(name, arr){
 function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => (!window.inSecDeal || inSecDeal(d))).filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = (window.secBarHtml ? secBarHtml() : "") + `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  let h = `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
   if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
       ${secPickHtml("nd")}
       ${window.KIT ? `<label class="fld${(SEC_KIND[section] || "mineral") === "mineral" || section === "All" ? "" : " hidden"}" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
@@ -727,6 +730,7 @@ function dealsViewHtml(){
   const names = Object.keys(groups).sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99) || a.localeCompare(b));
   if (names.length) h += `<h2>General – not tied to a deal</h2>` + names.map(n => areaHtml(n, groups[n])).join("");
   const kl = window.kitLibHtml ? kitLibHtml() : ""; if (kl) h += `<h2>Reference</h2>` + kl;
+  if (window.overviewHtml) h += overviewHtml();   // rings, deal tiles and this week (moved from Today, 26 Sep)
   return h;
 }
 // Deal tabs and the "Open this step" shortcut
@@ -751,7 +755,9 @@ function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === (view === "deal" ? "deals" : view)));
   $("pageTitle").textContent = dp ? dp.name : (PAGE_TITLES[view] || "Deal Board");
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
-  $("botBtn").classList.toggle("hidden", !me || view === "bot");
+  $("botBtn").classList.add("hidden");   // Ask is the centre of the bottom bar now
+  const secOn = ["worklist", "deals", "leads", "board"].includes(view) && !!window.secBarHtml && !!me;
+  $("secSlot").innerHTML = secOn ? secBarHtml() : ""; $("secSlot").classList.toggle("hidden", !secOn); document.body.classList.toggle("hassec", secOn);
   $("composer").classList.toggle("hidden", view !== "board" || !me);
   document.body.classList.toggle("boardview", view === "board");
   if (window.boardDot) boardDot();
@@ -781,7 +787,7 @@ function render(){
   } else if (view === "calc") {
     html = window.calcPageHtml ? calcPageHtml() : "";
   } else if (view === "bot") {
-    html += (window.botHelpHtml ? botHelpHtml(!chat.length) : "") + `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : m.role === "act" ? `<div class="sugg act"><div class="act-l">${ic("edit")}<span>${esc(m.a.label || "Change")}</span></div><div class="acts"><button class="primary" data-actdo="${i}">${ic("check")}Do it</button><button data-dismiss="${i}">No</button></div></div>` : m.role === "choose" ? `<div class="bub s">Which one?</div><div class="choose">${m.choose.map(c => `<button type="button" data-botgo="${esc(c.go)}">${ic({ deal: "deals", lead: "user", contact: "user", item: "list", guide: "guide", file: "clip" }[c.type] || "open")}<span>${esc(c.name)}</span></button>`).join("")}</div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}${m.go ? `<button type="button" class="linkb" data-botgo="${esc(m.go)}">Open</button>` : ""}</div>`).join("") : ""}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+    html += (window.botAddHtml ? botAddHtml() : "") + (window.botHelpHtml ? botHelpHtml(!chat.length) : "") + `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : m.role === "act" ? `<div class="sugg act"><div class="act-l">${ic("edit")}<span>${esc(m.a.label || "Change")}</span></div><div class="acts"><button class="primary" data-actdo="${i}">${ic("check")}Do it</button><button data-dismiss="${i}">No</button></div></div>` : m.role === "choose" ? `<div class="bub s">Which one?</div><div class="choose">${m.choose.map(c => `<button type="button" data-botgo="${esc(c.go)}">${ic({ deal: "deals", lead: "user", contact: "user", item: "list", guide: "guide", file: "clip" }[c.type] || "open")}<span>${esc(c.name)}</span></button>`).join("")}</div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}${m.go ? `<button type="button" class="linkb" data-botgo="${esc(m.go)}">Open</button>` : ""}</div>`).join("") : ""}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}Send</button></div>
       <div class="acts"><button data-bot="brief">${ic("brief")}Daily brief</button><button data-bot="clear">${ic("drop")}Clear chat</button></div>
       ${window._keyStatus === "not set" ? `<div class="quiet" style="margin-top:12px">The bot has no key yet – add it in More › Settings.</div>` : ""}`;
@@ -1217,19 +1223,19 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609260406"></script>
-<script src="directory2.js?v=17.202609260406"></script>
-<script src="today.js?v=17.202609260406"></script>
-<script src="task.js?v=17.202609260406"></script>
-<script src="kitdata.js?v=17.202609260406"></script>
-<script src="dealkit.js?v=17.202609260406"></script>
-<script src="board.js?v=17.202609260406"></script>
-<script src="calc.js?v=17.202609260406"></script>
-<script src="archive.js?v=17.202609260406"></script>
-<script src="extras.js?v=17.202609260406"></script>
-<script src="reader.js?v=17.202609260406"></script>
-<script src="sections.js?v=17.202609260406"></script>
-<script src="bot.js?v=17.202609260406"></script>
+<script src="directory.js?v=17.202609261633"></script>
+<script src="directory2.js?v=17.202609261633"></script>
+<script src="today.js?v=17.202609261633"></script>
+<script src="task.js?v=17.202609261633"></script>
+<script src="kitdata.js?v=17.202609261633"></script>
+<script src="dealkit.js?v=17.202609261633"></script>
+<script src="board.js?v=17.202609261633"></script>
+<script src="calc.js?v=17.202609261633"></script>
+<script src="archive.js?v=17.202609261633"></script>
+<script src="extras.js?v=17.202609261633"></script>
+<script src="reader.js?v=17.202609261633"></script>
+<script src="sections.js?v=17.202609261633"></script>
+<script src="bot.js?v=17.202609261633"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>

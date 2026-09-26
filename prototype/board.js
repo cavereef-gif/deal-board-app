@@ -35,7 +35,7 @@ function postHtml(p) {
 function boardHtml() {
   const P = (window._posts || []).filter(p => !window.inSecPost || inSecPost(p)).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   const pinned = P.filter(p => p.pinned && !p.done);
-  let h = window.secBarHtml ? secBarHtml() : "";
+  let h = "";
   if (pinned.length) h += `<div class="sech pinned-h"><h3>Pinned</h3></div><div class="feed">${pinned.map(postHtml).join("")}</div>`;
   h += `<div class="sech"><h3>Between Chris and Annemarie</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
   if (!P.length) return h + `<div class="empty">${typeof section !== "undefined" && section !== "All" ? `No messages about ${esc(section)} yet. Pick All to see every message.` : "No messages yet. Write the first one below – you can attach photos or files, and log checks."}</div>`;
