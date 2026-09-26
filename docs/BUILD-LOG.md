@@ -14,6 +14,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - Geometry: 8-point spacing; corners 28 sheets · 20 cards · 16 panels and tiles · 12 buttons and bars · 8 segments inside a bar (12 minus the 4px inset, so the curves run parallel); light always from above.
 - Velvet is kept: More › Settings › Look › Titanium | Velvet (remembered on the phone). Ring, map and phone status-bar colours follow the chosen palette.
 - Checks: 168 screens with the real Inter font – nothing under 14px, at most 4 text sizes, no coloured text, no bold at 20px or more, lowest contrast 4.67 (a ticked-step box in day mode was 4.22 and got a lighter green fill), no small targets, no console errors. flows.py: 32 jobs PASS (new: colour switch). Screenshots looked at, night and day, both sizes.
+- Commits: prototype branch bec271c; prototype link updated by b8ff891 on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: tidy pass – one size, one shape, straight lines (not live)
 - Asked by Chris: "headings bolder and slightly bigger; the Files / Edit / Ask / Accept / Drop tiles and especially Today / Tomorrow / Pick a date are too big; tidier, world class, symmetrical, everything ordered and lined".
