@@ -13,7 +13,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - API study 2 written: docs/API-STUDY-2026-09-26-transport-calendar.md (transport maths, calendars and reminders, least-typing extras; cost-saver vs best with prices seen 26 Sep 2026). Status: study only – waiting for Chris's OK.
 - Privacy fix: a real client's company name had slipped into the bot's "What you can ask" examples (bot.js, added in the bot batch). Replaced with the made-up "Sunny Farms" (opens the demo maize deal). The old text stays in the git history (history is never rewritten) and in the older preview/ folder, which changes only through a preview pull request.
 - Checks: flows.py 44 PASS; "Find Sunny Farms" opens the demo maize deal.
-- Commits: prototype branch COMMIT_PROTO; prototype link updated by COMMIT_MAIN on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+- Commits: prototype branch 26b0ecb; prototype link updated by 49f65dc on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: redesign step 1b – Today made modern and interactive (not live)
 - Asked by Chris after seeing step 1: "I like the ideas but the whole layout looks still old tech – I want it new and exceptionally modern with interactivity if possible." Same page map and colours (Graphite + section colours, 40px buttons); only the look and feel of Today changed, plus movement that works on every page.
