@@ -213,3 +213,7 @@ html[data-palette="titanium"] .ecgrid button.op{background:var(--raise-2)}
 html[data-palette="titanium"] .trs-n{background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow)}
 html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--seg-on);background-color:var(--seg-on);box-shadow:var(--soft-up-sm),inset 0 0 0 2px var(--s-transport);color:var(--text);outline:0}
 html[data-palette="titanium"] .trdeals .ib:is(.on,#_) :is(.ibw,svg.i){color:var(--text)}
+
+/* transport calculator parts: pressed-in wells for the toll list, the diesel line and weather */
+html[data-palette="titanium"] :is(.trtoll,.trfuel){background:var(--field);box-shadow:var(--soft-in)}
+html[data-palette="titanium"] .trtoll input{background:none;box-shadow:none}
