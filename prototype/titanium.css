@@ -184,3 +184,9 @@ html[data-palette="titanium"] .secpick>button{background:var(--btn);background-c
 html[data-palette="titanium"] .secpick>button.on{background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--sc,var(--accent))}
 html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--s-transport);color:var(--text)}
 html[data-palette="titanium"] .trdeals .ib:is(.on,#_) :is(.ibw,svg.i){color:var(--text)}
+html[data-palette="titanium"] .bothelp{background:var(--surface);box-shadow:var(--shadow);border-radius:20px}
+html[data-palette="titanium"] .bh-ex button{background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+html[data-palette="titanium"] .choose button{background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);color:var(--text)}
+/* your own chat lines: raised graphite, not blue (blue is for main buttons only) */
+html[data-palette="titanium"] .bub.u{background:var(--raise-2);color:var(--text);box-shadow:var(--seg-on-shadow)}
+html[data-palette="titanium"][data-theme="light"] .bub.u{background:#E3E6EA;color:var(--text);box-shadow:inset 0 0 0 1px #D2D6DC}
