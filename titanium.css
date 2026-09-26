@@ -1,0 +1,147 @@
+/* Deal Board – "Titanium" palette (26 Sep 2026, asked by Chris): silver, titanium, charcoal black, off-white and white.
+   Loaded after app.css. Only active on <html data-palette="titanium"> (the default); Settings › Colours can switch back to
+   Velvet, whose tokens in app.css are untouched.
+   Readability rules still hold: letters are always neutral (off-white on dark, charcoal on light – never pure white, never
+   coloured); colour appears only in status dots, rails and a few icons (urgent, drop, done). Titles at 24px stay medium weight.
+   Geometry: 8-point spacing; corners 28 (sheets) · 20 (cards) · 16 (panels, tiles) · 12 (buttons, bars) · 8 (segments inside a
+   bar: 12 − 4px inset, so the curves stay parallel). Light comes from above: every raised surface has a 1px highlight on its top
+   edge and a soft shadow below. */
+
+/* ---------------- tokens: night (dark) ---------------- */
+html[data-palette="titanium"]{
+  --bg:#0E0F11; --bg-a:rgba(14,15,17,.82); --card:#17191C; --card2:#1E2125; --row:#1E2125; --raise:#2A2D32; --raise-2:#34383E; --field:#0A0B0D;
+  --line:#2A2D32; --line2:#474B52; --text:#E6E3DC; --muted:#A7ABB2; --ivory:#F2F0EA;
+  --primary:#BEC2C8; --primary-2:#D0D3D7; --on-primary:#111214; --accent:#9AA1AA; --accent2:#D4D7DB; --navy:#1E2125; --teal:#7FA89C;
+  --grad:linear-gradient(150deg,#F1F0EC 0%,#C6CAD0 46%,#8B929B 100%);
+  --grad-card:linear-gradient(150deg,#30343A 0%,#1E2125 58%,#15171A 100%);
+  --ok:#4FA886; --warn:#D9A441; --bad:#D9665F; --prop:#8D9199; --low:#62666D; --rail-normal:#9AA1AA;
+  --c-wa:#C5C9CF; --c-mail:#C5C9CF; --c-call:#C5C9CF; --c-me:#C5C9CF; --c-bot:#C5C9CF; --c-note:#C5C9CF; --c-file:#C5C9CF; --c-link:#C5C9CF; --c-mute:#A7ABB2;
+  --c-ok:#6CC39C; --c-warn:#E3B25A; --c-bad:#F08A83;
+  --tint:12%;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C5C9CF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --r:20px; --r2:16px; --r3:12px;
+  /* surfaces and light */
+  --surface:linear-gradient(180deg,#1C1E22 0%,#16181B 100%);
+  --shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px rgba(255,255,255,.035), 0 2px 3px rgba(0,0,0,.55), 0 16px 32px -14px rgba(0,0,0,.9);
+  --btn:linear-gradient(180deg,#2F3237 0%,#26292D 100%);
+  --btn-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.6);
+  --btn-primary:linear-gradient(180deg,#D6D9DD 0%,#B3B8BF 100%);
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.55);
+  --track-shadow:inset 0 1px 3px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.04);
+  --plate:linear-gradient(150deg,#F3F2EE 0%,#C9CDD2 55%,#9CA2AA 100%); --plate-ink:#17191C;
+  --glow:radial-gradient(120% 60% at 50% -10%,rgba(214,217,221,.10) 0%,rgba(214,217,221,0) 60%);
+  --ring1:url(#tiGrad); --ring1-bg:linear-gradient(135deg,#F1F0EC,#8B929B); --ring2:#D4D7DB; --ring3:#7E858E;
+  --route:#2A2D31; --route-a:#111214; --route-b:#8B929B;
+}
+/* ---------------- tokens: day (light) ---------------- */
+html[data-palette="titanium"][data-theme="light"]{
+  --bg:#ECEBE7; --bg-a:rgba(236,235,231,.84); --card:#FFFFFF; --card2:#F5F5F2; --row:#F5F5F2; --raise:#EFEFEC; --raise-2:#E3E3DF; --field:#FFFFFF;
+  --line:#DAD9D4; --line2:#B4B5B1; --text:#141517; --muted:#4E5156; --ivory:#FFFFFF;
+  --primary:#1C1E21; --primary-2:#2B2E32; --on-primary:#F3F1EC; --accent:#6E747C; --accent2:#2B2E32; --navy:#2B2E32; --teal:#2F6F60;
+  --grad:linear-gradient(150deg,#5B6169 0%,#2B2E32 50%,#0E0F11 100%);
+  --grad-card:linear-gradient(150deg,#3A3E44 0%,#232629 58%,#141517 100%);
+  --ok:#2E8A63; --warn:#B98118; --bad:#C24A42; --prop:#8A8D92; --low:#9A9DA2; --rail-normal:#6E747C;
+  --c-wa:#33363B; --c-mail:#33363B; --c-call:#33363B; --c-me:#33363B; --c-bot:#33363B; --c-note:#33363B; --c-file:#33363B; --c-link:#33363B; --c-mute:#4E5156;
+  --c-ok:#1E7A55; --c-warn:#8A5A00; --c-bad:#B03A34;
+  --tint:10%;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2333363B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --surface:linear-gradient(180deg,#FFFFFF 0%,#F8F8F6 100%);
+  --shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(20,22,26,.07), 0 2px 4px -1px rgba(20,22,26,.16), 0 16px 30px -14px rgba(20,22,26,.42);
+  --btn:linear-gradient(180deg,#FFFFFF 0%,#F0F0ED 100%);
+  --btn-shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(20,22,26,.10), 0 1px 2px rgba(20,22,26,.14), 0 4px 10px -5px rgba(20,22,26,.22);
+  --btn-primary:linear-gradient(180deg,#3A3D42 0%,#1C1E21 100%);
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 1px 2px rgba(0,0,0,.3), 0 6px 14px -6px rgba(0,0,0,.45);
+  --track-shadow:inset 0 1px 3px rgba(20,22,26,.14), 0 1px 0 #FFFFFF;
+  --plate:linear-gradient(150deg,#FFFFFF 0%,#E4E5E7 55%,#C4C7CB 100%); --plate-ink:#1C1E21;
+  --glow:radial-gradient(120% 60% at 50% -10%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 62%);
+  --ring1:url(#tiGradDay); --ring1-bg:linear-gradient(135deg,#5B6169,#0E0F11); --ring2:#8A8F96; --ring3:#C4C7CB;
+  --route:#1C1E21; --route-a:#1C1E21; --route-b:#8A8F96;
+}
+
+/* ---------------- the room: charcoal (or stone) with soft light from the top ---------------- */
+html[data-palette="titanium"] body{background:transparent}
+html[data-palette="titanium"] body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--glow)}
+html[data-palette="titanium"] header.appbar{background:var(--bg-a);-webkit-backdrop-filter:saturate(1.2) blur(14px);backdrop-filter:saturate(1.2) blur(14px)}
+html[data-palette="titanium"] ::selection{background:var(--primary);color:var(--on-primary)}
+
+/* ---------------- surfaces: cards and rows ---------------- */
+html[data-palette="titanium"] :is(.card,.deal,.ccard,.pinfo,.tsec,.hero,form.panel,.qteaser,.cnote,.brief,.lead,.bub.a,.ask,.post,.sbar,.hrow,.dpage,.bl-main,.fcard:not(.hot),.dtile){background:var(--surface);box-shadow:var(--shadow);border:0}
+html[data-palette="titanium"] :is(.card,.deal,.ccard,.dpage,.lead,.ask,.brief,.pinfo,.tsec,.hero,.qteaser,.cnote){border-radius:20px}
+html[data-palette="titanium"] :is(.hrow,.sbar,.bl-main){border-radius:16px}
+html[data-palette="titanium"] :is(.nextup,.rvq,.cres,.duerow,.step.next,.setc .kv,.pcard .hrow,.dpage .hrow,.kitban){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+html[data-palette="titanium"] .pcard .hrow,html[data-palette="titanium"] .dpage .dpanel .hrow{border-radius:16px}
+html[data-palette="titanium"] .nextup:before{background:linear-gradient(180deg,var(--accent2),var(--accent))}
+
+/* sheets: deeper shade behind, a lit top edge */
+html[data-palette="titanium"] .sheet{background:rgba(6,7,8,.62)}
+html[data-palette="titanium"][data-theme="light"] .sheet{background:rgba(20,22,26,.42)}
+html[data-palette="titanium"] .sheet-b{background:var(--surface);border-radius:28px 28px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 -18px 40px rgba(0,0,0,.55)}
+html[data-palette="titanium"][data-theme="light"] .sheet-b{box-shadow:inset 0 1px 0 #FFFFFF, 0 -18px 40px rgba(20,22,26,.28)}
+
+/* ---------------- buttons: machined tiles ---------------- */
+html[data-palette="titanium"] :is(.ib,.backb,#botBtn,#menuBtn.avatar,.sheet-h button,.h2row>button,.kitline button,.acts>button:not(.primary),.acts0>button:not(.primary),.acts0>.btnlink,.acts>.btnlink,.row2 button:not(.primary),.wide:not(.primary),.seg:not(.on),.chips:not(.segbar) button:not(.on),.hscroll button:not(.on),.linkb.btn){background:var(--btn);box-shadow:var(--btn-shadow);border:0;color:var(--text)}
+html[data-palette="titanium"] :is(button.primary,.seg.on,.chips:not(.segbar) button.on,.hscroll button.on,.nowtag,.nexttag){background:var(--btn-primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary);border:0}
+html[data-palette="titanium"] button.primary svg.i{color:var(--on-primary)}
+html[data-palette="titanium"] .ib.on{outline:2px solid var(--ic);outline-offset:-2px}
+html[data-palette="titanium"] .ib svg.i{color:var(--ic,var(--c-mute))}
+
+/* one-of-several bars: a recessed track with a raised metal segment */
+html[data-palette="titanium"] :is(.seg2,.segbar,.dtabs4){border-radius:12px;padding:4px;background:var(--field);border:0;box-shadow:var(--track-shadow)}
+html[data-palette="titanium"] :is(.seg2>button,.seg2>label,.segbar>button,.dtabs4>.dtab){border-radius:8px;background:transparent;box-shadow:none;color:var(--text)}
+html[data-palette="titanium"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on){background:var(--btn-primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
+html[data-palette="titanium"][data-theme="light"] :is(.seg2,.segbar,.dtabs4){background:#E4E3DF}
+
+/* fields */
+html[data-palette="titanium"] :is(input,select,textarea){border-color:var(--line2);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+html[data-palette="titanium"][data-theme="light"] :is(input,select,textarea){box-shadow:inset 0 1px 2px rgba(20,22,26,.08)}
+html[data-palette="titanium"] :is(input,select,textarea):focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(190,194,200,.28)}
+html[data-palette="titanium"][data-theme="light"] :is(input,select,textarea):focus{box-shadow:0 0 0 3px rgba(28,30,33,.16)}
+html[data-palette="titanium"] .ask textarea{box-shadow:none}
+
+/* ---------------- brand marks ---------------- */
+html[data-palette="titanium"] .logo{background:var(--plate);color:var(--plate-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 6px rgba(0,0,0,.45);font-weight:600}
+html[data-palette="titanium"][data-theme="light"] .logo{background:var(--btn-primary);color:var(--on-primary);box-shadow:var(--btn-primary-shadow)}
+
+/* bottom bar and the + button */
+html[data-palette="titanium"] .tabs{background:var(--surface);box-shadow:var(--shadow);border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-palette="titanium"] .tabs button.on{background:var(--raise);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+html[data-palette="titanium"][data-theme="light"] .tabs button.on{background:var(--raise-2);box-shadow:none}
+html[data-palette="titanium"] .tabs button.on:after{background:var(--accent2)}
+html[data-palette="titanium"] .tabs .plus{background:var(--grad);color:var(--plate-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 10px 24px rgba(0,0,0,.6), 0 0 0 5px var(--bg)}
+html[data-palette="titanium"] .tabs .plus svg{stroke:var(--plate-ink)}
+html[data-palette="titanium"][data-theme="light"] .tabs .plus{color:var(--on-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(20,22,26,.4), 0 0 0 5px var(--bg)}
+html[data-palette="titanium"][data-theme="light"] .tabs .plus svg{stroke:var(--on-primary)}
+
+/* ---------------- + sheet: twelve machined tiles with silver icon plates ---------------- */
+html[data-palette="titanium"] .addgrid button{background:var(--btn);box-shadow:var(--btn-shadow);border-radius:16px;color:var(--text)}
+html[data-palette="titanium"] :is(.addgrid .qi,.qa .qi){background:var(--plate);color:var(--plate-ink);border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 1px 3px rgba(0,0,0,.45)}
+html[data-palette="titanium"][data-theme="light"] :is(.addgrid .qi,.qa .qi){box-shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(20,22,26,.10), 0 2px 4px rgba(20,22,26,.18)}
+html[data-palette="titanium"] .addgrid .qi svg.i{color:var(--plate-ink)}
+html[data-palette="titanium"] .qa{background:var(--btn);box-shadow:var(--btn-shadow)}
+
+/* ---------------- notice board ---------------- */
+/* your own messages: graphite at night (no big bright blocks – glare), charcoal by day */
+html[data-palette="titanium"] .post.mine{background:linear-gradient(180deg,#3A3E44 0%,#2D3035 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 2px 3px rgba(0,0,0,.5), 0 14px 28px -14px rgba(0,0,0,.9);color:var(--text)}
+html[data-palette="titanium"] .post.mine .pm{color:var(--muted);opacity:1}
+html[data-palette="titanium"][data-theme="light"] .post.mine{background:var(--btn-primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
+html[data-palette="titanium"][data-theme="light"] .post.mine .pm{color:var(--on-primary);opacity:.8}
+html[data-palette="titanium"] .post.pinned{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+html[data-palette="titanium"] .composer{background:var(--surface);border:0;box-shadow:var(--shadow)}
+
+/* ---------------- progress rings and overview ---------------- */
+html[data-palette="titanium"] .ring .rv{stroke:url(#tiGrad)}
+html[data-palette="titanium"][data-theme="light"] .ring .rv{stroke:url(#tiGradDay)}
+html[data-palette="titanium"] .fcard.hot{box-shadow:0 14px 30px -10px rgba(0,0,0,.7)}
+html[data-palette="titanium"] .wk .dd.today{box-shadow:var(--btn-primary-shadow)}
+html[data-palette="titanium"] .dt-ic{--c:var(--c-file)!important}
+html[data-palette="titanium"] .avs span{background:var(--plate)!important;color:var(--plate-ink)}
+
+/* review sheet tick boxes and step boxes */
+html[data-palette="titanium"] .rvtick .bx{background:var(--field);border-color:var(--line2);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+html[data-palette="titanium"] .rvtick input:checked+.bx{background:var(--btn-primary);border-color:transparent;box-shadow:var(--btn-primary-shadow)}
+/* ticked checklist boxes: a light green fill by day so the dark tick stays sharp */
+html[data-palette="titanium"][data-theme="light"] .step.done .cbox{background:#8FD3B0;border-color:#6FBF97}
+/* calculator keypad: machined keys, operators one step lighter, = in metal */
+html[data-palette="titanium"] .ecgrid button:not(.primary){background:var(--btn);box-shadow:var(--btn-shadow);color:var(--text)}
+html[data-palette="titanium"] .ecgrid button.op{background:linear-gradient(180deg,#3B3F45 0%,#31353A 100%)}
+html[data-palette="titanium"][data-theme="light"] .ecgrid button.op{background:linear-gradient(180deg,#F3F3F0 0%,#E2E2DE 100%)}

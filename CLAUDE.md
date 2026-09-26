@@ -17,7 +17,7 @@ A phone web app (PWA) for two business partners in Durban, South Africa: Chris a
 - Before saying something works, test it and say how you tested it.
 
 ## Files
-index.html (page, main script, demo data) · app.css (all styles) · ui.js (icons, buttons, progress rings) · today.js (Home) · board.js (notice board) · calc.js (calculator) · archive.js (archive + "used before" hints) · directory.js / directory2.js (directory, next-up queue, playbook, WhatsApp chat import) · dealkit.js + kitdata.js (South African deal kit) · task.js (new-task sheet, due dates, typing mode) · extras.js (easy-read guides, + New deal, Speak buttons, voice note, checks, three calculators) · reader.js (Claude reads photos, PDFs, WhatsApp quotes, voice notes → review sheet) · sw.js (service worker, root only) · manifest.webmanifest, icons · version.txt.
+index.html (page, main script, demo data) · app.css (all styles) · ui.js (icons, buttons, progress rings) · today.js (Home) · board.js (notice board) · calc.js (calculator) · archive.js (archive + "used before" hints) · directory.js / directory2.js (directory, next-up queue, playbook, WhatsApp chat import) · dealkit.js + kitdata.js (South African deal kit) · task.js (new-task sheet, due dates, typing mode) · extras.js (easy-read guides, + New deal, Speak buttons, voice note, checks, three calculators) · reader.js (Claude reads photos, PDFs, WhatsApp quotes, voice notes → review sheet) · titanium.css (the Titanium palette, default; Velvet stays in app.css) · sw.js (service worker, root only) · manifest.webmanifest, icons · version.txt.
 tools/make_preview.py (builds preview/ from the root files) · tools/screens.py + tools/metrics.js (screenshots + readability numbers) · tools/flows.py (everyday jobs walked through, PASS/FAIL) · supabase/functions/ask/index.ts and read/index.ts (record copies of the bot and the reader; deploying needs Supabase access) · docs/db/ (proposed database changes).
 
 ## Run and test
@@ -31,7 +31,7 @@ tools/make_preview.py (builds preview/ from the root files) · tools/screens.py 
 ## Readability rules (Chris has keratoconus – these are hard rules)
 - No coloured text. Colour may appear only in filled dots, pills, rails, icons and buttons, always beside neutral text – never in the letters. Red and yellow text are unreadable for him.
 - No pure white text (#FFF); use the off-white tokens. No heavy bold (600+) at large sizes on dark backgrounds (it glares). Don't rely on contrast numbers alone.
-- Minimum sizes and the rest of the look rules are in docs/PLAN.md batch 1. Keep the Velvet palette tokens in app.css (:root and [data-theme="light"]).
+- Minimum sizes and the rest of the look rules are in docs/PLAN.md batch 1. Colours: "Titanium" (titanium.css, html[data-palette="titanium"], the default since 26 Sep 2026) and "Velvet" (tokens in app.css :root and [data-theme="light"]) – keep both; Settings switches. Controls are 40px (main buttons 48px).
 
 ## How the app must behave (standing rules)
 - Claude proposes, people confirm: the bot never ticks checklist steps and never confirms, completes or deletes anything. Anything automatic arrives as "Suggested".

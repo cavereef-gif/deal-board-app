@@ -205,6 +205,12 @@ async def main():
             check("Deal › Numbers › Read terms from a document opens the reader set to this deal", rd['open'] and rd['doc'] and rd['about']=="deal:dm1", str(rd))
             await pg.go_back(); await W()
             check("Back closes the reader", await ev("document.getElementById('rdSheet').classList.contains('hidden')"))
+            # palette: Titanium by default; Settings can switch to Velvet and back
+            p0=await ev("document.documentElement.dataset.palette")
+            await ev("goView('settings')"); await W()
+            await tap("button[data-set=palette][data-v=velvet]"); p1=await ev("document.documentElement.dataset.palette + '|' + getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()")
+            await tap("button[data-set=palette][data-v=titanium]"); p2=await ev("document.documentElement.dataset.palette + '|' + getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()")
+            check("Colours: Titanium by default, Settings switches to Velvet and back", p0=="titanium" and p1.startswith("velvet|") and p2.startswith("titanium|") and p1.split("|")[1]!=p2.split("|")[1], f"{p0} {p1} {p2}")
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)
