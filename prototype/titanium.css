@@ -1,209 +1,215 @@
-/* Deal Board – "Titanium" palette (26 Sep 2026, asked by Chris): silver, titanium, charcoal black, off-white and white,
-   then (same night) "too black and white – bring in shades of blue, keep the colour-coded priority": anodised-titanium blues.
-   Loaded after app.css. Only active on <html data-palette="titanium"> (the default); Settings › Colours can switch back to
-   Velvet, whose tokens in app.css are untouched.
-   Readability rules still hold: letters are always neutral (off-white on dark, charcoal on light – never pure white, never
-   coloured); colour appears only in status dots, rails and a few icons (urgent, drop, done). Titles at 24px stay medium weight.
-   Geometry: 8-point spacing; corners 28 (sheets) · 20 (cards) · 16 (panels, tiles) · 12 (buttons, bars) · 8 (segments inside a
-   bar: 12 − 4px inset, so the curves stay parallel). Light comes from above: every raised surface has a 1px highlight on its top
-   edge and a soft shadow below. */
+/* Deal Board – "Graphite" palette (key "titanium"), the default. Loaded after app.css; only active on <html data-palette="titanium">.
+   Settings › Colours can switch back to Velvet, whose tokens in app.css are untouched.
 
-/* ---------------- tokens: night (dark) – GRAPHITE (26 Sep, Chris: "too much blue"): charcoal and graphite, silver lines,
-   blue only on the main buttons, colour per section (Chrome steel blue · Manganese plum · Transport teal) ---------------- */
+   26 Sep 2026 – "Soft Graphite" (asked by Chris: "the dark layout looks like a christmas tree … a mixture of neumorphism and
+   glass morphism", then "I want the day feature to look as good as the night feature"). Three finishes, night and day:
+   · RAISED SOFT – things you tap (tiles, cards, rows, buttons) sit up from the page: light from the top-left, shadow bottom-right.
+   · PRESSED IN – switches and places you type sink in; the chosen segment sits up.
+   · FROSTED GLASS – things that float: Next up, the top and bottom bars, sheets (backdrop-filter, with the -webkit- form for Safari 16).
+   Colour appears only in small dots (urgent red · late amber · one dot per section) and on the one blue main button.
+   Readability rules still hold: letters are always neutral (off-white on night, charcoal on day – never pure white, never
+   coloured); no heavy weight at large sizes. Titles at 24px stay medium weight.
+   Geometry: 8-point spacing; corners 28 (sheets) · 22 (cards) · 16 (panels, tiles) · 12 (buttons, bars) · 8 (segments in a bar). */
+
+/* ---------------- tokens: NIGHT – one mid-graphite room so both the light edge and the shadow can show ---------------- */
 html[data-palette="titanium"]{
-  --bg:#0D0E10; --bg-a:rgba(13,14,16,.84); --card:#17191C; --card2:#1D2024; --row:#1D2024; --raise:#262A2F; --raise-2:#33383E; --field:#0A0B0C;
-  --line:#272B30; --line2:#434950; --text:#E6E8EB; --muted:#A5ABB4; --ivory:#F2F3F5;
-  --primary:#3765C0; --primary-2:#4574CF; --on-primary:#F1F4F9; --accent:#C9CFD8; --accent2:#E2E6EB; --navy:#1D2024; --teal:#3FC1AE;
-  --grad:linear-gradient(150deg,#8DB3F5 0%,#3F6FD0 45%,#1D3C80 100%);
-  --grad-card:linear-gradient(150deg,#2B2F35 0%,#202328 58%,#17191C 100%);
-  /* status and priority colours: urgent red · overdue amber · done green · suggested grey · low slate */
-  --ok:#4FB58F; --warn:#E4A94A; --bad:#E4655F; --prop:#8C939D; --low:#5C636D; --rail-normal:#8C939D; --rail-default:var(--rail-normal);
-  /* sections: every row, deal and switch carries its section colour (added sections take x1, x2, x3 in turn) */
-  --s-all:#C9CFD8; --s-chrome:#7FA6E3; --s-manganese:#C08AE0; --s-transport:#3FC1AE; --s-other:#8C939D; --s-x1:#D6A46B; --s-x2:#A7CC6E; --s-x3:#E48BAA;
-  --c-wa:#5FD49A; --c-mail:#8EB8FF; --c-call:#6FD0DA; --c-me:#C9CFD8; --c-bot:#B9A2FF; --c-note:#E8C46E; --c-file:#B8BEC7; --c-link:#8EB8FF; --c-mute:#A5ABB4;
-  --c-ok:#6CC9A0; --c-warn:#EDB85C; --c-bad:#F48B85;
-  --tint:14%;
-  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C9CFD8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  --r:20px; --r2:16px; --r3:12px;
-  /* surfaces and light */
-  --surface:linear-gradient(180deg,#1B1D21 0%,#16181B 100%);
-  --shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px rgba(255,255,255,.035), 0 2px 3px rgba(0,0,0,.55), 0 16px 32px -14px rgba(0,0,0,.9);
-  --btn:linear-gradient(180deg,#2A2E34 0%,#23272C 100%);
-  --btn-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.6);
-  --btn-primary:linear-gradient(180deg,#3765C0 0%,#24499A 100%);
-  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.55), 0 8px 18px -8px rgba(55,101,192,.6);
-  --seg-on:linear-gradient(180deg,#3A3F46 0%,#31363C 100%); --seg-on-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 1px 3px rgba(0,0,0,.6);
-  --track-shadow:inset 0 1px 3px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.04);
-  --plate:linear-gradient(150deg,#F4F5F7 0%,#CFD3D9 55%,#9EA4AD 100%); --plate-ink:#15171A;
-  --glow:radial-gradient(120% 60% at 50% -10%,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 60%);
-  --ring1:url(#tiGrad); --ring1-bg:linear-gradient(135deg,#CFE0FF,#2A55A8); --ring2:#3FC1AE; --ring3:#B8BEC7;
+  --bg:#1B1E23; --bg-a:rgba(27,30,35,.84); --card:#1F2227; --card2:#1D2025; --row:#1F2227; --raise:#252930; --raise-2:#2A2F36; --field:#16181C;
+  --line:#2A2E35; --line2:#3A3F47; --text:#E3E6EA; --muted:#A9AFB8; --ivory:#ECEEF1;
+  --primary:#34588F; --primary-2:#3D639C; --on-primary:#EEF1F5; --accent:#AEB5BF; --accent2:#C9CED6; --navy:#1F2227; --teal:#7DB3AA;
+  --grad:linear-gradient(160deg,#4468A3 0%,#2E4F86 100%);
+  --grad-card:linear-gradient(150deg,#2B2F35 0%,#202328 58%,#1F2227 100%);
+  /* status and priority colours – dots only: urgent red · late amber · done green · suggested grey · low slate */
+  --ok:#6DB395; --warn:#D6A55A; --bad:#D9736C; --prop:#8C939D; --low:#5C636D; --rail-normal:#8C939D; --rail-default:var(--rail-normal);
+  /* sections (dots): Chrome steel blue · Manganese plum · Transport teal; added sections take x1, x2, x3 in turn */
+  --s-all:#AEB5BF; --s-chrome:#8EA9D1; --s-manganese:#AE97C6; --s-transport:#7DB3AA; --s-other:#8C939D; --s-x1:#D6A46B; --s-x2:#A7CC6E; --s-x3:#E48BAA;
+  --c-wa:#6DB395; --c-mail:#8EA9D1; --c-call:#7DB3AA; --c-me:#AEB5BF; --c-bot:#B4A6DA; --c-note:#D6A55A; --c-file:#B8BEC7; --c-link:#8EA9D1; --c-mute:#A9AFB8;
+  --c-ok:#6DB395; --c-warn:#D6A55A; --c-bad:#D9736C;
+  --g-bad:#D9736C; --g-over:#D6A55A; --g-today:#E3E6EA; --g-tmrw:#B8BEC7; --g-week:#8C939D; --g-later:#5C636D; --g-deal:#AEB5BF; --g-buyer:#AEB5BF;
+  --tint:12%;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AEB5BF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --r:22px; --r2:16px; --r3:12px;
+  /* the three finishes */
+  --soft-up:-6px -6px 14px rgba(255,255,255,.045), 7px 8px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+  --soft-up-sm:-3px -3px 8px rgba(255,255,255,.04), 4px 5px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  --soft-in:inset 4px 4px 9px rgba(0,0,0,.50), inset -3px -3px 8px rgba(255,255,255,.028);
+  --glass-bg:rgba(36,40,47,.86); --glass-bg-2:rgba(255,255,255,.05);
+  --glass:linear-gradient(145deg,rgba(255,255,255,.085) 0%,rgba(255,255,255,.035) 100%);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.07), 0 20px 40px -18px rgba(0,0,0,.75);
+  --glass-soft:rgba(255,255,255,.06); --glass-soft-edge:inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.06);
+  --surface:#1F2227; --shadow:var(--soft-up);
+  --btn:#23272D; --btn-shadow:var(--soft-up-sm);
+  --btn-primary:linear-gradient(180deg,#3A5F98 0%,#2F5189 100%);
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px -6px rgba(0,0,0,.7);
+  --seg-on:#2A2E35; --seg-on-shadow:var(--soft-up-sm);
+  --track-shadow:var(--soft-in);
+  --plate:linear-gradient(150deg,#D9DDE3 0%,#A9AFB8 100%); --plate-ink:#16181B;
+  --room:radial-gradient(62% 30% at 92% 44%,rgba(128,152,190,.26) 0%,rgba(128,152,190,0) 70%),
+         radial-gradient(55% 28% at 2% 70%,rgba(150,144,172,.14) 0%,rgba(150,144,172,0) 70%),
+         radial-gradient(120% 50% at 50% -10%,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 60%);
+  --ring1:url(#tiGrad); --ring1-bg:linear-gradient(135deg,#CFE0FF,#2A55A8); --ring2:#7DB3AA; --ring3:#B8BEC7; --ring-track:rgba(255,255,255,.09);
   --route:#2A55A8; --route-a:#15171A; --route-b:#5B8DEF;
+  --sw-done:#34588F; --sw-wait:#3A4049; --sw-rest:#30353D; --sw-ink:#F1F4F9;
+  --well:#16181C;
 }
-/* ---------------- tokens: day (light) – white cards on a light stone-grey room, charcoal letters ---------------- */
+/* ---------------- tokens: DAY – a light stone room, soft white light, charcoal letters ---------------- */
 html[data-palette="titanium"][data-theme="light"]{
-  --bg:#ECEEF1; --bg-a:rgba(236,238,241,.86); --card:#FFFFFF; --card2:#F4F5F7; --row:#F4F5F7; --raise:#ECEEF1; --raise-2:#FFFFFF; --field:#FFFFFF;
-  --line:#DADDE2; --line2:#AEB4BC; --text:#15171A; --muted:#4B5058; --ivory:#FFFFFF;
+  --bg:#E3E6EB; --bg-a:rgba(227,230,235,.84); --card:#EEF0F3; --card2:#E8EAEE; --row:#EEF0F3; --raise:#F4F5F7; --raise-2:#FAFBFC; --field:#DCDFE5;
+  --line:#D3D7DD; --line2:#AEB4BC; --text:#15171A; --muted:#4B5058; --ivory:#FFFFFF;
   --primary:#2A57B0; --primary-2:#3564C0; --on-primary:#F3F6FB; --accent:#5A6069; --accent2:#2F3338; --navy:#2F3338; --teal:#0E8F7E;
-  --grad:linear-gradient(150deg,#6F9BEA 0%,#2F5FC0 48%,#1A3A7C 100%);
+  --grad:linear-gradient(160deg,#4F7BD0 0%,#2A57B0 100%);
   --grad-card:linear-gradient(150deg,#4A4F57 0%,#383C42 58%,#26292D 100%);
   --ok:#2E8F66; --warn:#B98118; --bad:#C8463F; --prop:#8A919B; --low:#A3A9B1; --rail-normal:#8A919B; --rail-default:var(--rail-normal);
   --s-all:#5A6069; --s-chrome:#3E6FC0; --s-manganese:#9A4FC4; --s-transport:#0E8F7E; --s-other:#8A919B; --s-x1:#A8691F; --s-x2:#5E8A1E; --s-x3:#B8406A;
   --c-wa:#128C4A; --c-mail:#1F5FD1; --c-call:#0B7285; --c-me:#4B5058; --c-bot:#6A4FC8; --c-note:#8A5E00; --c-file:#4B5058; --c-link:#1F5FD1; --c-mute:#4B5058;
   --c-ok:#1E7A55; --c-warn:#8A5A00; --c-bad:#B03A34;
-  --tint:11%;
+  --g-bad:#C8463F; --g-over:#B98118; --g-today:#15171A; --g-tmrw:#5A6069; --g-week:#8A919B; --g-later:#B3B8BF; --g-deal:#5A6069; --g-buyer:#5A6069;
+  --tint:10%;
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234B5058' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  --surface:linear-gradient(180deg,#FFFFFF 0%,#F8F9FA 100%);
-  --shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(20,22,26,.07), 0 2px 4px -1px rgba(20,22,26,.14), 0 16px 30px -14px rgba(20,22,26,.36);
-  --btn:linear-gradient(180deg,#FFFFFF 0%,#F0F1F3 100%);
-  --btn-shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(20,22,26,.11), 0 1px 2px rgba(20,22,26,.12), 0 4px 10px -5px rgba(20,22,26,.2);
+  --soft-up:-6px -6px 14px rgba(255,255,255,.9), 7px 8px 18px rgba(20,22,26,.13), inset 0 1px 0 #FFFFFF;
+  --soft-up-sm:-3px -3px 8px rgba(255,255,255,.85), 4px 5px 10px rgba(20,22,26,.12), inset 0 1px 0 #FFFFFF;
+  --soft-in:inset 4px 4px 9px rgba(20,22,26,.12), inset -3px -3px 8px rgba(255,255,255,.9);
+  --glass-bg:rgba(240,242,245,.84); --glass-bg-2:rgba(255,255,255,.5);
+  --glass:linear-gradient(145deg,rgba(255,255,255,.72) 0%,rgba(255,255,255,.42) 100%);
+  --glass-edge:inset 0 1px 0 #FFFFFF, inset 0 0 0 1px rgba(255,255,255,.7), 0 20px 40px -18px rgba(20,22,26,.28);
+  --glass-soft:rgba(255,255,255,.55); --glass-soft-edge:inset 0 1px 0 #FFFFFF, inset 0 0 0 1px rgba(20,22,26,.07);
+  --surface:#EEF0F3; --shadow:var(--soft-up);
+  --btn:#F1F2F5; --btn-shadow:var(--soft-up-sm);
   --btn-primary:linear-gradient(180deg,#3564C0 0%,#244B98 100%);
-  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 1px 2px rgba(20,22,26,.3), 0 6px 14px -6px rgba(36,75,152,.55);
-  --seg-on:linear-gradient(180deg,#FFFFFF 0%,#F6F7F8 100%); --seg-on-shadow:0 0 0 1px rgba(20,22,26,.08), 0 1px 3px rgba(20,22,26,.22);
-  --track-shadow:inset 0 1px 3px rgba(20,22,26,.12), 0 1px 0 #FFFFFF;
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 6px 14px -6px rgba(36,75,152,.55);
+  --seg-on:#F8F9FB; --seg-on-shadow:var(--soft-up-sm);
+  --track-shadow:var(--soft-in);
   --plate:linear-gradient(150deg,#FFFFFF 0%,#E3E6EA 55%,#B9BFC7 100%); --plate-ink:#15171A;
-  --glow:radial-gradient(120% 60% at 50% -10%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 62%);
-  --ring1:url(#tiGradDay); --ring1-bg:linear-gradient(135deg,#7FA8F0,#1A3A7C); --ring2:#0E8F7E; --ring3:#9AA1AB;
+  --room:radial-gradient(62% 30% at 92% 44%,rgba(80,110,160,.13) 0%,rgba(80,110,160,0) 70%),
+         radial-gradient(55% 28% at 2% 70%,rgba(120,110,150,.08) 0%,rgba(120,110,150,0) 70%),
+         radial-gradient(120% 50% at 50% -10%,rgba(255,255,255,.9) 0%,rgba(255,255,255,0) 60%);
+  --ring1:url(#tiGradDay); --ring1-bg:linear-gradient(135deg,#7FA8F0,#1A3A7C); --ring2:#0E8F7E; --ring3:#9AA1AB; --ring-track:rgba(20,22,26,.09);
   --route:#2A57B0; --route-a:#15171A; --route-b:#6F9BEA;
+  --sw-done:#2A57B0; --sw-wait:#5A6069; --sw-rest:#5C626B; --sw-ink:#F3F6FB;
+  --well:#DCDFE5;
 }
 
-/* ---------------- the room: charcoal (or stone) with soft light from the top ---------------- */
+/* ---------------- the room ---------------- */
 html[data-palette="titanium"] body{background:transparent}
-html[data-palette="titanium"] body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--glow)}
-html[data-palette="titanium"] header.appbar{background:var(--bg-a);-webkit-backdrop-filter:saturate(1.2) blur(14px);backdrop-filter:saturate(1.2) blur(14px)}
+html[data-palette="titanium"] body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--room)}
 html[data-palette="titanium"] ::selection{background:var(--primary);color:var(--on-primary)}
 
-/* ---------------- surfaces: cards and rows ---------------- */
-html[data-palette="titanium"] :is(.card,.deal,.ccard,.pinfo,.tsec,.hero,form.panel,.qteaser,.cnote,.brief,.lead,.bub.a,.ask,.post,.sbar,.hrow,.dpage,.bl-main,.fcard:not(.hot),.dtile){background:var(--surface);box-shadow:var(--shadow);border:0}
-html[data-palette="titanium"] :is(.card,.deal,.ccard,.dpage,.lead,.ask,.brief,.pinfo,.tsec,.hero,.qteaser,.cnote){border-radius:20px}
+/* ---------------- FROSTED GLASS: the top bar, the bottom bar, Next up, sheets ---------------- */
+html[data-palette="titanium"] header.appbar{background:var(--bg-a);-webkit-backdrop-filter:blur(22px) saturate(1.3);backdrop-filter:blur(22px) saturate(1.3);box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
+html[data-palette="titanium"][data-theme="light"] header.appbar{box-shadow:inset 0 -1px 0 rgba(20,22,26,.06)}
+html[data-palette="titanium"] .tabs{background:var(--glass-bg);background-image:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:var(--glass-edge);border:0}
+html[data-palette="titanium"] .tabs button.on{background:rgba(0,0,0,.22);box-shadow:var(--soft-in);color:var(--text)}
+html[data-palette="titanium"][data-theme="light"] .tabs button.on{background:var(--field)}
+html[data-palette="titanium"] .tabs button.on:after{background:var(--accent)}
+html[data-palette="titanium"] .tabs .plus,html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background:var(--grad);background-color:var(--primary);color:var(--on-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 10px 22px -6px rgba(0,0,0,.8), 0 0 0 5px var(--bg);outline:0}
+html[data-palette="titanium"][data-theme="light"] .tabs .plus,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 10px 22px -6px rgba(16,32,64,.45), 0 0 0 5px var(--bg)}
+html[data-palette="titanium"] .tabs .plus.on{outline:2px solid var(--accent);outline-offset:3px}
+html[data-palette="titanium"] .tabs .plus svg{stroke:var(--on-primary)}
+html[data-palette="titanium"] .tabs .plus .pl{color:var(--on-primary)}
+html[data-palette="titanium"] .hero2{background:var(--glass-bg-2);background-image:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);box-shadow:var(--glass-edge);border-radius:26px}
+html[data-palette="titanium"] .hero2:before{display:none}
+html[data-palette="titanium"] .sheet{background:rgba(10,12,15,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+html[data-palette="titanium"][data-theme="light"] .sheet{background:rgba(16,32,64,.28)}
+html[data-palette="titanium"] .sheet-b{background:var(--glass-bg);background-image:var(--glass);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);border-radius:28px 28px 0 0;box-shadow:var(--glass-edge)}
+
+/* ---------------- RAISED SOFT: cards, rows, tiles, buttons ---------------- */
+html[data-palette="titanium"] :is(.card,.deal,.ccard,.pinfo,.tsec,.hero,form.panel,.qteaser,.cnote,.brief,.lead,.bub.a,.ask,.post,.sbar,.hrow,.dpage,.bl-main,.fcard:not(.hot),.dtile,.hcard,.bothelp,.composer){background:var(--surface);box-shadow:var(--soft-up);border:0}
+html[data-palette="titanium"] :is(.card,.deal,.ccard,.dpage,.lead,.ask,.brief,.pinfo,.tsec,.hero,.qteaser,.cnote,.hcard,.bothelp){border-radius:22px}
 html[data-palette="titanium"] :is(.hrow,.sbar,.bl-main){border-radius:16px}
 html[data-palette="titanium"] :is(.nextup,.rvq,.cres,.duerow,.step.next,.setc .kv,.pcard .hrow,.dpage .hrow,.kitban){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
 html[data-palette="titanium"] .pcard .hrow,html[data-palette="titanium"] .dpage .dpanel .hrow{border-radius:16px}
 html[data-palette="titanium"] .nextup:before{background:linear-gradient(180deg,var(--accent2),var(--accent))}
-
-/* sheets: deeper shade behind, a lit top edge */
-html[data-palette="titanium"] .sheet{background:rgba(4,8,14,.64)}
-html[data-palette="titanium"][data-theme="light"] .sheet{background:rgba(16,32,64,.40)}
-html[data-palette="titanium"] .sheet-b{background:var(--surface);border-radius:28px 28px 0 0;box-shadow:inset 0 1px 0 rgba(168,198,255,.1), 0 -18px 40px rgba(0,0,0,.55)}
-html[data-palette="titanium"][data-theme="light"] .sheet-b{box-shadow:inset 0 1px 0 #FFFFFF, 0 -18px 40px rgba(16,32,64,.28)}
-
-/* ---------------- buttons: machined tiles ---------------- */
-html[data-palette="titanium"] :is(.ib,.backb,#botBtn,#menuBtn.avatar,.sheet-h button,.h2row>button,.kitline button,.acts>button:not(.primary),.acts0>button:not(.primary),.acts0>.btnlink,.acts>.btnlink,.row2 button:not(.primary),.wide:not(.primary),.seg:not(.on),.chips:not(.segbar) button:not(.on),.hscroll button:not(.on),.linkb.btn){background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);border:0;color:var(--text)}
+html[data-palette="titanium"] .hlist .hcard{background:transparent;box-shadow:none}
+html[data-palette="titanium"] .hlist .hcard .hc-b,html[data-palette="titanium"] .scard{background:var(--surface);box-shadow:var(--soft-up);border-radius:22px}
+html[data-palette="titanium"] .scont{background:var(--surface);background-color:var(--surface)}
+html[data-palette="titanium"] :is(.ib,.backb,#botBtn,#menuBtn.avatar,.sheet-h button,.h2row>button,.kitline button,.acts>button:not(.primary),.acts0>button:not(.primary),.acts0>.btnlink,.acts>.btnlink,.row2 button:not(.primary),.wide:not(.primary),.seg:not(.on),.chips:not(.segbar) button:not(.on),.hscroll button:not(.on),.linkb.btn,.choose button,.askadd button,.secpick>button,.addgrid button,.qa,.tdone .tacts>button:not(.primary)){background:var(--btn);background-color:var(--btn);box-shadow:var(--soft-up-sm);border:0;color:var(--text)}
 html[data-palette="titanium"] :is(button.primary,.nowtag,.nexttag){background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary);border:0}
-html[data-palette="titanium"] :is(.seg.on,.chips:not(.segbar) button.on,.hscroll button.on){background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 1.5px var(--accent);color:var(--text);border:0}
-/* counts inside a chosen chip stay as clear as its word */
-html[data-palette="titanium"] :is(.seg.on,.hscroll button.on) span{color:var(--text);opacity:1}
 html[data-palette="titanium"] button.primary svg.i{color:var(--on-primary)}
+html[data-palette="titanium"] :is(.seg.on,.chips:not(.segbar) button.on,.hscroll button.on,.secpick>button.on){background:var(--seg-on);background-color:var(--seg-on);box-shadow:var(--soft-up-sm),inset 0 0 0 1.5px var(--accent);color:var(--text);border:0}
+html[data-palette="titanium"] :is(.seg.on,.hscroll button.on) span{color:var(--text);opacity:1}
 html[data-palette="titanium"] .ib.on{outline:2px solid var(--ic);outline-offset:-2px}
 html[data-palette="titanium"] .ib svg.i{color:var(--ic,var(--c-mute))}
-
-/* one-of-several bars: a recessed track with a raised metal segment */
-html[data-palette="titanium"] :is(.seg2,.segbar,.dtabs4){border-radius:12px;padding:4px;background:var(--field);border:0;box-shadow:var(--track-shadow)}
-html[data-palette="titanium"] :is(.seg2>button,.seg2>label,.segbar>button,.dtabs4>.dtab){border-radius:8px;background:transparent;box-shadow:none;color:var(--text)}
-html[data-palette="titanium"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on,.secbar>button.on){background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow);color:var(--text)}
-html[data-palette="titanium"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on) span{color:var(--text)}
-html[data-palette="titanium"][data-theme="light"] :is(.seg2,.segbar,.dtabs4,.secbar){background:#E1E4E8}
-
-/* fields */
-html[data-palette="titanium"] :is(input,select,textarea){border-color:var(--line2);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
-html[data-palette="titanium"][data-theme="light"] :is(input,select,textarea){box-shadow:inset 0 1px 2px rgba(16,32,64,.08)}
-html[data-palette="titanium"] :is(input,select,textarea):focus{border-color:#7FA6E3;box-shadow:0 0 0 3px rgba(127,166,227,.3)}
-html[data-palette="titanium"][data-theme="light"] :is(input,select,textarea):focus{box-shadow:0 0 0 3px rgba(47,102,208,.22)}
-html[data-palette="titanium"] .ask textarea{box-shadow:none}
-
-/* ---------------- brand marks ---------------- */
+html[data-palette="titanium"] .hc-n{background:var(--well);box-shadow:var(--soft-in)}
+html[data-palette="titanium"] .hc-more,html[data-palette="titanium"] .tdone .tcancel{background:transparent;box-shadow:none}
 html[data-palette="titanium"] .logo{background:var(--plate);color:var(--plate-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 6px rgba(0,0,0,.45);font-weight:600}
 html[data-palette="titanium"][data-theme="light"] .logo{background:var(--btn-primary);color:var(--on-primary);box-shadow:var(--btn-primary-shadow)}
 
-/* bottom bar and the + button */
-html[data-palette="titanium"] .tabs{background:var(--surface);box-shadow:var(--shadow);border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
-html[data-palette="titanium"] .tabs button.on{background:var(--raise);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-html[data-palette="titanium"][data-theme="light"] .tabs button.on{background:var(--raise-2);box-shadow:none}
-html[data-palette="titanium"] .tabs button.on:after{background:var(--accent)}
-html[data-palette="titanium"] .tabs .plus{background:var(--grad);color:var(--on-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 10px 24px rgba(0,0,0,.55), 0 6px 22px -6px rgba(63,111,208,.7), 0 0 0 5px var(--bg)}
-html[data-palette="titanium"] .tabs .plus svg{stroke:var(--on-primary)}
-html[data-palette="titanium"][data-theme="light"] .tabs .plus{color:var(--on-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 10px 22px rgba(16,32,64,.35), 0 0 0 5px var(--bg)}
-html[data-palette="titanium"][data-theme="light"] .tabs .plus svg{stroke:var(--on-primary)}
+/* ---------------- PRESSED IN: one-of-several bars, fields, wells ---------------- */
+html[data-palette="titanium"] :is(.seg2,.segbar,.dtabs4,.secbar,.wkstrip){border-radius:12px;padding:4px;background:var(--field);border:0;box-shadow:var(--soft-in)}
+html[data-palette="titanium"] .wkstrip{padding:6px 4px}
+html[data-palette="titanium"] :is(.seg2>button,.seg2>label,.segbar>button,.dtabs4>.dtab){border-radius:8px;background:transparent;box-shadow:none;color:var(--text)}
+html[data-palette="titanium"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on,.secbar>button.on,.wkstrip>button.on){background:var(--seg-on);background-color:var(--seg-on);box-shadow:var(--soft-up-sm);color:var(--text)}
+html[data-palette="titanium"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on) span{color:var(--text)}
+html[data-palette="titanium"] :is(input,select,textarea){background:var(--field);border-color:transparent;box-shadow:var(--soft-in)}
+html[data-palette="titanium"] :is(input,select,textarea):focus{border-color:transparent;box-shadow:var(--soft-in),0 0 0 3px rgba(127,166,227,.35)}
+html[data-palette="titanium"][data-theme="light"] :is(input,select,textarea):focus{box-shadow:var(--soft-in),0 0 0 3px rgba(42,87,176,.28)}
+html[data-palette="titanium"] .ask textarea{box-shadow:var(--soft-in)}
+html[data-palette="titanium"] :is(.addgrid .qi,.qa .qi,.askadd .qi){background:var(--well);color:var(--text);border-radius:10px;box-shadow:var(--soft-in)}
+html[data-palette="titanium"] :is(.addgrid .qi svg.i,.askadd .qi svg.i){color:var(--text)}
+html[data-palette="titanium"] .bh-ex button{background:var(--well);box-shadow:var(--soft-in)}
+html[data-palette="titanium"] .trr{background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+html[data-palette="titanium"] .trfold{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}
 
-/* ---------------- + sheet: twelve machined tiles with silver icon plates ---------------- */
-html[data-palette="titanium"] .addgrid button{background:var(--btn);box-shadow:var(--btn-shadow);border-radius:16px;color:var(--text)}
-html[data-palette="titanium"] :is(.addgrid .qi,.qa .qi){background:var(--plate);color:var(--plate-ink);border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 1px 3px rgba(0,0,0,.45)}
-html[data-palette="titanium"][data-theme="light"] :is(.addgrid .qi,.qa .qi){box-shadow:inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(16,32,64,.10), 0 2px 4px rgba(16,32,64,.18)}
-html[data-palette="titanium"] .addgrid .qi svg.i{color:var(--plate-ink)}
-html[data-palette="titanium"] .qa{background:var(--btn);box-shadow:var(--btn-shadow)}
+/* ---------------- COLOUR ONLY IN DOTS ---------------- */
+/* section switch: a small dot before each name instead of coloured underlines and rings */
+html[data-palette="titanium"] .secbar>button{display:inline-flex;align-items:center;gap:7px;padding:6px 8px}
+html[data-palette="titanium"] .secbar>button:after{position:static;flex:none;order:-1;width:8px;height:8px;border-radius:50%;opacity:1;background:var(--sc)}
+html[data-palette="titanium"] .secbar>button[data-sec="All"]:after{background:var(--muted)}
+html[data-palette="titanium"] .secbar>button.on{box-shadow:var(--soft-up-sm)}
+html[data-palette="titanium"] .secpick>button.on{box-shadow:var(--soft-up-sm),inset 0 0 0 2px var(--sc,var(--accent))}
+/* Today tiles: no wash, no rail – the colour is one dot beside the icon; a chosen tile is pressed in */
+html[data-palette="titanium"] .htile{background:var(--surface);box-shadow:var(--soft-up);border:0}
+html[data-palette="titanium"] .htile:before{display:none}
+html[data-palette="titanium"] .htiles3 .htile{padding:12px 12px 12px 14px}
+html[data-palette="titanium"] .htile .ht-i{display:flex;align-items:center;gap:6px;width:auto}
+html[data-palette="titanium"] .htile .ht-i:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--tc)}
+html[data-palette="titanium"] .htile .ht-i svg.i{color:var(--muted)}
+html[data-palette="titanium"] .htile.on{background:var(--field);background-image:none;box-shadow:var(--soft-in)}
+/* name badges: neutral, the section as a small dot on the edge */
+html[data-palette="titanium"] .av2{position:relative;background:var(--raise);background-image:none;box-shadow:var(--soft-up-sm);color:var(--text)}
+html[data-palette="titanium"] .av2:after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 2px var(--surface)}
+html[data-palette="titanium"] .hero2 .av2{background:var(--glass-soft);box-shadow:var(--glass-soft-edge)}
+/* status pills: neutral pill, coloured dot only */
+html[data-palette="titanium"] :is(.chip2,.chip2.c-bad,.chip2.c-warn){background:var(--glass-soft);background-image:none}
+/* rails go: Today rows, suggestion cards and deals carry their dot instead */
+html[data-palette="titanium"] .hlist .hrow:before,html[data-palette="titanium"] .scard:before,html[data-palette="titanium"] .deal.srail:before{display:none}
+/* swipe actions: blue for Done (the main action), graphite for the rest – the icons tell them apart */
+html[data-palette="titanium"] :is(.sw-done,.sw-confirm,.sw-ftdone){background:var(--sw-done)!important;color:var(--sw-ink)}
+html[data-palette="titanium"] :is(.sw-chased,.sw-tomorrow,.sw-fu3){background:var(--sw-wait)!important;color:var(--sw-ink)}
+html[data-palette="titanium"] :is(.sw-urgent,.sw-normal,.sw-drop){background:var(--sw-rest)!important;color:var(--sw-ink)}
+html[data-palette="titanium"] .sact button svg.i{color:var(--sw-ink)}
+html[data-palette="titanium"] .h2-acts button:not(.sw-done):not(.sw-confirm):not(.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-drop{background:var(--glass-soft)!important;background-color:var(--glass-soft)!important;box-shadow:var(--glass-soft-edge);color:var(--text)}
+html[data-palette="titanium"] .sc-acts .sw-drop{background:var(--btn)!important;background-color:var(--btn)!important;box-shadow:var(--soft-up-sm)}
+html[data-palette="titanium"] .h2-acts button:not(.sw-done):not(.sw-confirm):not(.sw-ftdone) svg.i,html[data-palette="titanium"] .sc-acts .sw-drop svg.i{color:var(--text)}
+html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-confirm{background:var(--btn-primary)!important;background-color:var(--primary)!important;box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
+html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone) svg.i,html[data-palette="titanium"] .sc-acts .sw-confirm svg.i{color:var(--on-primary)}
+/* quiet icons where colour was only decoration */
+html[data-palette="titanium"] .bl-l svg.i,html[data-palette="titanium"] .bh-h svg.i{color:var(--muted)}
+html[data-palette="titanium"] .dt-ic{--c:var(--accent)!important}
 
 /* ---------------- notice board ---------------- */
-/* your own messages: deep steel blue at night (no big bright blocks – glare), royal blue by day */
-html[data-palette="titanium"] .post.mine{background:linear-gradient(180deg,#2D3137 0%,#25292E 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 2px 3px rgba(0,0,0,.5), 0 14px 28px -14px rgba(0,0,0,.9);color:var(--text)}
+html[data-palette="titanium"] .post.mine{background:var(--raise-2);box-shadow:var(--soft-up);color:var(--text)}
 html[data-palette="titanium"] .post.mine .pm{color:var(--muted);opacity:1}
-html[data-palette="titanium"][data-theme="light"] .post.mine{background:#E3E6EA;box-shadow:inset 0 0 0 1px #D2D6DC;color:var(--text)}
-html[data-palette="titanium"][data-theme="light"] .post.mine .pm{color:var(--muted);opacity:1}
-html[data-palette="titanium"] .post.pinned{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
-html[data-palette="titanium"] .composer{background:var(--surface);border:0;box-shadow:var(--shadow)}
+html[data-palette="titanium"] .post.pinned{box-shadow:var(--soft-up),inset 0 0 0 2px var(--accent)}
+html[data-palette="titanium"] .post .pa a{background:var(--glass-soft);box-shadow:var(--glass-soft-edge)}
+
+/* ---------------- the bot's page ---------------- */
+html[data-palette="titanium"] .bub.u{background:var(--raise-2);color:var(--text);box-shadow:var(--soft-up-sm)}
 
 /* ---------------- progress rings and overview ---------------- */
 html[data-palette="titanium"] .ring .rv{stroke:url(#tiGrad)}
 html[data-palette="titanium"][data-theme="light"] .ring .rv{stroke:url(#tiGradDay)}
+html[data-palette="titanium"] .ring .rt{stroke:var(--ring-track)}
 html[data-palette="titanium"] .fcard.hot{box-shadow:0 14px 30px -10px rgba(0,0,0,.7)}
+html[data-palette="titanium"][data-theme="light"] .fcard.hot{box-shadow:0 14px 30px -10px rgba(16,32,64,.35)}
 html[data-palette="titanium"] .wk .dd.today{box-shadow:var(--btn-primary-shadow)}
-html[data-palette="titanium"] .dt-ic{--c:var(--accent)!important}
 html[data-palette="titanium"] .avs span{background:var(--plate)!important;color:var(--plate-ink)}
 
-/* review sheet tick boxes and step boxes */
-html[data-palette="titanium"] .rvtick .bx{background:var(--field);border-color:var(--line2);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+/* ---------------- review sheet tick boxes, checklist boxes, keypads ---------------- */
+html[data-palette="titanium"] .rvtick .bx{background:var(--well);border-color:transparent;box-shadow:var(--soft-in)}
 html[data-palette="titanium"] .rvtick input:checked+.bx{background:var(--btn-primary);border-color:transparent;box-shadow:var(--btn-primary-shadow)}
-/* ticked checklist boxes: a light green fill by day so the dark tick stays sharp */
 html[data-palette="titanium"][data-theme="light"] .step.done .cbox{background:#8FD3B0;border-color:#6FBF97}
-/* calculator keypad: machined keys, operators one step lighter, = in metal */
-html[data-palette="titanium"] .ecgrid button:not(.primary){background:var(--btn);box-shadow:var(--btn-shadow);color:var(--text)}
-html[data-palette="titanium"] .ecgrid button.op{background:linear-gradient(180deg,#363B42 0%,#2D3137 100%)}
-html[data-palette="titanium"][data-theme="light"] .ecgrid button.op{background:linear-gradient(180deg,#F0F1F3 0%,#E1E4E8 100%)}
-/* priority on every task row (the 4px rail on the left, beside neutral text): urgent red · overdue amber · normal blue ·
-   suggested grey · low slate – the default rail colour comes from --rail-default above */
-
-/* ---------------- Home v2: tiles and group cards ---------------- */
-/* group colours, all in the blue family plus the two warning colours: today royal blue · tomorrow cyan · next 7 days periwinkle ·
-   later slate · overdue amber · urgent red · suggested grey · deals ice blue · buyer search teal */
-html[data-palette="titanium"]{--g-today:#E6E8EB;--g-tmrw:#B8BEC7;--g-week:#8C939D;--g-later:#5C636D;--g-deal:#C9CFD8;--g-buyer:#C9CFD8}
-html[data-palette="titanium"][data-theme="light"]{--g-today:#15171A;--g-tmrw:#5A6069;--g-week:#8A919B;--g-later:#B3B8BF;--g-deal:#5A6069;--g-buyer:#5A6069}
-html[data-palette="titanium"] .hcard{background:var(--surface);box-shadow:var(--shadow);border-radius:20px}
-html[data-palette="titanium"] .htile:not(.on){box-shadow:var(--shadow)}
-html[data-palette="titanium"] .hc-n{background:var(--raise)}
-html[data-palette="titanium"] .hc-more,html[data-palette="titanium"] .tdone .tcancel{background:transparent;box-shadow:none}
-html[data-palette="titanium"] .tdone .tacts>button:not(.primary){background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);border:0;color:var(--text)}
-/* transport calculator: numbered step discs in blue metal, result lines inset */
+html[data-palette="titanium"] .ecgrid button:not(.primary){background:var(--btn);box-shadow:var(--soft-up-sm);color:var(--text)}
+html[data-palette="titanium"] .ecgrid button.op{background:var(--raise-2)}
 html[data-palette="titanium"] .trs-n{background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow)}
-html[data-palette="titanium"] .trr{background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
-html[data-palette="titanium"] .trfold{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}
-html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary);outline:0}
-html[data-palette="titanium"] .trdeals .ib.on svg.i{color:var(--on-primary)}
-html[data-palette="titanium"] .trdeals .ib:is(.on,#_) .ibw{color:var(--on-primary)}
-/* sections in graphite: the switch track like the other bars; tiles and cards on graphite metal */
-html[data-palette="titanium"] .secbar{border:0;background:var(--field);box-shadow:var(--track-shadow)}
-html[data-palette="titanium"] .secbar>button.on{background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--sc);color:var(--text)}
-html[data-palette="titanium"] .secpick>button{background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);color:var(--text)}
-html[data-palette="titanium"] .secpick>button.on{background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--sc,var(--accent))}
-html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--s-transport);color:var(--text)}
+html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--seg-on);background-color:var(--seg-on);box-shadow:var(--soft-up-sm),inset 0 0 0 2px var(--s-transport);color:var(--text);outline:0}
 html[data-palette="titanium"] .trdeals .ib:is(.on,#_) :is(.ibw,svg.i){color:var(--text)}
-html[data-palette="titanium"] .bothelp{background:var(--surface);box-shadow:var(--shadow);border-radius:20px}
-html[data-palette="titanium"] .bh-ex button{background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
-html[data-palette="titanium"] .choose button{background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);color:var(--text)}
-/* your own chat lines: raised graphite, not blue (blue is for main buttons only) */
-html[data-palette="titanium"] .bub.u{background:var(--raise-2);color:var(--text);box-shadow:var(--seg-on-shadow)}
-html[data-palette="titanium"][data-theme="light"] .bub.u{background:#E3E6EA;color:var(--text);box-shadow:inset 0 0 0 1px #D2D6DC}
-/* Ask page Add tiles: machined tiles with silver icon plates, like the old + sheet */
-html[data-palette="titanium"] .askadd button{background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);color:var(--text)}
-html[data-palette="titanium"] .askadd .qi{background:var(--plate);color:var(--plate-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 1px 3px rgba(0,0,0,.45)}
-html[data-palette="titanium"] .askadd .qi svg.i{color:var(--plate-ink)}
-html[data-palette="titanium"] .tabs .plus .pl{color:var(--on-primary)}
-html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background:var(--grad);color:var(--on-primary);outline:2px solid var(--accent);outline-offset:3px}
-html[data-palette="titanium"] .tabs .plus,html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background-color:var(--primary)}
-/* modern Today in graphite */
-html[data-palette="titanium"] .hlist .hcard{background:transparent;box-shadow:none}
-html[data-palette="titanium"] .hlist .hcard .hc-b,html[data-palette="titanium"] .scard{background:var(--surface);box-shadow:var(--shadow)}
-html[data-palette="titanium"] .scont{background:var(--surface);background-color:var(--card)}
-html[data-palette="titanium"] .wkstrip{border:0;background:var(--field);box-shadow:var(--track-shadow)}
-html[data-palette="titanium"][data-theme="light"] .wkstrip{background:#E1E4E8}
-html[data-palette="titanium"] .wkstrip>button.on{background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--accent)}
-html[data-palette="titanium"] .h2-acts button:not(.sw-done):not(.sw-confirm):not(.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-drop{background:var(--btn)!important;background-color:var(--raise)!important;box-shadow:var(--btn-shadow)}
-html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-confirm{background:var(--btn-primary)!important;background-color:var(--primary)!important;box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
-html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone) svg.i,html[data-palette="titanium"] .sc-acts .sw-confirm svg.i{color:var(--on-primary)}
