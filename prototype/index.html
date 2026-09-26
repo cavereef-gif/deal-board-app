@@ -9,8 +9,8 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
-<link rel="stylesheet" href="app.css?v=17.202609262033">
-<link rel="stylesheet" href="titanium.css?v=17.202609262033">
+<link rel="stylesheet" href="app.css?v=17.202609262043">
+<link rel="stylesheet" href="titanium.css?v=17.202609262043">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -224,7 +224,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609262033"></script>
+<script src="ui.js?v=17.202609262043"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -586,7 +586,7 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}`;
+    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
 // Free map services (26 Sep 2026): keys typed once here, stored encrypted like the bot key. Geoapify is the one that matters;
 // TomTom is an optional second check on distances; HERE is for later.
@@ -712,7 +712,7 @@ function dealPageHtml(d){
     h += `<div class="lbl">Background</div>` + infoHtml(d);
   } else if (t === "notes") {
     h += (dds.length ? draftHtml("deal", d.id, "") : "") + `<div class="lbl" style="margin-top:0">Notes</div>` + notesBlock(ns, "deal", d.id);
-    h += `<div class="lbl">Files · ${fN}</div>` + filesHtml("deal", d.id);
+    h += `<div class="lbl">Files · ${fN}</div>` + (window.driveLinkHtml ? driveLinkHtml(d) : "") + filesHtml("deal", d.id);
     h += `<div class="lbl">History</div>` + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
   } else if (t === "guide") h += kitGuideHtml(d);
   h += `</div><div class="dfoot">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}<label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div></div>`;
@@ -1252,21 +1252,22 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609262033"></script>
-<script src="directory2.js?v=17.202609262033"></script>
-<script src="today.js?v=17.202609262033"></script>
-<script src="task.js?v=17.202609262033"></script>
-<script src="kitdata.js?v=17.202609262033"></script>
-<script src="dealkit.js?v=17.202609262033"></script>
-<script src="board.js?v=17.202609262033"></script>
-<script src="calc.js?v=17.202609262033"></script>
-<script src="archive.js?v=17.202609262033"></script>
-<script src="extras.js?v=17.202609262033"></script>
-<script src="easy.js?v=17.202609262033"></script>
-<script src="reader.js?v=17.202609262033"></script>
-<script src="sections.js?v=17.202609262033"></script>
-<script src="bot.js?v=17.202609262033"></script>
-<script src="motion.js?v=17.202609262033"></script>
+<script src="directory.js?v=17.202609262043"></script>
+<script src="directory2.js?v=17.202609262043"></script>
+<script src="today.js?v=17.202609262043"></script>
+<script src="task.js?v=17.202609262043"></script>
+<script src="kitdata.js?v=17.202609262043"></script>
+<script src="dealkit.js?v=17.202609262043"></script>
+<script src="board.js?v=17.202609262043"></script>
+<script src="calc.js?v=17.202609262043"></script>
+<script src="archive.js?v=17.202609262043"></script>
+<script src="extras.js?v=17.202609262043"></script>
+<script src="easy.js?v=17.202609262043"></script>
+<script src="google.js?v=17.202609262043"></script>
+<script src="reader.js?v=17.202609262043"></script>
+<script src="sections.js?v=17.202609262043"></script>
+<script src="bot.js?v=17.202609262043"></script>
+<script src="motion.js?v=17.202609262043"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
