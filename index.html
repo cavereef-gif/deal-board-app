@@ -586,7 +586,7 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
+    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
 // Free map services (26 Sep 2026): keys typed once here, stored encrypted like the bot key. Geoapify is the one that matters;
 // TomTom is an optional second check on distances; HERE is for later.
@@ -1264,6 +1264,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="extras.js?v=17"></script>
 <script src="easy.js?v=17"></script>
 <script src="google.js?v=17"></script>
+<script src="push.js?v=17"></script>
 <script src="reader.js?v=17"></script>
 <script src="sections.js?v=17"></script>
 <script src="bot.js?v=17"></script>

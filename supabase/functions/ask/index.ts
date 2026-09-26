@@ -1,4 +1,4 @@
-// Record copy of the deployed Supabase edge function `ask` (v10, 26 Sep 2026). One example name was replaced because this repo is public.
+// Record copy of the deployed Supabase edge function `ask` (v11, 26 Sep 2026: prompt caching – see "prompt caching" below). One example name differs from v10 because this repo is public.
 // v10: app_action tool for the v17 app (sent app:2) – open/show/calculator at once, changes only prepared ("Do it" in the app).
 // Older apps (no app flag) get exactly the v9 tools. propose_item takes an optional due date; the board lists due dates.
 // Deploying needs Supabase access (done from the Claude project), never from this repo.
@@ -235,6 +235,7 @@ async function anthropic(key: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const data = await r.json();
+  if (data && data.usage) console.log("usage " + JSON.stringify(data.usage));   // shows cache reads in the function logs
   if (!r.ok) { const m = data?.error?.message || `Anthropic API ${r.status}`; throw new Error(/x-api-key|authentication/i.test(m) ? "The saved bot key is not valid. Open Bot, tap the key box and paste a key that starts with sk-ant-." : m); }
   return data;
 }
@@ -291,9 +292,17 @@ Deno.serve(async (req: Request) => {
       `Gates: ${(gates || []).map((g: any) => `${g.title}: ${g.status}${g.note ? " (" + g.note + ")" : ""}`).join("; ")}\n` +
       `Buyer-search queue, ready now (score = value x ease): ${ready.map((t: any) => `[${t.score}] ${t.task}`).join(" | ") || "none"}\n` +
       `LEADS in focus:\n${named.map((l: any) => leadText(l, lpeople || [], ltasks || [])).join("\n") || "(none named)"}`;
-    const system = SYSTEM(actor, boardText(items || [], deals || [], steps || [], projects || [], today, contacts || []) + "\n\n" + dir, noteText) +
+    const boardStr = boardText(items || [], deals || [], steps || [], projects || [], today, contacts || []) + "\n\n" + dir;
+    const systemText = SYSTEM(actor, boardStr, noteText) +
       "\n- Directory rules: never mark a lead contacted or replied yourself; use suggest_lead_update. Hold rule: no offers go out while the mine-confirmation gate is open, and no chrome offers while the ITAC gate is open. Replies to the 28 Reef Trading emails are answered as Chris de Jager, saying Verve Africa is the company name going forward." +
       (appV >= 2 ? APP_RULES(todayLong) : "");
+    // prompt caching (26 Sep 2026, "cheaper bot"): the fixed rules are one cached block (reused across questions for 5 minutes);
+    // the board and notes are a second block, cached too when a question takes several rounds (tool use), so rounds 2–4 cost a tenth.
+    const cut = systemText.indexOf(boardStr);
+    const system: any[] = cut > 0
+      ? [{ type: "text", text: systemText.slice(0, cut), cache_control: { type: "ephemeral" } },
+         { type: "text", text: systemText.slice(cut), ...(mode === "brief" ? {} : { cache_control: { type: "ephemeral" } }) }]
+      : [{ type: "text", text: systemText }];
     let userText = mode === "brief" ? "Build today's brief with write_brief. chase_order: items waiting on other people that need a chase today (STALE ones first, then anything that blocks a deal), most urgent first. risks: real contradictions or risks only, each tied to the item, deal or lead id it concerns. drafts: one short friendly WhatsApp per named person in chase_order (from us, plain words, no private target or walk-away limit, no other counterparties' names or terms). No drafts for email lists, groups or ourselves." : question;
     if (mode === "chat" && chat && chat.text) {
       const idKey = chat.target_type === "lead" ? "lead_id" : chat.target_type === "contact" ? "contact_id" : chat.target_type === "deal" ? "deal_id" : "item_id";

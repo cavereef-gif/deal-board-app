@@ -170,6 +170,17 @@ async def main():
             gd=await ev("!!document.querySelector('a[href*=\"drive.google.com\"]')")
             check("Google link: the code makes a ready script (setup, hourly, morning email, email-in, folders, contacts, meetings) with steps and Share; Today shows meetings; a deal shows its Drive folder", gs['code'] and gs['fns'] and gs['steps'] and gs['share'] and gm==2 and gd, f"{gs} meetings {gm} drive {gd}")
             await ev("dealTab['dm1']='steps'; goView('calc')"); await W()
+            # 13f phone reminders (26 Sep 2026): Settings has the card; turning on (demo) shows On and a test button
+            # headless Chrome always answers "denied" for notifications, so the screen logic is tested as "not asked yet";
+            # the real sign-up with the phone's push service can only be proven on a phone
+            await ev("(Object.defineProperty(Notification, 'permission', { get: () => 'default', configurable: true }), 1)")
+            await ev("goView('settings')"); await ev("pushLoad().then(render)"); await W(500)
+            pr=await ev("({ card: /Phone reminders/.test(document.getElementById('list').innerText), ok: !!document.querySelector('[data-pushon]'), perm: (window._push||{}).perm })")
+            if pr['ok']:
+                await tap("button[data-pushon]"); await W(300)
+            pr2=await ev("({ on: !!document.querySelector('[data-pushtest]'), off: !!document.querySelector('[data-pushoff]') })")
+            check("Phone reminders: the Settings card is there; turning on (demo) shows Send a test and Turn off", pr['card'] and pr['ok'] and pr2['on'] and pr2['off'], f"{pr} {pr2}")
+            await ev("goView('calc')"); await W()
             # 13b free services (26 Sep 2026): Work it out fills km, toll gates (class 4 both ways), weather; unticking a gate and class 3 change the tolls; diesel "Use it" fills the price
             await ev("TR.tollAuto=true; TR.toll=''"); await pg.fill("input[data-tr=from]", "City Deep, Johannesburg"); await pg.fill("input[data-tr=to]", "Durban Harbour")
             await tap("button[data-trgo]"); await pg.wait_for_timeout(1500)

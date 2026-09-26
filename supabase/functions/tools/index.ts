@@ -1,4 +1,4 @@
-// Record copy of the Supabase edge function `tools` (v10 pending, 26 Sep 2026). Deployed from the Claude project, never from this repo.
+// Record copy of the Supabase edge function `tools` (26 Sep 2026: + phone reminders; the border sentence built from the figures). Deployed from the Claude project, never from this repo.
 // Deal Board free services (Chris, 26 Sep 2026: "i want all the free api"): everything here costs R0 except a few cents of
 // Claude when the monthly diesel statement is read. Nothing here changes a deal or a task: prices arrive as "suggested" and a
 // person accepts them with one tap; routes and places are remembered so the same question never costs twice.
@@ -9,9 +9,12 @@
 //   borders    – the weekly cross-border report (WCO ESA / FESARTA), read by Claude into a short note
 //   holidays   – South African public holidays (Nager.Date)
 //   weather    – rain and wind for the next three days at the ports and route ends (MET Norway)
+//   push_*     – phone reminders (web push, free): push_key (the public key; the key pair is made here once and kept in
+//                Vault), push_test (a test note to your own phones), push_daily (07:00 weekdays: late / due today / suggested)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { unzipSync } from "npm:fflate@0.8.2";
+import webpush from "npm:web-push@3.6.7";
 
 const UA = "DealBoard/1.0 (github.com/cavereef-gif/deal-board-app)";
 const CORS = {
@@ -354,6 +357,52 @@ async function weather(admin: any, points: any[]) {
   return { weather: out, credit: "Weather: MET Norway (api.met.no)" };
 }
 
+// ---------------- phone reminders (web push) ----------------
+const APP_URL = "https://cavereef-gif.github.io/deal-board-app/";
+async function vapid(admin: any) {
+  let { data } = await admin.rpc("vapid_get");
+  if (!data || !data.public || !data.private) {
+    const k = webpush.generateVAPIDKeys();
+    await admin.rpc("vapid_store", { p_public: k.publicKey, p_private: k.privateKey });
+    ({ data } = await admin.rpc("vapid_get"));
+  }
+  return data as { public: string; private: string };
+}
+async function sendPush(admin: any, owner: string, payload: Record<string, unknown>) {
+  const keys = await vapid(admin);
+  const { data: subs } = await admin.from("push_subs").select("*").eq("owner", owner);
+  let sent = 0, gone = 0, failed = 0;
+  for (const s of subs || []) {
+    try {
+      const d = webpush.generateRequestDetails({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload),
+        { TTL: 6 * 3600, urgency: "normal", vapidDetails: { subject: APP_URL, publicKey: keys.public, privateKey: keys.private } });
+      const r = await fetch(d.endpoint, { method: d.method, headers: d.headers as Record<string, string>, body: d.body as any });
+      if (r.status === 404 || r.status === 410) { await admin.from("push_subs").delete().eq("endpoint", s.endpoint); gone++; }
+      else if (r.ok) { await admin.from("push_subs").update({ last_ok: new Date().toISOString(), fails: 0 }).eq("endpoint", s.endpoint); sent++; }
+      else { await admin.from("push_subs").update({ fails: (s.fails || 0) + 1 }).eq("endpoint", s.endpoint); failed++; }
+    } catch { failed++; }
+  }
+  return { sent, gone, failed, phones: (subs || []).length };
+}
+async function pushDaily(admin: any) {
+  const today = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
+  const { data: owners } = await admin.from("allowed_users").select("display_name");
+  const { data: items } = await admin.from("items").select("owner,state,due_on,last_chased,created_at,nudge_after_days,priority").neq("state", "Done");
+  const out: any = {};
+  for (const o of owners || []) {
+    const name = o.display_name as string;
+    const mine = (items || []).filter((i: any) => (i.owner || "Chris") === name && i.state !== "Proposed");
+    const due = (i: any) => i.due_on || new Date(new Date(i.last_chased || i.created_at).getTime() + (i.nudge_after_days || 3) * 864e5 + 2 * 3600e3).toISOString().slice(0, 10);
+    const late = mine.filter((i: any) => due(i) < today).length, now = mine.filter((i: any) => due(i) === today).length;
+    const urgent = mine.filter((i: any) => i.priority === 1 && due(i) <= today).length;
+    const sugg = (items || []).filter((i: any) => i.state === "Proposed").length;
+    if (!late && !now && !sugg) { out[name] = "nothing to say"; continue; }
+    const body = [late ? `${late} late` : "", now ? `${now} due today` : "", urgent ? `${urgent} urgent` : "", sugg ? `${sugg} suggested to check` : ""].filter(Boolean).join(" · ");
+    out[name] = await sendPush(admin, name, { title: "Deal Board", body, url: APP_URL, tag: "daily" });
+  }
+  return out;
+}
+
 // ---------------- entry ----------------
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -367,7 +416,7 @@ Deno.serve(async (req: Request) => {
     let actor = "";
     if (cron) {
       const { data: t } = await admin.rpc("get_tools_cron_token");
-      if (!t || t !== cron || !["route", "places", "diesel", "borders", "holidays", "weather", "status"].includes(action)) return json({ error: "Not allowed" }, 403);
+      if (!t || t !== cron || !["route", "places", "diesel", "borders", "holidays", "weather", "status", "push_daily"].includes(action)) return json({ error: "Not allowed" }, 403);
       actor = "timer";
     } else {
       const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") || "" } } });
@@ -393,6 +442,9 @@ Deno.serve(async (req: Request) => {
     }
     if (action === "holidays") return json({ ok: true, ...(await holidays()) });
     if (action === "weather") return json({ ok: true, ...(await weather(admin, body.points || [])) });
+    if (action === "push_key") return json({ ok: true, public_key: (await vapid(admin)).public });
+    if (action === "push_test") return json({ ok: true, ...(await sendPush(admin, actor, { title: "Deal Board", body: "Reminders work on this phone. You'll get one short note at 07:00 on weekdays.", url: APP_URL, tag: "test" })) });
+    if (action === "push_daily") return json({ ok: true, sent: await pushDaily(admin) });
     if (action === "status") return json({ ok: true, actor, keys: { geoapify: !!keys.geoapify, tomtom: !!keys.tomtom } });
     return json({ error: "Unknown action" }, 400);
   } catch (e) {

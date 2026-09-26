@@ -45,6 +45,9 @@ service_key_status() · set_service_key(p_name, p_key) for the free map services
 - Server function `tools` (route, places, diesel, borders, holidays, weather, status). Signed-in partners, or the database timer with the TOOLS_CRON_TOKEN kept in Vault (lookups only).
 - Timers (pg_cron + pg_net, migration v17_tools_timers): diesel 06:10 SA time on days 1–12 of each month (stops once the month's price is in); borders 06:20 every Monday.
 
+### Phone reminders (26 Sep 2026, docs/db/007)
+- push_subs (one row per phone; server only) · push_subscribe(sub, device) · push_unsubscribe(endpoint) · push_status() (your phones and the public key). vapid_get / vapid_store: server only; the key pair lives in Vault (VAPID_PUBLIC, VAPID_PRIVATE). Timer deal-board-push: 07:00 SA time Mon–Fri.
+
 ### Google link (26 Sep 2026, docs/db/006)
 - google_link (one row: the fingerprint of the link code) · calendar_events (meetings shown on Today; owner read) · deal_folders (Drive folder per deal; owner read) · email_in (which emails were already added).
 - In the app: google_link_new() (makes the code, shown once) · google_link_status() · google_link_drop(). For the Google script (anon key + code): gs_pull · gs_put_events · gs_put_folders · gs_email_in – each checks the code first and touches only what its name says.
