@@ -15,26 +15,26 @@ window.dirLoad = async function () {
 function dirDemo() {
   const L = (id, o) => Object.assign({ id, name: "", person: "", side: "buyer", kind: "", market: "Foreign", country: "India", location: "", commodity: "Manganese", status: "new", priority: 2, evidence: "none", phone: "", whatsapp: "", email: "", website: "", channel: "research", grade: "", volume: "", terms: "", source: "Demo", source_date: "", source_url: "", about: "", checked: "", checks_needed: "", flag: "", template: "", personal_line: "", board_ref: "", call_window: "", outcome: "", owner: "Chris", contact_id: null, deal_id: null }, o);
   window._leads = [
-    L("l1", { name: "World Metals & Alloys", kind: "Trader / trading house", country: "UAE", status: "replied", priority: 0, email: "kobus@wmalloys.com", phone: "+27 12 942 4525", evidence: "verified", outcome: "Kobus replied 21 Sep; you asked for volumes and grades.", channel: "email" }),
-    L("l2", { name: "Minerais US LLC", kind: "Trader / trading house", country: "USA", status: "ready", priority: 0, email: "jjh@mineraisus.com", template: "E", personal_line: "I understand you already bring in South African manganese.", evidence: "found", channel: "email" }),
-    L("l3", { name: "Tendai Mutenje", side: "supplier", kind: "Seller (board post)", market: "SA", country: "South Africa", commodity: "Chrome", phone: "062 498 2632", grade: "Conc 38-44%", terms: "FOT R2,975 / DAP R3,300, escrow only", evidence: "posted", channel: "whatsapp", priority: 1 }),
-    L("l4", { name: "Vishnu Chemical", kind: "End user", commodity: "Chrome", status: "contacted", email: "vishnu@vishnuchemicals.com", phone: "+91 40 2339 6817", outcome: "Delivered 20 Sep. No reply yet.", channel: "email", priority: 1 }),
-    L("l5", { name: "JSC Chrompik", kind: "Sanctioned – do not deal", country: "Russia", commodity: "Chrome", status: "dnd", flag: "Sanctioned – never deal.", priority: 4 }),
-    L("l6", { name: "Clover Alloys", side: "supplier", kind: "Mine + wash plant", market: "SA", country: "South Africa", commodity: "Chrome", phone: "+27 14 001 0327", email: "info@cloveralloys.co.za", evidence: "verified", channel: "call", flag: "Old mobile 083 303 9823 is outdated." }),
+    L("l1", { name: "Demo Metals Ltd", kind: "Trader / trading house", country: "UAE", status: "replied", priority: 0, email: "kim@example.com", phone: "012 555 0101", evidence: "verified", outcome: "Kim replied 21 Sep; you asked for volumes and grades.", channel: "email" }),
+    L("l2", { name: "Sample Ore Co", kind: "Trader / trading house", country: "USA", status: "ready", priority: 0, email: "buyer@example.com", template: "E", personal_line: "I understand you already bring in South African manganese.", evidence: "found", channel: "email" }),
+    L("l3", { name: "Taylor Demo", side: "supplier", kind: "Seller (board post)", market: "SA", country: "South Africa", commodity: "Chrome", phone: "060 555 0103", grade: "Conc 38-44%", terms: "FOT R2,975 / DAP R3,300, escrow only", evidence: "posted", channel: "whatsapp", priority: 1 }),
+    L("l4", { name: "Example Chem Works", kind: "End user", commodity: "Chrome", status: "contacted", email: "info@example.com", phone: "+91 40 5550 0104", outcome: "Delivered 20 Sep. No reply yet.", channel: "email", priority: 1 }),
+    L("l5", { name: "Blocked Metals JSC", kind: "Sanctioned – do not deal", country: "Russia", commodity: "Chrome", status: "dnd", flag: "Sanctioned – never deal.", priority: 4 }),
+    L("l6", { name: "Green Valley Mining", side: "supplier", kind: "Mine + wash plant", market: "SA", country: "South Africa", commodity: "Chrome", phone: "014 555 0105", email: "office@example.com", evidence: "verified", channel: "call", flag: "Old mobile 083 555 0106 is outdated." }),
   ];
-  window._lpeople = [{ id: "p1", lead_id: "l1", name: "Kobus Keulder", title: "WMA Africas, Centurion", email: "kobus@wmalloys.com", phone: "+27 12 942 4525", whatsapp: "", email_note: "", note: "Replied 21 Sep", priority: 0, sort: 1 }];
+  window._lpeople = [{ id: "p1", lead_id: "l1", name: "Kim Example", title: "Buyer desk, Centurion", email: "kim@example.com", phone: "012 555 0101", whatsapp: "", email_note: "", note: "Replied 21 Sep", priority: 0, sort: 1 }];
   window._ltasks = [
     { id: "t1", rank: 1, task: "Check ITAC chrome export permit status", value: 3, ease: 3, score: 9, kind: "GATE", gates: [], lead_ids: [], status: "open", not_before: null },
-    { id: "t2", rank: 1.5, task: "Kobus: chase volumes and grades if nothing by 29 Sep", value: 3, ease: 3, score: 9, kind: "BUYER", gates: [], lead_ids: ["l1"], status: "open", not_before: null },
-    { id: "t3", rank: 4, task: "Call Tendai Mutenje 062 498 2632", value: 3, ease: 2, score: 6, kind: "SUPPLY", gates: [], lead_ids: ["l3"], status: "open", not_before: null },
-    { id: "t4", rank: 24, task: "Send Verve email to Jonathan Huh", value: 3, ease: 3, score: 9, kind: "SEND-Mn", gates: ["mine"], lead_ids: ["l2"], status: "open", not_before: null },
+    { id: "t2", rank: 1.5, task: "Kim: chase volumes and grades if nothing by 29 Sep", value: 3, ease: 3, score: 9, kind: "BUYER", gates: [], lead_ids: ["l1"], status: "open", not_before: null },
+    { id: "t3", rank: 4, task: "Call Taylor Demo 060 555 0103", value: 3, ease: 2, score: 6, kind: "SUPPLY", gates: [], lead_ids: ["l3"], status: "open", not_before: null },
+    { id: "t4", rank: 24, task: "Send Verve email to Jordan Sample", value: 3, ease: 3, score: 9, kind: "SEND-Mn", gates: ["mine"], lead_ids: ["l2"], status: "open", not_before: null },
   ];
   window._gates = [{ key: "mine", title: "Mine confirmation in writing", unblocks: "Every send", status: "open", note: "Verbal only", major: true, sort: 1 }, { key: "itac", title: "ITAC chrome export permit status known", unblocks: "All chrome sends", status: "open", note: "", major: true, sort: 2 }];
   window._library = [
-    { id: "s1", kind: "script", title: "Buyer opener", body: "Good day, this is Chris de Jager from Verve Africa in Durban. Are you still buying?", meta: { code: "opener-buyer", use: "whatsapp" }, sort: 1 },
+    { id: "s1", kind: "script", title: "Buyer opener", body: "Good day, this is Chris from Verve Africa in Durban. Are you still buying?", meta: { code: "opener-buyer", use: "whatsapp" }, sort: 1 },
     { id: "s2", kind: "script", title: "Seller opener", body: "Good day, Chris from Verve Africa in Durban. Is the material still available?", meta: { code: "opener-seller", use: "whatsapp" }, sort: 2 },
     { id: "s3", kind: "script", title: "Template E", body: "Dear [Name],\n\n[PERSONAL LINE]\n\nKind regards,\nChris", meta: { code: "E", subject: "A team you can rely on in South Africa" }, sort: 3 },
-    { id: "c1", kind: "country", title: "India", body: "The market that publishes emails and answers.", meta: { focus: "Manganese", companies: "27", key: "Nava, Shyam" }, sort: 1 },
+    { id: "c1", kind: "country", title: "India", body: "The market that publishes emails and answers.", meta: { focus: "Manganese", companies: "27", key: "Company A, Company B" }, sort: 1 },
   ];
   window._lhist = [];
 }
