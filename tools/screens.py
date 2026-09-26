@@ -77,6 +77,11 @@ async def run(p, dev, theme, results, errors):
     for t in ["chrome", "everyday", "transport"]:
         await js(f"goView('calc'); (document.querySelector('[data-calctab=\"{t}\"]') || {{click(){{}}}}).click()"); await snap("calc-" + t)
     await js("Object.assign(window._trip, {from:'Middelburg', to:'City Deep', km:169, rkm:'28', toll:'450', client:'350', loads:'20'}); render()"); await snap("calc-transport-filled", True)
+    # v17 tidy (26 Sep): Home tiles filter, buyer step Done / Follow up form, transport filled from a deal
+    await js("goView('calc'); document.querySelector('[data-trdeal]') && document.querySelector('[data-trdeal]').click()"); await snap("calc-transport-deal", True)
+    await go("worklist"); await js("document.querySelector('[data-hf=urgent]').click()"); await snap("home-urgent"); await js("document.querySelector('[data-hf=urgent]').click()")
+    await js("goTo('task:t2')"); await pg.wait_for_timeout(500); await snap("step-followup")
+    await js("goTo('lead:l4')"); await pg.wait_for_timeout(300); await js("const t = document.querySelector('.tnote'); if (t) t.scrollIntoView({block:'center'})"); await snap("step-followup-set")
     await js("openVoiceNote()"); await snap("voice-note"); await js("document.getElementById('vnClose').click()")
     await js("openChecks('Example Mining (Pty) Ltd', 'contact:c1')"); await snap("checks"); await js("document.getElementById('ckClose').click()")
     await js("openTaskSheet()"); await snap("new-task-mics"); await js("document.getElementById('tsClose').click()")

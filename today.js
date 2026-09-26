@@ -49,10 +49,17 @@ function dtile(d) {
   const av = owners.map(o => `<span style="background:${o === "Annemarie" ? "#FF9CCB" : "#C7B6FF"}" title="${esc(o)}">${esc(o[0])}</span>`).join("");
   return `<button class="dtile" data-tgo="deal:${d.id}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done} of ${pg.total}</span></span></button>`;
 }
-// One task = one line (what) + one line of plain words (kind · due · who). Suggestions carry Accept / Drop.
+// One task = one line (what) + one line of plain words (kind · due · who).
+// Rail colour = priority: urgent red, overdue amber, suggested grey, low slate, normal blue (palette colour).
 function homeRow(it, showOwner, noWho) {
-  const sugg = it.state === "Proposed", n = dayDiff(dueDate(it)), dw = dueWords(it);
-  // rail colour = priority first: urgent red, then overdue amber, suggested grey, low slate, normal (palette colour, blue in Titanium)
+  const n = dayDiff(dueDate(it)), dw = dueWords(it);
+  if (it._ft) {   // a buyer-search step waiting on a reply (follow-up) – opens the step with its Done / Follow up form
+    const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null;
+    const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() + " – " + l.name : l.name) : t.task;
+    const meta = ["Follow up", n < 0 ? "Overdue" : dw, t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · ");
+    return `<div class="hrow${n < 0 ? " r-warn" : ""}"><button class="hr-main" data-tgo="task:${t.id}"><span class="hr-t">${esc(who)}</span><span class="hr-m">${esc(meta)}</span></button></div>`;
+  }
+  const sugg = it.state === "Proposed";
   const rail = it.priority === 1 ? " r-bad" : n < 0 ? " r-warn" : sugg ? " r-prop" : it.priority === 3 ? " r-low" : "";
   const meta = [kindWords(it), it.priority === 1 ? "Urgent" : "", sugg ? sinceWords(it) : it._me ? dw : `${dw} · ${sinceWords(it)}`, showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
   return `<div class="hrow${rail}"><button class="hr-main" data-tgo="item:${it.id}"><span class="hr-t">${it._me || noWho ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="hr-m">${meta}</span></button></div>`;
@@ -69,49 +76,84 @@ function hGroup(key, title, rows, dflt) {
   const k = "home:" + key, open = isOpen(k, dflt !== false);
   return `<section class="hgrp"><button class="hg-h" data-tog="${k}" data-dflt="${dflt === false ? 0 : 1}" aria-expanded="${open}"><span class="hg-t">${title}</span><span class="hg-n">${rows.length}</span><span class="chev"></span></button>${open ? `<div class="hg-b">${rows.join("")}</div>` : ""}</section>`;
 }
+// One card per group: coloured dot + title + count on top, rows inside with thin lines between.
+// tone picks the dot colour (--g-<tone> in the stylesheets); the words stay neutral.
+function hCard(key, tone, title, rows, o) {
+  o = o || {};
+  if (!rows.length) return "";
+  const k = "home:" + key, open = o.fold ? isOpen(k, o.dflt !== false) : true;
+  const head = `<i class="hc-dot" style="background:var(--g-${tone})"></i><span class="hc-t">${title}</span><span class="hc-n">${rows.length}</span>`;
+  const h = o.fold ? `<button class="hc-h" data-tog="${k}" data-dflt="${o.dflt === false ? 0 : 1}" aria-expanded="${open}">${head}<span class="chev"></span></button>` : `<div class="hc-h">${head}${o.extra || ""}</div>`;
+  let body = rows;
+  if (o.limit && rows.length > o.limit && !isOpen(k + ":all", false)) body = rows.slice(0, o.limit).concat(`<button class="hc-more" data-tog="${k}:all" data-dflt="0">Show ${rows.length - o.limit} more</button>`);
+  return `<section class="hcard t-${tone}">${h}${open ? `<div class="hc-b">${body.join("")}</div>` : ""}</section>`;
+}
+// Groups for Home. Suggestions stay apart (a person accepts them first). Buyer-search follow-ups join the day they are due.
 function homeGroups(items, target) {
-  const mine = items.filter(i => target === "All" || (i.owner || "Chris") === target);
+  const own = x => target === "All" || (x.owner || "Chris") === target;
+  const mine = items.filter(own);
+  const sugg = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
+  const fu = (window._ltasks || []).filter(t => window.isFollowUp && isFollowUp(t) && own(t))
+    .map(t => ({ _ft: t, id: "ft:" + t.id, due_on: t.not_before, owner: t.owner || "Chris", priority: 2, _days: 0, state: "Confirmed", created_at: t.created_at }));
+  const list = mine.filter(i => i.state !== "Proposed").concat(fu);
   const g = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
-  for (const it of mine) { const n = dayDiff(dueDate(it)); (n < 0 ? g.overdue : n === 0 ? g.today : n === 1 ? g.tomorrow : n <= 7 ? g.week : g.later).push(it); }
+  for (const it of list) { const n = dayDiff(dueDate(it)); (n < 0 ? g.overdue : n === 0 ? g.today : n === 1 ? g.tomorrow : n <= 7 ? g.week : g.later).push(it); }
   const byDue = (a, b) => dueDate(a) - dueDate(b) || byPrioThenAge(a, b);
   g.overdue.sort(byPrioThenAge); g.today.sort(byPrioThenAge); g.tomorrow.sort(byPrioThenAge); g.week.sort(byDue); g.later.sort(byDue);
-  return { mine, g, sugg: mine.filter(i => i.state === "Proposed") };
+  return { mine, list, g, sugg, fu };
 }
+// Tiles on top: tap one to see only those; tap it again (or "Show everything") for the whole list.
+let homeFilter = null;
+const HF = [["urgent", "bad", "Urgent"], ["overdue", "over", "Overdue"], ["today", "today", "Today"], ["week", "week", "This week"]];
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
-  const { mine, g, sugg } = homeGroups(items, target);
+  const { mine, list, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
   const hr = SA().getUTCHours();
   let h = `<section class="hello"><div class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")} · ${dayName(Date.now())}</div></section>`;
   h += `<div class="chips whochips segbar">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
-  // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
-  if (sugg.length) h += `<div class="sbar"><span>${sugg.length} suggested by the bot</span><button class="primary" data-qa="acceptall">${ic("check")}Accept all</button></div>`;
   const all = target === "All";
+  const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, today: g.today.length, week: g.tomorrow.length + g.week.length };
+  h += `<div class="htiles" role="group" aria-label="Show only">${HF.map(([k, tone, t]) => `<button class="htile t-${tone}${homeFilter === k ? " on" : ""}" data-hf="${k}" aria-pressed="${homeFilter === k}"><span class="ht-n">${cnt[k]}</span><span class="ht-l">${t}</span></button>`).join("")}</div>`;
+  const R = arr => arr.map(i => homeRow(i, all));
   h += `<div class="hlist">`;
-  h += hLabel("Overdue", g.overdue.map(i => homeRow(i, all)));
-  h += hLabel("Today", g.today.map(i => homeRow(i, all)));
-  h += hLabel("Tomorrow", g.tomorrow.map(i => homeRow(i, all)));
-  h += hLabel("Next 7 days", g.week.map(i => homeRow(i, all)));
-  h += hGroup("later", "Later than a week", g.later.map(i => homeRow(i, all)), false);
+  if (homeFilter) {
+    const only = homeFilter === "urgent" ? (arr => arr.filter(i => i.priority === 1)) : (arr => arr);
+    const cards = [["overdue", "over", "Overdue", g.overdue], ["today", "today", "Today", g.today], ["tomorrow", "tmrw", "Tomorrow", g.tomorrow], ["week", "week", "Next 7 days", g.week], ["later", "later", "Later than a week", g.later]]
+      .filter(([k]) => homeFilter === "urgent" || homeFilter === k || (homeFilter === "week" && k === "tomorrow"));
+    let out = cards.map(([k, tone, t, arr]) => hCard("f-" + k, tone, t, R(only(arr)))).join("");
+    if (homeFilter === "urgent") out = hCard("f-sugg", "prop", "Suggested", R(only(sugg))) + out;   // urgent suggestions too (open one to accept it)
+    const name = HF.find(x => x[0] === homeFilter)[2].toLowerCase();
+    h += out || `<div class="empty">Nothing ${homeFilter === "week" ? "due this week" : homeFilter === "today" ? "due today" : name} right now.</div>`;
+    h += `<button class="wide hf-all" data-hf="">Show everything</button></div>`;
+    return h;
+  }
+  // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
+  h += hCard("sugg", "prop", "Suggested", sugg.map(i => homeRow(i, all)), { limit: 3, extra: `<button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button>` });
+  h += hCard("overdue", "over", "Overdue", R(g.overdue));
+  h += hCard("today", "today", "Today", R(g.today));
+  h += hCard("tomorrow", "tmrw", "Tomorrow", R(g.tomorrow));
+  h += hCard("week", "week", "Next 7 days", R(g.week));
+  h += hCard("later", "later", "Later than a week", R(g.later), { fold: true, dflt: false });
   // brief: one or two lines, "Read more" opens the rest
   const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
   const bOpen = isOpen("home:brief", false);
   if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
   else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
     <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
-  if (!mine.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}. Tap + to add a task.</div>`;
+  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}. Tap + to add a task.</div>`;
   // next steps on deals and the buyer search (open where the work is done)
   const ld = liveDeals();
   const dealRows = ld.map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next).map(({ d, pg }) => linkRow(`deal:${d.id}:${pg.next.id}`, esc(pg.next.title), `Next step · ${esc(d.name)}`, "r-deal"));
-  h += hGroup("deals", "Next step on each deal", dealRows);
+  h += hCard("deals", "deal", "Next step on each deal", dealRows, { fold: true });
   const td = saKey(Date.now());
   const gOpen = k => ((window._gates || []).find(x => x.key === k) || {}).status === "open";
-  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
-  h += hGroup("buyers", "Buyer search – next 3", queue.map(t => { const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "r-deal"); }));
+  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(window.isFollowUp && isFollowUp(t)) && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
+  h += hCard("buyers", "buyer", "Buyer search – next 3", queue.map(t => { const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
+    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "r-deal"); }), { fold: true });
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
-  h += hGroup("risks", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), false);
+  h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), { fold: true, dflt: false });
   h += `</div>`;
   // overview below the list: progress rings, deal tiles, this week
   const st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
@@ -120,14 +162,14 @@ function todayHtml(items) {
   const oOpen = isOpen("home:overview", true);
   h += `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
   if (oOpen) {
-    h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, mine.length ? (mine.length - g.overdue.length) / mine.length : 0])}
+    h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, list.length ? (list.length - g.overdue.length) / list.length : 0])}
       <div class="legend"><div class="lg"><i style="background:var(--ring1-bg)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
       <div class="lg"><i style="background:var(--ring2)"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
-      <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${mine.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
+      <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${list.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
     if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">All deals</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
     const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
     const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
-    const byDay = {}; for (const it of mine) { const k = dayDiff(dueDate(it)) < 0 ? td : saKey(dueDate(it)); (byDay[k] ||= []).push(it); }
+    const byDay = {}; for (const it of list) { const k = dayDiff(dueDate(it)) < 0 ? td : saKey(dueDate(it)); (byDay[k] ||= []).push(it); }
     h += `<div class="card week"><div class="wk-m">This week · tasks due each day</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), n = (byDay[k] || []).length;
       return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="wn">${n ? n : ""}</div></div>`; }).join("")}</div></div>`;
   }
@@ -135,6 +177,10 @@ function todayHtml(items) {
   if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   return h;
 }
+$("list").addEventListener("click", e => {
+  const f = e.target.closest("button[data-hf]"); if (!f) return;
+  const v = f.dataset.hf || null; homeFilter = v && homeFilter !== v ? v : null; render(); window.scrollTo(0, 0);
+});
 // Accept / Drop straight from the list, and Accept all
 async function quickItemAction(id, action) {
   if (DEMO) { const it = (window._items || []).find(i => i.id === id); if (!it) return true; if (action === "confirm") it.state = "Confirmed"; else window._items = window._items.filter(i => i.id !== id); return true; }
@@ -201,11 +247,14 @@ function goTo(ref) {
     dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; render(); scrollTo(`#lead-${id}`); return;
   }
   if (type === "task") {
+    // open the step with its Done / Follow up form: on its lead card when it has one lead, otherwise in the buyer-search queue
+    const tk = (window._ltasks || []).find(x => x.id === id), lid = tk && (tk.lead_ids || []).length === 1 ? tk.lead_ids[0] : null;
+    const l = lid && (window._leads || []).find(x => x.id === lid);
     navPush(); view = "leads"; try { localStorage.setItem("view", view); } catch (e) {}
-    openKeys.delete("-dq"); dTaskDone = id; render();
-    const inTop = document.querySelector(`[data-dtaskact="${id}"]`);
-    if (!inTop) { openKeys.add("+dq:more"); openKeys.add("+dq:gated"); openKeys.add("+dq:later"); saveOpen(); render(); }
-    scrollTo("#tOut"); return;
+    dTaskDone = id;
+    const toForm = () => setTimeout(() => { const el = document.querySelector(".tdone"); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 30);
+    if (l) { if (window.setDirSeg) setDirSeg("all"); dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; openKeys.delete(`-lc:${l.id}:next`); saveOpen(); render(); toForm(); return; }
+    openKeys.delete("-dq"); openKeys.add("+dq"); openKeys.add("+dq:more"); openKeys.add("+dq:gated"); openKeys.add("+dq:later"); saveOpen(); render(); toForm(); return;
   }
   if (type === "contact") { navPush(); view = "leads"; if (window.setDirSeg) setDirSeg("saved"); openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
 }

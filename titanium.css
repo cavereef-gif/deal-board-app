@@ -151,3 +151,21 @@ html[data-palette="titanium"] .ecgrid button.op{background:linear-gradient(180de
 html[data-palette="titanium"][data-theme="light"] .ecgrid button.op{background:linear-gradient(180deg,#EEF3F9 0%,#DCE6F2 100%)}
 /* priority on every task row (the 4px rail on the left, beside neutral text): urgent red · overdue amber · normal blue ·
    suggested grey · low slate – the default rail colour comes from --rail-default above */
+
+/* ---------------- Home v2: tiles and group cards ---------------- */
+/* group colours, all in the blue family plus the two warning colours: today royal blue · tomorrow cyan · next 7 days periwinkle ·
+   later slate · overdue amber · urgent red · suggested grey · deals ice blue · buyer search teal */
+html[data-palette="titanium"]{--g-today:#5B8DEF;--g-tmrw:#5FC4CF;--g-week:#9C9CF6;--g-later:#6F7F97;--g-deal:#A8C6FF;--g-buyer:#4FB58F}
+html[data-palette="titanium"][data-theme="light"]{--g-today:#2F66D0;--g-tmrw:#0E8A94;--g-week:#5B4FD0;--g-later:#8A97AA;--g-deal:#6F9BEA;--g-buyer:#2E8F66}
+html[data-palette="titanium"] .hcard{background:var(--surface);box-shadow:var(--shadow);border-radius:20px}
+html[data-palette="titanium"] .htile:not(.on){box-shadow:var(--shadow)}
+html[data-palette="titanium"] .hc-n{background:var(--raise)}
+html[data-palette="titanium"] .hc-more,html[data-palette="titanium"] .tdone .tcancel{background:transparent;box-shadow:none}
+html[data-palette="titanium"] .tdone .tacts>button:not(.primary){background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);border:0;color:var(--text)}
+/* transport calculator: numbered step discs in blue metal, result lines inset */
+html[data-palette="titanium"] .trs-n{background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow)}
+html[data-palette="titanium"] .trr{background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+html[data-palette="titanium"] .trfold{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}
+html[data-palette="titanium"] .trdeals .ib:is(.on,#_){background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary);outline:0}
+html[data-palette="titanium"] .trdeals .ib.on svg.i{color:var(--on-primary)}
+html[data-palette="titanium"] .trdeals .ib:is(.on,#_) .ibw{color:var(--on-primary)}

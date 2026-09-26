@@ -28,6 +28,8 @@ function dirDemo() {
     { id: "t2", rank: 1.5, task: "Kim: chase volumes and grades if nothing by 29 Sep", value: 3, ease: 3, score: 9, kind: "BUYER", gates: [], lead_ids: ["l1"], status: "open", not_before: null },
     { id: "t3", rank: 4, task: "Call Taylor Demo 060 555 0103", value: 3, ease: 2, score: 6, kind: "SUPPLY", gates: [], lead_ids: ["l3"], status: "open", not_before: null },
     { id: "t4", rank: 24, task: "Send Verve email to Jordan Sample", value: 3, ease: 3, score: 9, kind: "SEND-Mn", gates: ["mine"], lead_ids: ["l2"], status: "open", not_before: null },
+    // a follow-up: no reply yet, so it stays open and comes back in two days
+    { id: "t5", rank: 6, task: "Example Chem Works: check they got the offer email (sent 20 Sep)", value: 2, ease: 3, score: 6, kind: "BUYER", gates: [], lead_ids: ["l4"], status: "open", not_before: saDayPlus(2), outcome: "No reply yet (checked 26 Sep)", owner: "Chris" },
   ];
   window._gates = [{ key: "mine", title: "Mine confirmation in writing", unblocks: "Every send", status: "open", note: "Verbal only", major: true, sort: 1 }, { key: "itac", title: "ITAC chrome export permit status known", unblocks: "All chrome sends", status: "open", note: "", major: true, sort: 2 }];
   window._library = [
@@ -114,6 +116,15 @@ $("list").addEventListener("click", async e => {
   if (ds.dtaskact) {
     const out = $("tOut") ? $("tOut").value.trim() : "";
     if (ds.v === "block" && !out) { toast("Write why it is blocked first."); $("tOut").focus(); return; }
+    if (ds.v === "followup") {
+      // no reply yet: the step stays open and comes back on the follow-up date (never marked done)
+      const fd = ($("tFu") && $("tFu").value) || saDayPlus(3), when = dayName(new Date(fd + "T08:00:00+02:00"));
+      if (fd < saDayPlus(1)) { toast("Pick a follow-up date from tomorrow on."); $("tFu").focus(); return; }
+      const note = out || "No reply yet";
+      if (DEMO) { const tk = (window._ltasks || []).find(x => x.id === ds.dtaskact); if (tk) Object.assign(tk, { status: "open", not_before: fd, outcome: note, done_by: null, done_at: null, blocked_note: "" }); dTaskDone = null; toast(`Follow-up set for ${when} – the step stays open (demo – not saved).`); render(); return; }
+      const ok = await rpc("task_action", { p_id: ds.dtaskact, p_action: "followup", p_value: fd + "|" + note }, `Follow-up set for ${when} – the step stays open.`);
+      if (ok) dTaskDone = null; return;
+    }
     if (DEMO) { const tk = (window._ltasks || []).find(x => x.id === ds.dtaskact); if (tk) { tk.status = ds.v === "done" ? "done" : ds.v === "block" ? "blocked" : ds.v === "drop" ? "dropped" : "open"; tk.outcome = out; tk.done_by = me; tk.done_at = new Date().toISOString(); } dTaskDone = null; render(); return; }
     const ok = await rpc("task_action", { p_id: ds.dtaskact, p_action: ds.v, p_value: out || null }, ds.v === "done" ? "Done – next one moves up." : "Saved.");
     if (ok) dTaskDone = null; return;

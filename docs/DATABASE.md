@@ -36,8 +36,9 @@ add_post(p_body, p_deal, p_kind) · post_action(p_id, p_action [pin, unpin, done
 add_step(p_deal, p_stage, p_title) · set_step(p_id, p_status, p_evidence) · seed_deal_steps(p_deal, p_kind, p_route) · upgrade_deal_kit(p_deal, p_route) ·
 save_deal(p_id, p_name, p_kind, p_area, p_status, p_summary, p_stage, p_key_facts, p_contacts, p_next_milestone, p_params, p_route) ·
 set_project(...) · save_lead(p_id, p jsonb) · lead_status(p_id, p_status, p_via, p_outcome) · save_person(p_id, p_lead, p jsonb) · remove_person(p_id) ·
-save_task(p_id, p jsonb) · task_action(p_id, p_action, p_value) · set_gate(p_key, p_status, p_note) · save_library(p_id, p_title, p_body) ·
+save_task(p_id, p jsonb) · task_action(p_id, p_action [done, reopen, block, drop, followup], p_value) · set_gate(p_key, p_status, p_note) · save_library(p_id, p_title, p_body) ·
 bot_key_status() · set_bot_key(p_key) (key stored in Vault; get_bot_key() is for the edge function only).
+task_action "followup" (change 002, applied 26 Sep 2026 as migration v17_task_followup): p_value = "YYYY-MM-DD|what happened". The step stays open (never done), not_before = the follow-up date (default today + 3), outcome = the note ("No reply yet" if empty). The app treats an open step with a not_before date and an outcome as a follow-up and shows it on Today under that day. Source: docs/db/002-task-followup.sql.
 Edge function: `ask` (v9, verify_jwt on, Claude Haiku). Source copy: supabase/functions/ask/index.ts (record only – deploying needs Supabase access).
 Edge function: `read` (v1, 26 Sep 2026, verify_jwt on, owners only). Sonnet for photos/PDFs (Haiku fallback), Haiku for quotes and voice notes. Returns suggestions and saves nothing; the app saves only what a person ticks. Names only in – never terms, target or limit. Source copy: supabase/functions/read/index.ts.
 
