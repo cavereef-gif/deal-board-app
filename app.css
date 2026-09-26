@@ -435,7 +435,7 @@ form.panel .wide{margin-top:16px}
 .menu{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .mi{justify-content:flex-start;gap:14px;min-height:54px;padding:12px 14px;background:var(--card2);font-size:16px;font-weight:400;border-radius:var(--r2)}
 .mi svg.i{color:var(--accent2)}
-.toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));background:var(--text);color:var(--bg);border-radius:14px;padding:12px 16px;font-size:16px;box-shadow:0 10px 30px rgba(4,6,20,.35);max-width:90vw}
+.toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));background:var(--text);color:var(--bg);border-radius:14px;padding:12px 16px;font-size:16px;box-shadow:0 10px 30px rgba(4,6,20,.35);width:max-content;max-width:90vw}
 .fab,.fab2{display:none!important}
 .spin svg.i{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1094,3 +1094,97 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .tabs .plus,.tabs .plus.on{background-color:var(--primary)}
 /* with a Back button the title drops to its own line – keep it above the section bar */
 .secslot{order:4}
+
+/* ======================================================================================
+   Today – modern (26 Sep evening): big greeting · day strip · Next up · three tiles · swipe rows · suggestion cards
+   ====================================================================================== */
+/* groups: a label above a rounded inset card (no box around the label) */
+.hlist .hcard{background:transparent;box-shadow:none;border-radius:0;overflow:visible;margin-top:18px}
+.hlist .hcard .hc-h{min-height:40px;padding:0 4px 6px}
+.hlist .hcard .hc-b{border-top:0;border-radius:20px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+/* greeting: the date small, the greeting large and calm (medium weight – no glare) */
+.hello3{display:flex;flex-direction:column;gap:2px;margin:4px 2px 14px}
+.hello3 .hd{font:500 14px/1.3 var(--font);color:var(--muted)}
+.hello3 .hn{font:500 26px/1.2 var(--font);letter-spacing:-.3px;color:var(--text)}
+/* the day strip: seven days from today, tap one */
+.wkstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:12px 0 14px;padding:4px;border-radius:18px;background:var(--field);border:1px solid var(--line);position:relative}
+.wkstrip>button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:64px;height:auto;padding:6px 0;border:0;border-radius:14px;background:transparent;box-shadow:none;color:var(--text)}
+.wkstrip .wd2{font:500 14px/1.1 var(--font);color:var(--muted);white-space:nowrap}
+.wkstrip .dn2{font:500 18px/1.2 var(--font);font-variant-numeric:tabular-nums}
+.wkstrip .dots{display:flex;gap:3px;height:6px}
+.wkstrip .dots i{width:5px;height:5px;border-radius:50%;background:var(--muted)}
+.wkstrip .dots i.late{background:var(--warn)}
+.wkstrip>button.today .wd2{color:var(--text)}
+.wkstrip>button.on{background:var(--raise-2);box-shadow:inset 0 0 0 2px var(--accent)}
+/* Next up: the one thing to do now, tinted with its section colour */
+.hero2{position:relative;margin:0 0 12px;padding:14px var(--pad) 12px;border-radius:24px;overflow:hidden;background:var(--card);background:linear-gradient(150deg,color-mix(in srgb,var(--ac) 24%,var(--card)) 0%,var(--card) 62%);box-shadow:var(--shadow)}
+.hero2:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--ac)}
+.h2-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.h2-l{font:600 14px/1.2 var(--font);letter-spacing:.4px;text-transform:uppercase;color:var(--text)}
+.h2-main{display:flex;align-items:flex-start;gap:12px;width:100%;margin:10px 0 12px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left;justify-content:flex-start;color:var(--text)}
+.h2-tx{display:flex;flex-direction:column;gap:4px;min-width:0}
+.h2-t{font:500 18px/1.3 var(--font);color:var(--text)}
+.h2-m{font:400 14px/1.35 var(--font);color:var(--muted)}
+.h2-acts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
+.h2-acts button{min-height:var(--ctl);height:auto;padding:6px 8px;border-radius:var(--r-ctl);font:500 14px/1.2 var(--font);gap:6px}
+.h2-acts button svg.i{width:18px;height:18px}
+.h2-acts .sw-done,.h2-acts .sw-confirm,.h2-acts .sw-ftdone{background:var(--primary);color:var(--on-primary)}
+/* three tiles */
+.htiles3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.htiles3 .htile{min-height:76px;padding:10px 10px 10px 16px}
+.htiles3 .ht-n{font-size:24px}
+/* avatars: initials in a circle tinted with the section colour */
+.av2{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--raise);background:color-mix(in srgb,var(--ac) 22%,var(--card));box-shadow:inset 0 0 0 2px var(--ac);color:var(--text);font:600 14px/1 var(--font);letter-spacing:.2px}
+.av2 svg.i{width:20px;height:20px;color:var(--text)}
+/* status chip: dot + neutral words on a soft tint */
+.chip2{display:inline-flex;align-items:center;gap:6px;flex:none;padding:2px 10px 2px 8px;border-radius:999px;background:var(--raise);color:var(--text);font:500 14px/1.4 var(--font);white-space:nowrap}
+.chip2 i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.chip2.c-bad i{background:var(--bad)} .chip2.c-warn i{background:var(--warn)} .chip2.c-prop i{background:var(--prop)} .chip2.c-today i{background:var(--text)}
+.chip2.c-bad{background:var(--raise);background:color-mix(in srgb,var(--bad) 20%,var(--raise))}
+.chip2.c-warn{background:var(--raise);background:color-mix(in srgb,var(--warn) 20%,var(--raise))}
+/* swipe rows */
+.swrow{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+.swrow:before{display:none}
+.strack{display:grid;grid-template-columns:auto 100% auto;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.strack::-webkit-scrollbar{display:none}
+.sact{display:flex;scroll-snap-align:start}
+.sact.r{scroll-snap-align:end}
+.scont{scroll-snap-align:start;min-width:0;background:var(--card)}
+.sact button{width:88px;min-height:100%;height:auto;flex-direction:column;justify-content:center;gap:4px;padding:8px 4px;border:0;border-radius:0;box-shadow:none;font:500 14px/1.2 var(--font);color:#F1F4F9}
+.sact button svg.i{width:20px;height:20px;color:#F1F4F9}
+.sw-done,.sw-confirm,.sw-ftdone{background:#1F6B4C!important}
+.sw-chased,.sw-tomorrow,.sw-fu3{background:#7A5200!important}
+.sw-urgent{background:#9E3530!important} .sw-normal,.sw-drop{background:#4B5058!important}
+.h2-acts .sw-chased,.h2-acts .sw-tomorrow,.h2-acts .sw-fu3,.h2-acts .sw-urgent,.h2-acts .sw-normal,.h2-acts .sw-drop,.sc-acts .sw-drop{background:var(--raise)!important;color:var(--text)}
+.h2-acts .sw-chased svg.i,.h2-acts .sw-tomorrow svg.i,.h2-acts .sw-fu3 svg.i,.h2-acts .sw-urgent svg.i,.h2-acts .sw-normal svg.i,.sc-acts .sw-drop svg.i{color:var(--text)}
+.swrow .hr-main{flex-direction:row;align-items:center;gap:12px;padding:12px 44px 12px var(--pad)}
+.hr-tx{display:flex;flex-direction:column;gap:6px;min-width:0}
+.swrow .hr-t{font:500 16px/1.35 var(--font)}
+.swrow .hr-m,.scard .hr-m{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.swrow .hr-mt,.scard .hr-mt{flex-basis:100%}
+.hr-mt{font:400 14px/1.35 var(--font);color:var(--muted)}
+.hcard .hc-b .swrow+.swrow{border-top:1px solid var(--line)}
+/* suggestion cards: slide sideways, each with Accept / Drop */
+.sugg2 .hc-b{display:none}
+.scar{display:grid;grid-auto-flow:column;grid-auto-columns:86%;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 16px 24px;margin:-6px -16px -16px;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
+.scar::-webkit-scrollbar{display:none}
+.scard{scroll-snap-align:start;display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:20px;background:var(--card)!important;box-shadow:var(--shadow)!important}
+.scard:before{display:none}
+.sc-main{display:flex;align-items:flex-start;gap:12px;padding:0;border:0;background:transparent;box-shadow:none;text-align:left;justify-content:flex-start;color:var(--text);min-height:0}
+.sc-main .hr-t{font:500 16px/1.35 var(--font)}
+.sc-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc-acts button{min-height:var(--ctl);height:auto;padding:6px 8px;border-radius:var(--r-ctl);font:500 14px/1.2 var(--font);gap:6px}
+.sc-acts .sw-confirm{background:var(--primary)!important;color:var(--on-primary)}
+.sc-acts svg.i{width:18px;height:18px}
+.sugg2 .hc-h{padding-right:0}
+/* the tip under the list */
+.swhint{display:flex;align-items:center;gap:8px;margin:14px 4px 0;font:400 14px/1.4 var(--font);color:var(--muted)}
+.swhint svg.i{flex:none;width:18px;height:18px;color:var(--c-bot)}
+/* sliding highlight while a segment changes */
+:is(.secbar,.segbar,.seg2,.dtabs4,.wkstrip){position:relative}
+:is(.secbar,.segbar,.seg2,.dtabs4,.wkstrip)>:is(button,label){position:relative;z-index:1}
+.flipghost{position:absolute;z-index:0;pointer-events:none;transform-origin:left top}
+:is(.secbar,.segbar,.seg2,.dtabs4,.wkstrip)>.on.flipping{background:transparent!important;background-image:none!important;box-shadow:none!important}
+.swrow{padding:0;margin:0;min-height:0;display:block;border-radius:0;background:transparent}
+.scard{margin:0!important;padding:14px!important}
+.htiles3 .ht-l{font-size:14px}
