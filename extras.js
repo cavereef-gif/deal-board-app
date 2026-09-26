@@ -148,6 +148,7 @@ function addMics(root) {
   (root || document).querySelectorAll("#tsWhat, #tsFrom, #tsNext, #cText, #q, #vnText, input[data-noteinput], input[data-evid]").forEach(f => {
     if (f.dataset.micAdded) return; f.dataset.micAdded = "1";
     if (f.id === "vnText") { f.closest(".fld").insertAdjacentHTML("beforebegin", `<button type="button" class="wide primary mic bigmic" data-mic="#vnText" aria-label="Speak – the words appear in the box">${ic("mic")}<span class="ibw">Speak</span></button>`); return; }
+    if (f.id === "q") { const send = document.querySelector('.ask button[data-bot="ask"]'); if (send) { send.insertAdjacentHTML("beforebegin", micButton("#q")); return; } }
     if (f.id === "cText") { $("cSend").insertAdjacentHTML("beforebegin", micButton("#cText")); return; }   // board: box on its own line, File · Speak · Send under it
     const key = f.id ? "#" + f.id : f.dataset.noteinput ? `input[data-noteinput="${f.dataset.noteinput}"]` : `input[data-evid="${f.dataset.evid}"]`;
     const wrap = document.createElement("div"); wrap.className = "micwrap" + (f.tagName === "TEXTAREA" ? " ta" : "");
@@ -286,12 +287,12 @@ function transportCalcHtml() {
   const tdeals = liveDeals().filter(d => d.kind === "transport" && d.params && d.params.route);
   return `<div class="card calcc">
     ${tdeals.length ? `<label class="fld" style="margin-top:0"><span>Fill in from a deal</span><select id="trDeal"><option value="">Choose a transport deal…</option>${tdeals.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</select></label>` : ""}
-    ${f("from", "From (town or address)", "e.g. Middelburg, Mpumalanga", "text")}${f("to", "To (town or address)", "e.g. City Deep, Johannesburg", "text")}
+    ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}
     <div class="acts0"><button class="primary" data-trgo="1">${ic("globe")}Find the road distance</button>${TR.km ? `<a class="btnlink" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(TR.from)}&destination=${encodeURIComponent(TR.to)}">${ic("open")}Open in Google Maps</a>` : ""}</div>
     <div id="trMap" class="trmap${TR.geo ? "" : " hidden"}"></div>
-    <div class="calc">${f("km", "Kilometres one way", "or type it yourself")}<label class="fld"><span>Count the empty trip back?</span><select data-tr="ret"><option${TR.ret === "Yes" ? " selected" : ""}>Yes</option><option${TR.ret === "No" ? " selected" : ""}>No</option></select></label>
-      ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client pays per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
-      ${f("lp100", "Diesel use, litres per 100 km (optional)", "e.g. 45")}${f("diesel", "Diesel price per litre (optional)", "e.g. 22.50")}</div>
+    <div class="calc">${f("km", "Km one way", "or type it")}<label class="fld"><span>Empty trip back?</span><select data-tr="ret"><option${TR.ret === "Yes" ? " selected" : ""}>Yes</option><option${TR.ret === "No" ? " selected" : ""}>No</option></select></label>
+      ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
+      ${f("lp100", "Diesel l/100 km", "e.g. 45")}${f("diesel", "Diesel R/litre", "e.g. 22.50")}</div>
     <div class="cres" id="trRes">${tripResults()}</div>
     <label class="fld"><span>Save on</span><select id="trSaveOn"><option value="">The notice board</option>${liveDeals().map(d => `<option value="${d.id}"${TR.deal === d.id ? " selected" : ""}>Deal: ${esc(d.name)}</option>`).join("")}</select></label>
     <div class="acts0"><button data-trsave="1">${ic("note")}Save</button><button data-trcopy="1">${ic("copy")}Copy</button></div>
@@ -306,7 +307,7 @@ function everydayCalcHtml() {
     ${(window._ecHist || []).length ? `<div class="lbl">Earlier</div>${window._ecHist.slice(0, 6).map(h => `<div class="kv"><span class="k">${esc(h[0])}</span><span class="v">${esc(h[1])}</span></div>`).join("")}` : ""}</div>`;
 }
 function calcTabsPage() {
-  const tabs = [["transport", "truck", "Transport"], ["chrome", "gem", "Chrome and ore"], ["everyday", "calc", "Everyday"]];
+  const tabs = [["transport", "truck", "Transport"], ["chrome", "gem", "Chrome & ore"], ["everyday", "calc", "Everyday"]];
   let h = `<div class="dtabs4 calctabs">${tabs.map(([k, icn, t]) => `<button class="dtab${calcTab === k ? " on" : ""}" data-calctab="${k}">${ic(icn)}${t}</button>`).join("")}</div>`;
   if (calcTab === "transport") h += transportCalcHtml();
   else if (calcTab === "everyday") h += everydayCalcHtml();

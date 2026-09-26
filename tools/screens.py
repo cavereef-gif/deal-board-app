@@ -8,6 +8,8 @@ Makes a temporary copy of the app, serves it on 127.0.0.1:8790 and opens index.h
 Writes PNGs plus metrics.json (see tools/metrics.js for what each number means).
 If the supabase-js CDN is blocked, set SUPABASE_JS=/path/to/supabase.js (npm i @supabase/supabase-js,
 file dist/umd/supabase.js) – the temp copy then loads it locally. Never commit that change.
+If Google Fonts is blocked too, set LOCAL_FONTS=/path/to/folder holding inter.local.css plus the Inter woff2 files
+(npm i @fontsource/inter) so the screenshots show the real font; again only in the temp copy.
 """
 import asyncio, subprocess, time, os, sys, json, shutil, tempfile
 from playwright.async_api import async_playwright
@@ -16,6 +18,7 @@ OUT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "/tmp/deal-board-sho
 MET = open(os.path.join(REPO, "tools", "metrics.js")).read()
 DEV = {"s22": (360, 780), "iph8": (375, 667)}
 CDN = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+GF = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">'
 
 def make_site():
     d = tempfile.mkdtemp(prefix="deal-board-site-")
@@ -26,6 +29,12 @@ def make_site():
     if lib:
         shutil.copy(lib, os.path.join(d, "supabase.local.js"))
         h = open(os.path.join(d, "index.html"), encoding="utf-8").read().replace(CDN, '<script src="supabase.local.js"></script>')
+        open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(h)
+    fonts = os.environ.get("LOCAL_FONTS")
+    if fonts:
+        for n in os.listdir(fonts):
+            if n.endswith((".css", ".woff2")): shutil.copy(os.path.join(fonts, n), d)
+        h = open(os.path.join(d, "index.html"), encoding="utf-8").read().replace(GF, '<link rel="stylesheet" href="inter.local.css">')
         open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(h)
     return d
 

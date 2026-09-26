@@ -64,6 +64,7 @@ Done when: every screen is reachable in ≤ 2 taps from Home; search is the firs
 ## Batch 6 – iPhone 8 finish
 - Hide the bottom bar while typing (board composer, forms) so the typing box sits above the keyboard.
 - Check at 375x667 in light mode: nothing hidden behind the bottom bar; tap targets ≥ 44 px.
+- Changed 26 Sep 2026 at Chris's request ("smaller and tidier"): compact controls are 40 px (main full-width buttons 48 px). Do not go below 40 px.
 - Chris tests on Annemarie's phone.
 
 ## After batch 2 (or when Chris says): promote to live as v17

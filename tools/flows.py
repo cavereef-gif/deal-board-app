@@ -102,7 +102,7 @@ async def main():
             # 9 due date on a task
             await ev("goView('worklist')"); await W()
             await ev("openItemSheet('2')"); await W()
-            await ev("document.querySelector('.isheet .duerow button[data-v]').click()"); await W()
+            await ev("document.querySelector('.isheet .dr-b button[data-v]').click()"); await W()
             du=await ev("window._items.find(i=>i.id==='2').due_on")
             check("Due date can be set from the task sheet", bool(du), str(du))
             # ---- step 1 (v17): easy guides, + New deal, calculators, Speak, voice note, checks ----

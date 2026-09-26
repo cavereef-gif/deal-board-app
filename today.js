@@ -82,7 +82,7 @@ function todayHtml(items) {
   const br = parseBrief(window._brief);
   const hr = SA().getUTCHours();
   let h = `<section class="hello"><div class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")} · ${dayName(Date.now())}</div></section>`;
-  h += `<div class="chips whochips">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
+  h += `<div class="chips whochips segbar">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
   if (sugg.length) h += `<div class="sbar"><span>${sugg.length} suggested by the bot</span><button class="primary" data-qa="acceptall">${ic("check")}Accept all</button></div>`;
   const all = target === "All";

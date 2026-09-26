@@ -7,10 +7,10 @@ const perMonth = s => { const m = String(s || "").match(/(\d+)\s*\/\s*month/i); 
 const fR = n => (n < 0 ? "−" : "") + "R " + Math.round(Math.abs(n)).toLocaleString("en-ZA");
 const fU = n => "US$ " + Math.round(n).toLocaleString("en-ZA");
 const fN = (n, d) => (+n).toLocaleString("en-ZA", { maximumFractionDigits: d == null ? 1 : d });
-const MIN_F = [["wmt", "Tonnes (wet, as weighed)", "e.g. 1000"], ["moist", "Moisture %", "e.g. 6"], ["price", "Price per dry ton (DMT)", "e.g. 2400"], ["cur", "Price currency", ["R", "US$"]], ["fx", "Rand per US$ (only if US$)", "e.g. 17.50"],
-  ["comm", "Our commission per DMT (R)", "e.g. 40"], ["cuts", "Other parties' cuts per DMT (R)", "e.g. 10"], ["share", "Our share of what is left %", "100"], ["vat", "Add 15% VAT on our invoice?", ["No", "Yes"]]];
-const TR_F = [["rate", "Client rate per ton (R)", "e.g. 350"], ["vatin", "Client rate includes VAT?", ["No", "Yes", "Not agreed"]], ["haul", "Transporter rate per ton (R)", "e.g. 200"], ["cuts", "Other parties' cuts per ton (R)", "e.g. 40"],
-  ["tpl", "Tons per load", "34"], ["loads", "Loads per month", "e.g. 20"], ["share", "Our share of the margin %", "100"]];
+const MIN_F = [["wmt", "Wet tonnes", "e.g. 1000"], ["moist", "Moisture %", "e.g. 6"], ["price", "Price per DMT", "e.g. 2400"], ["cur", "Currency", ["R", "US$"]], ["fx", "Rand per US$", "e.g. 17.50"],
+  ["comm", "Our cut per DMT (R)", "e.g. 40"], ["cuts", "Others per DMT (R)", "e.g. 10"], ["share", "Our share %", "100"], ["vat", "Add 15% VAT?", ["No", "Yes"]]];
+const TR_F = [["rate", "Client rate per ton (R)", "e.g. 350"], ["vatin", "Rate incl. VAT?", ["No", "Yes", "Not agreed"]], ["haul", "Transporter per ton (R)", "e.g. 200"], ["cuts", "Others per ton (R)", "e.g. 40"],
+  ["tpl", "Tons per load", "34"], ["loads", "Loads per month", "e.g. 20"], ["share", "Our share %", "100"]];
 function calcState(key, d, kind) {
   if (window._calc[key] && window._calc[key]._kind === kind) return window._calc[key];
   const p = (d && d.params) || {};
@@ -61,7 +61,7 @@ function calcPageHtml() {
   const all = window._deals || [], d = calcDeal ? all.find(x => x.id === calcDeal) : null;
   const kind = d ? (d.kind === "transport" ? "transport" : "mineral") : ((window._calc.free || {})._kind || "mineral");
   let h = `<div class="card" style="padding:16px"><label class="fld" style="margin-top:0"><span>Deal</span><select id="calcDealSel"><option value="">No deal – free calculation</option>${all.map(x => `<option value="${x.id}"${x.id === calcDeal ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>`;
-  if (!d) h += `<div class="chips" style="margin-top:12px">${[["mineral", "Mineral"], ["transport", "Transport"]].map(([k, t]) => `<button data-calckind="${k}" class="${kind === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
+  if (!d) h += `<div class="chips segbar" style="margin-top:12px">${[["mineral", "Mineral"], ["transport", "Transport"]].map(([k, t]) => `<button data-calckind="${k}" class="${kind === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
   return h + `<div style="height:12px"></div>${calcHtml(d ? d.id : "free", d, kind)}</div>`;
 }
 window.calcPageHtml = calcPageHtml;
