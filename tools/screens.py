@@ -85,6 +85,10 @@ async def run(p, dev, theme, results, errors):
     # sections (26 Sep): Today on Chrome, the new-deal form with + Add a section
     await go("worklist"); await js("document.querySelector('.secbar [data-sec=Chrome]').click()"); await snap("home-chrome"); await js("document.querySelector('.secbar [data-sec=All]').click()")
     await go("deals"); await js("document.querySelector('[data-newdeal]').click()"); await js("document.querySelector('[data-secpick=\"+\"]').click()"); await snap("deal-new-section"); await js("document.querySelector('[data-newdeal]').click()")
+    # the bot that does things (26 Sep): the notes on what you can ask, a "Which one?" choice and "Do it" cards
+    await js("chat.length = 0; goView('bot')"); await snap("ask-help"); await snap("ask-help-full", True)
+    await js("chat.length = 0; chat.push({role:'user', text:'Move the VAT question to Monday and make it urgent'}, {role:'assistant', text:'Here is what I prepared. Tap Do it to save.'}); botApply([{do:'change', change:'due', target_type:'item', target_id:'2', value:'2026-09-28', label:'Move \\u201cVAT question\\u201d to Mon 28 Sep'}, {do:'change', change:'priority', target_type:'item', target_id:'2', value:'urgent', label:'Make \\u201cVAT question\\u201d urgent'}]); chat.push({role:'user', text:'open the maize numbers'}, {role:'choose', text:'Which one?', choose:[{go:'deal:dm2:calc', name:'Maize haulage \\u2013 Sunny Farms', type:'deal'}, {go:'item:2', name:'Sam & Lee: VAT on the maize rate', type:'item'}]}); goView('bot')"); await snap("ask-cards", True)
+    await js("chat.length = 0")
     await js("openVoiceNote()"); await snap("voice-note"); await js("document.getElementById('vnClose').click()")
     await js("openChecks('Example Mining (Pty) Ltd', 'contact:c1')"); await snap("checks"); await js("document.getElementById('ckClose').click()")
     await js("openTaskSheet()"); await snap("new-task-mics"); await js("document.getElementById('tsClose').click()")

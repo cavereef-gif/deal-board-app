@@ -1,4 +1,6 @@
-// Record copy of the deployed Supabase edge function `ask` (v9, 25 Sep 2026). One example name was replaced because this repo is public.
+// Record copy of the deployed Supabase edge function `ask` (v10, 26 Sep 2026). One example name was replaced because this repo is public.
+// v10: app_action tool for the v17 app (sent app:2) – open/show/calculator at once, changes only prepared ("Do it" in the app).
+// Older apps (no app flag) get exactly the v9 tools. propose_item takes an optional due date; the board lists due dates.
 // Deploying needs Supabase access (done from the Claude project), never from this repo.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -41,6 +43,7 @@ const TOOLS = [
         next_action: { type: "string" },
         priority: { type: "integer", enum: [1, 2, 3], description: "1 high, 2 normal, 3 low" },
         owner: { type: "string", enum: ["Chris", "Annemarie"] },
+        due: { type: "string", description: "Due date YYYY-MM-DD when the user gives a day (e.g. 'on Tuesday' = the coming Tuesday)" },
       },
       required: ["project", "waiting_on", "waiting_for"],
     },
@@ -93,6 +96,36 @@ const TOOLS = [
     },
   },
 ];
+
+const TERM_KEYS = Object.keys(TERM_LABELS).filter((k) => k !== "target" && k !== "limit");
+const APP_TOOL = {
+  name: "app_action",
+  description: "Act in the Deal Board app for the user. do=open, show or calculator happens at once: the app opens it. do=change is only PREPARED: the user sees your label with a 'Do it' button and nothing changes until they tap it. One call per action; several calls are fine. Always give a short plain label.",
+  input_schema: {
+    type: "object",
+    properties: {
+      do: { type: "string", enum: ["open", "show", "calculator", "change"] },
+      target_type: { type: "string", enum: ["deal", "item", "lead", "contact", "view"], description: "What it is about. view = a page of the app." },
+      target_id: { type: "string", description: "deal_id, item id, lead_id, the contact's name, or for view one of: today, deals, contacts, board, calculators, guides, archive, settings" },
+      deal_tab: { type: "string", enum: ["steps", "numbers", "notes"], description: "open: show the deal on this tab" },
+      section: { type: "string", description: "show: All, Chrome, Manganese, Transport or another section (deal area)" },
+      tile: { type: "string", enum: ["urgent", "overdue", "today", "week", "none"], description: "show: only these tasks on Today" },
+      change: { type: "string", enum: ["due", "priority", "owner", "chased", "done", "drop_item", "confirm_item", "follow_up", "tick_step", "untick_step", "term", "deal_status", "new_deal", "board_post"] },
+      value: { type: "string", description: `due: YYYY-MM-DD (empty clears). priority: urgent | normal | low. owner: Chris | Annemarie. follow_up: YYYY-MM-DD|what happened (on an item or a lead). term: key=value, key one of ${TERM_KEYS.join(", ")} (never target or limit). deal_status: Active | On hold | Won | Lost. new_deal: deal name|section. board_post: the message text (target_type deal + deal_id links it to a deal).` },
+      step: { type: "string", description: "tick_step / untick_step: the exact step title from the deal's checklist (target_type deal, target_id deal_id)" },
+      proof: { type: "string", description: "tick_step: the proof the user gave, if any" },
+      calc: { type: "object", description: "calculator: numbers for the transport calculator", properties: { from: { type: "string" }, to: { type: "string" }, km: { type: "number" }, rate_km: { type: "number" }, tolls: { type: "number" }, tons_per_load: { type: "number" }, client_per_ton: { type: "number" }, loads_per_month: { type: "number" } } },
+      label: { type: "string", description: "One short plain line, e.g. 'Open the deal Chrome – Example stockpile' or 'Move \"Sigma check\" to Mon 28 Sep'" },
+    },
+    required: ["do", "label"],
+  },
+};
+const APP_RULES = (todayLong: string) => `
+- You can act in the app with app_action. When the user asks to open, show, find, pull up or bring up something (a deal, a task, a lead, a contact, a page, a section, overdue or urgent tasks), call app_action with do=open or do=show and the right id, then answer in one short line ("Opening the Piet deal."). For numbers on a transport route, call do=calculator.
+- When the user asks to change something – a due date, urgent or not, who does it, a follow-up, chased today, ticking or unticking a checklist step, a term, the deal status, a new deal, a board message, accepting, dropping or finishing a task – prepare it with app_action do=change and end with "Tap Do it to save." Never say it is done. One change per call.
+- New tasks and waits still go through propose_item (they arrive as Suggested); give due when a day is named.
+- Never set or reveal the private target or walk-away numbers. Never send messages; drafts are for the user to send.
+- Dates: today is ${todayLong}. A weekday name means the next one to come (today counts only if the user says today). Write dates as YYYY-MM-DD in app_action.`;
 
 const BRIEF_TOOL = {
   name: "write_brief",
@@ -147,7 +180,7 @@ function boardText(items: any[], deals: any[], steps: any[], areas: any[], today
   const lines = items.map((it) =>
     `- id=${it.id} | deal: ${dealName(it.deal_id)} | ${it.project} | waiting on: ${it.waiting_on} | for: ${it.waiting_for}` +
     (it.blocks ? ` | blocks: ${it.blocks}` : "") + (it.next_action ? ` | next: ${it.next_action}` : "") +
-    ` | ${pr(it.priority)} | owner: ${it.owner} | state: ${it.state} | ${days(it)} days since last chase${days(it) >= (it.nudge_after_days || 3) ? " (STALE)" : ""}`
+    ` | ${pr(it.priority)} | owner: ${it.owner} | state: ${it.state}${it.due_on ? ` | due ${it.due_on}` : ""} | ${days(it)} days since last chase${days(it) >= (it.nudge_after_days || 3) ? " (STALE)" : ""}`
   );
   const area = areas.map((p) =>
     `## AREA ${p.name} — ${p.stage || "not set"}\n${p.summary}\nKey facts:\n${p.key_facts}\nContacts:\n${p.contacts}\nNext milestone: ${p.next_milestone}`
@@ -223,7 +256,8 @@ Deno.serve(async (req: Request) => {
     if (!key) { const { data: k } = await admin.rpc("get_bot_key"); key = (k as string) || ""; }
     if (!key) return json({ answer: "The bot is not switched on yet. Paste your Anthropic API key in the box below (Set API key) and try again.", actions: [] });
 
-    const { question = "", mode = "ask", history = [], focus = "", chat = null } = await req.json().catch(() => ({}));
+    const { question = "", mode = "ask", history = [], focus = "", chat = null, app = 0 } = await req.json().catch(() => ({}));
+    const appV = Number(app) || 0;   // 2 = the v17 app, which can open things and show "Do it" cards
     const [{ data: items }, { data: projects }, { data: notes }, { data: contacts }, { data: deals }, { data: steps }] = await Promise.all([
       admin.from("items").select("*").neq("state", "Done").order("priority").order("created_at"),
       admin.from("projects").select("*").order("sort"),
@@ -233,6 +267,8 @@ Deno.serve(async (req: Request) => {
       admin.from("deal_steps").select("deal_id,stage,sort,title,status,evidence,closes_with"),
     ]);
     const today = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short", year: "numeric" });
+    const todayIso = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
+    const todayLong = new Date().toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ` (${todayIso})`;
     const noteText = (notes || []).map((n: any) => `- ${new Date(n.changed_at).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric", month: "short" })} ${n.field} on ${n.item_id ? "item " + n.item_id : n.deal_id ? "deal " + n.deal_id : "-"} by ${n.changed_by}: ${n.new_value}`).join("\n") || "(none)";
     // Directory: live leads always, plus any lead named in the question or in focus
     const [{ data: leads }, { data: lpeople }, { data: ltasks }, { data: gates }] = await Promise.all([
@@ -244,7 +280,10 @@ Deno.serve(async (req: Request) => {
     const L = leads || [];
     const qlow = String(question || "").toLowerCase();
     const focusLead = String(focus).startsWith("lead:") ? String(focus).slice(5) : (chat && chat.target_type === "lead" ? chat.target_id : "");
-    const named = L.filter((l: any) => l.id === focusLead || ["replied", "qualified", "deal"].includes(l.status) || (qlow && [l.name, l.person].some((n: string) => n && n.length > 3 && qlow.includes(n.toLowerCase().split(" (")[0])))).slice(0, 25);
+    const first = (n: string) => String(n || "").toLowerCase().split(/[ (,]/)[0];
+    const hasWord = (w: string) => w.length >= 4 && new RegExp(`\\b${w.replace(/[^a-z0-9]/g, "")}\\b`).test(qlow);
+    const peopleLeads = new Set((lpeople || []).filter((p: any) => qlow && hasWord(first(p.name))).map((p: any) => p.lead_id));
+    const named = L.filter((l: any) => l.id === focusLead || peopleLeads.has(l.id) || ["replied", "qualified", "deal"].includes(l.status) || (qlow && ([l.name, l.person].some((n: string) => n && n.length > 3 && qlow.includes(n.toLowerCase().split(" (")[0])) || (l.person && hasWord(first(l.person)))))).slice(0, 25);
     const openG = new Set((gates || []).filter((g: any) => g.status === "open").map((g: any) => g.key));
     const ready = (ltasks || []).filter((t: any) => t.status === "open" && !(t.gates || []).some((k: string) => openG.has(k))).sort((a: any, b: any) => b.score - a.score || a.rank - b.rank).slice(0, 8);
     const cnt = (f: (l: any) => boolean) => L.filter(f).length;
@@ -253,7 +292,8 @@ Deno.serve(async (req: Request) => {
       `Buyer-search queue, ready now (score = value x ease): ${ready.map((t: any) => `[${t.score}] ${t.task}`).join(" | ") || "none"}\n` +
       `LEADS in focus:\n${named.map((l: any) => leadText(l, lpeople || [], ltasks || [])).join("\n") || "(none named)"}`;
     const system = SYSTEM(actor, boardText(items || [], deals || [], steps || [], projects || [], today, contacts || []) + "\n\n" + dir, noteText) +
-      "\n- Directory rules: never mark a lead contacted or replied yourself; use suggest_lead_update. Hold rule: no offers go out while the mine-confirmation gate is open, and no chrome offers while the ITAC gate is open. Replies to the 28 Reef Trading emails are answered as Chris de Jager, saying Verve Africa is the company name going forward.";
+      "\n- Directory rules: never mark a lead contacted or replied yourself; use suggest_lead_update. Hold rule: no offers go out while the mine-confirmation gate is open, and no chrome offers while the ITAC gate is open. Replies to the 28 Reef Trading emails are answered as Chris de Jager, saying Verve Africa is the company name going forward." +
+      (appV >= 2 ? APP_RULES(todayLong) : "");
     let userText = mode === "brief" ? "Build today's brief with write_brief. chase_order: items waiting on other people that need a chase today (STALE ones first, then anything that blocks a deal), most urgent first. risks: real contradictions or risks only, each tied to the item, deal or lead id it concerns. drafts: one short friendly WhatsApp per named person in chase_order (from us, plain words, no private target or walk-away limit, no other counterparties' names or terms). No drafts for email lists, groups or ourselves." : question;
     if (mode === "chat" && chat && chat.text) {
       const idKey = chat.target_type === "lead" ? "lead_id" : chat.target_type === "contact" ? "contact_id" : chat.target_type === "deal" ? "deal_id" : "item_id";
@@ -269,11 +309,12 @@ Deno.serve(async (req: Request) => {
     const messages: any[] = [...history.filter((m: any) => m && m.content).slice(-10), { role: "user", content: userText }];
     const actions: string[] = [];
     const suggestions: any[] = [];
+    const app_actions: any[] = [];
     let reload = false;
     let answer = "";
     for (let round = 0; round < 4; round++) {
       const briefMode = mode === "brief";
-      const resp = await anthropic(key, { model: MODEL, max_tokens: mode === "chat" ? 2000 : briefMode ? 2500 : 1500, system, tools: briefMode ? [BRIEF_TOOL] : TOOLS, ...(briefMode ? { tool_choice: { type: "tool", name: "write_brief" } } : {}), messages });
+      const resp = await anthropic(key, { model: MODEL, max_tokens: mode === "chat" ? 2000 : briefMode ? 2500 : 1500, system, tools: briefMode ? [BRIEF_TOOL] : appV >= 2 ? [...TOOLS, APP_TOOL] : TOOLS, ...(briefMode ? { tool_choice: { type: "tool", name: "write_brief" } } : {}), messages });
       if (briefMode) {
         const u = (resp.content || []).find((c: any) => c.type === "tool_use" && c.name === "write_brief");
         if (!u) throw new Error("The bot did not return a brief. Try again.");
@@ -314,6 +355,7 @@ Deno.serve(async (req: Request) => {
               project: i.project, waiting_on: i.waiting_on, waiting_for: i.waiting_for, blocks: i.blocks || null,
               next_action: i.next_action || null, priority: i.priority || 2, owner: i.owner || actor, state: "Proposed",
               evidence: `Proposed by bot for ${actor}, ${today}`, deal_id: d ? d.id : null,
+              ...(i.due && /^\d{4}-\d{2}-\d{2}$/.test(i.due) ? { due_on: i.due } : {}),
             }).select("id").single();
             if (error) throw error;
             actions.push(`Proposed: ${i.waiting_on} — ${i.waiting_for} (${d ? d.name : i.project}). Confirm or drop it on the board.`);
@@ -353,6 +395,14 @@ Deno.serve(async (req: Request) => {
             suggestions.push(s);
             actions.push(`Suggested ${s.field} change for ${s.target} — tap Apply below to accept.`);
             out = "suggestion shown to user with an Apply button";
+          } else if (u.name === "app_action" && appV >= 2) {
+            const a = { ...u.input };
+            const t = a.target_type, tid = String(a.target_id || "");
+            const exists = t === "deal" ? (deals || []).some((d: any) => d.id === tid) : t === "item" ? (items || []).some((x: any) => x.id === tid) : t === "lead" ? L.some((l: any) => l.id === tid) : true;
+            if (a.do !== "show" && a.do !== "calculator" && !(a.do === "change" && a.change === "new_deal") && !(a.do === "change" && a.change === "board_post" && !tid) && (!t || !exists)) throw new Error(`${t || "target"} id not found on the board – use an id from the board`);
+            if (a.change === "term" && /^(target|limit)\s*=/i.test(String(a.value || ""))) throw new Error("the private target and walk-away numbers are set by the user only");
+            app_actions.push(a);
+            out = a.do === "change" ? "prepared – the user sees it with a Do it button; nothing is saved until they tap it" : "the app opens it for the user";
           } else out = "unknown tool";
         } catch (e) { out = "error: " + (e as Error).message; }
         results.push({ type: "tool_result", tool_use_id: u.id, content: out });
@@ -360,7 +410,7 @@ Deno.serve(async (req: Request) => {
       messages.push({ role: "user", content: results });
     }
     await admin.from("events").insert({ item_id: null, field: "bot", old_value: mode, new_value: userText.slice(0, 300), changed_by: actor, source: "bot" });
-    return json({ answer: answer || "(no answer)", actions, suggestions, reload });
+    return json({ answer: answer || (app_actions.length ? "" : "(no answer)"), actions, suggestions, reload, ...(appV >= 2 ? { app_actions: app_actions.slice(0, 12) } : {}) });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

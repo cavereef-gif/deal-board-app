@@ -781,7 +781,7 @@ function render(){
   } else if (view === "calc") {
     html = window.calcPageHtml ? calcPageHtml() : "";
   } else if (view === "bot") {
-    html += `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}</div>`).join("") : `<div class="bub s">Ask anything about the board or a deal, give it news or someone's number, or tap Daily brief. The bot only proposes – you confirm and tick.</div>`}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
+    html += (window.botHelpHtml ? botHelpHtml(!chat.length) : "") + `<div class="chat">${chat.length ? chat.map((m, i) => m.role === "sugg" ? `<div class="sugg" data-si="${i}">${m.s.lead_id ? `Suggested for ${esc(m.s.lead_name || "lead")} · ${esc(m.s.field)}:\n${esc(m.s.field === "status" && ST[m.s.value] ? ST[m.s.value][0] : m.s.value)}${m.s.note ? "\n(" + esc(m.s.note) + ")" : ""}` : `Suggested for ${esc(m.s.target || m.s.project)} · ${esc(INFO_LABELS[m.s.field] || m.s.field)} (${esc(m.s.mode)}):\n${esc(m.s.text)}`}<div class="acts"><button class="primary" data-apply="${i}">${ic("check")}Apply</button><button data-dismiss="${i}">Dismiss</button></div></div>` : m.role === "act" ? `<div class="sugg act"><div class="act-l">${ic("edit")}<span>${esc(m.a.label || "Change")}</span></div><div class="acts"><button class="primary" data-actdo="${i}">${ic("check")}Do it</button><button data-dismiss="${i}">No</button></div></div>` : m.role === "choose" ? `<div class="bub s">Which one?</div><div class="choose">${m.choose.map(c => `<button type="button" data-botgo="${esc(c.go)}">${ic({ deal: "deals", lead: "user", contact: "user", item: "list", guide: "guide", file: "clip" }[c.type] || "open")}<span>${esc(c.name)}</span></button>`).join("")}</div>` : `<div class="bub ${m.role === "user" ? "u" : m.role === "sys" ? "s" : "a"}">${esc(m.text)}${m.go ? `<button type="button" class="linkb" data-botgo="${esc(m.go)}">Open</button>` : ""}</div>`).join("") : ""}${botBusy ? `<div class="bub s">Thinking…</div>` : ""}</div>
       <div class="ask"><textarea id="q" placeholder="Ask, give news, or save a number…"></textarea><button class="primary" data-bot="ask" aria-label="Send">${ic("send")}Send</button></div>
       <div class="acts"><button data-bot="brief">${ic("brief")}Daily brief</button><button data-bot="clear">${ic("drop")}Clear chat</button></div>
       ${window._keyStatus === "not set" ? `<div class="quiet" style="margin-top:12px">The bot has no key yet – add it in More › Settings.</div>` : ""}`;
@@ -1100,14 +1100,16 @@ async function askBot(question, mode, focus, silent){
   botBusy = true; if (!silent) { if (view !== "bot") navPush(); view = "bot"; try{ localStorage.setItem("view", view) }catch(e){} } render();
   try {
     if (DEMO) throw new Error("Demo mode — the bot needs a real login.");
-    const history = chat.filter(m => m.role !== "sys" && m.role !== "sugg").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
-    const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history, focus: focus || "" } });
+    const history = chat.filter(m => m.role === "user" || m.role === "assistant").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+    const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history, focus: focus || "", app: 2 } });
     if (error) { let msg = error.message || String(error); try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){} throw new Error(msg); }
-    chat.push({ role: "assistant", text: data.answer || "(no answer)" });
+    if (data.answer || !(data.app_actions || []).length) chat.push({ role: "assistant", text: data.answer || "(no answer)" });
     if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
     for (const s of (data.suggestions || [])) chat.push({ role: "sugg", s, text: "" });
+    const goNow = window.botApply ? botApply(data.app_actions) : null;   // open / show at once; changes wait as "Do it" cards
     if (mode === "brief") window._brief = { text: data.brief ? JSON.stringify(data.brief) : (data.answer || ""), created_at: new Date().toISOString(), actor: me, for_date: "" };
     botBusy = false; render();
+    if (goNow) { if (view === "bot") navPush(); goNow(); }
     if (data.reload || mode === "brief" || (data.actions || []).length) load(); else if (view === "bot") { window.scrollTo(0, document.body.scrollHeight); }
   } catch (err) {
     botBusy = false; chat.push({ role: "sys", text: "Bot error: " + (err.message || err) }); render();
@@ -1162,7 +1164,9 @@ $("list").addEventListener("click", e => {
     return;
   }
   if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
-  const q = ($("q") && $("q").value.trim()) || ""; if (!q) return; askBot(q, "ask");
+  const q = ($("q") && $("q").value.trim()) || ""; if (!q) return;
+  if (window.botQuick && botQuick(q)) return;   // "open the deal with Piet on chrome": the app opens it itself, no bot call
+  askBot(q, "ask");
 });
 
 $("addBtn").onclick = () => { $("addForm").classList.toggle("hidden"); const open = !$("addForm").classList.contains("hidden"); $("addBtn").textContent = open ? "Close" : "+ Add"; if (open) { if (me === "Chris" || me === "Annemarie") $("fOwner").value = me; $("fFor").focus(); } };
@@ -1225,6 +1229,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="extras.js?v=17"></script>
 <script src="reader.js?v=17"></script>
 <script src="sections.js?v=17"></script>
+<script src="bot.js?v=17"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>

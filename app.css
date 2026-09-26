@@ -1026,3 +1026,25 @@ button.hc-h .hc-n{margin-right:0}
 .ht-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .htile .ht-l{flex:none}
 .ht-i{margin-left:0}
+
+/* ======================================================================================
+   The bot that does things (26 Sep): info notes on the Ask page, "Do it" cards, "Which one?" choices
+   ====================================================================================== */
+.bothelp{margin:0 0 12px;border-radius:var(--r2,16px);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.bh-h{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:6px 8px 6px var(--pad);border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--text);font:600 16px/1.3 var(--font);text-align:left;justify-content:flex-start}
+.bh-h span:first-of-type{flex:1}
+.bh-h svg.i{width:20px;height:20px;color:var(--c-bot)}
+.bh-h .chev{width:30px;height:30px}
+.bh-b{padding:0 var(--pad) 14px;border-top:1px solid var(--line)}
+.bh-t{margin:14px 0 8px;font:600 14px/1.3 var(--font);color:var(--text)}
+.bh-ex{display:flex;flex-direction:column;gap:6px}
+.bh-ex button{justify-content:flex-start;width:100%;min-height:var(--ctl);height:auto;padding:8px 12px;border-radius:var(--r-ctl);background:var(--card2);box-shadow:inset 0 0 0 1px var(--line);color:var(--text);font:400 16px/1.3 var(--font);text-align:left;white-space:normal}
+.bh-n{margin-top:14px;font-size:14px;line-height:1.4;color:var(--muted)}
+.sugg.act{white-space:normal}
+.act-l{display:flex;align-items:flex-start;gap:10px;font:500 16px/1.35 var(--font);color:var(--text)}
+.act-l svg.i{flex:none;width:20px;height:20px;margin-top:1px;color:var(--c-bot)}
+.sugg.act .acts{margin-top:12px}
+.choose{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.choose button{justify-content:flex-start;gap:10px;width:100%;min-height:var(--ctl-lg);height:auto;padding:10px 14px;border-radius:var(--r-ctl);text-align:left;font:500 16px/1.3 var(--font);white-space:normal}
+.choose button svg.i{flex:none;width:20px;height:20px;color:var(--accent)}
+.bub .linkb{display:inline-flex;margin-left:8px;min-height:var(--ctl);padding:0 12px}
