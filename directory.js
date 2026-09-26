@@ -59,7 +59,7 @@ function fill(body, l, person) {
 }
 function waText(l) {
   const code = l.side === "supplier" || (l.side === "broker" && /sell/i.test(l.kind)) ? "opener-seller" : "opener-buyer";
-  const s = libBy(code); return s ? s.body : "Good day, this is Chris de Jager from Verve Africa in Durban.";
+  const s = libBy(code); return s ? s.body : "Good day, this is Chris from Verve Africa in Durban.";
 }
 function mailOf(l, person) {
   const s = libBy(l.status === "contacted" ? "day7" : (l.template || "E")) || libBy("E");
