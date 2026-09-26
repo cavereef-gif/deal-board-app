@@ -197,3 +197,13 @@ html[data-palette="titanium"] .askadd .qi svg.i{color:var(--plate-ink)}
 html[data-palette="titanium"] .tabs .plus .pl{color:var(--on-primary)}
 html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background:var(--grad);color:var(--on-primary);outline:2px solid var(--accent);outline-offset:3px}
 html[data-palette="titanium"] .tabs .plus,html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background-color:var(--primary)}
+/* modern Today in graphite */
+html[data-palette="titanium"] .hlist .hcard{background:transparent;box-shadow:none}
+html[data-palette="titanium"] .hlist .hcard .hc-b,html[data-palette="titanium"] .scard{background:var(--surface);box-shadow:var(--shadow)}
+html[data-palette="titanium"] .scont{background:var(--surface);background-color:var(--card)}
+html[data-palette="titanium"] .wkstrip{border:0;background:var(--field);box-shadow:var(--track-shadow)}
+html[data-palette="titanium"][data-theme="light"] .wkstrip{background:#E1E4E8}
+html[data-palette="titanium"] .wkstrip>button.on{background:var(--seg-on);background-color:var(--raise-2);box-shadow:var(--seg-on-shadow),inset 0 0 0 2px var(--accent)}
+html[data-palette="titanium"] .h2-acts button:not(.sw-done):not(.sw-confirm):not(.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-drop{background:var(--btn)!important;background-color:var(--raise)!important;box-shadow:var(--btn-shadow)}
+html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-palette="titanium"] .sc-acts .sw-confirm{background:var(--btn-primary)!important;background-color:var(--primary)!important;box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
+html[data-palette="titanium"] .h2-acts :is(.sw-done,.sw-confirm,.sw-ftdone) svg.i,html[data-palette="titanium"] .sc-acts .sw-confirm svg.i{color:var(--on-primary)}

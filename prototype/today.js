@@ -109,47 +109,109 @@ function homeGroups(items, target) {
 // Tiles on top: tap one to see only those; tap it again (or "Show everything") for the whole list.
 let homeFilter = null;
 const HF = [["urgent", "bad", "Urgent", "flag"], ["overdue", "over", "Overdue", "clock"], ["today", "today", "Today", "sun"], ["week", "week", "This week", "list"]];
-// Today (redesign 26 Sep, on the approved page map): only what needs doing.
-// Greeting and date · who (Chris / Annemarie / Both) · four tiles · the brief in one line · Suggested · tasks by day ·
-// risks. The section switch is pinned in the header. Deals' next steps, the buyer-search queue and the overview live on
-// Deals and People now.
+// Today – modern (26 Sep evening, Chris: "the whole layout still looks old tech – new, exceptionally modern, with
+// interactivity"). Big greeting · whose list · a 7-day strip (tap a day) · "Next up" hero with its actions · three tiles ·
+// the brief · suggestions as swipeable cards · tasks by day as rows you can swipe for quick actions (Done / Chased /
+// Tomorrow – each action is a real button, and the same actions are in the task sheet). Colour: the avatar carries the
+// section, the status chip carries priority (urgent red, late amber, suggested grey); every word stays neutral.
+let homeDay = null;   // a day picked on the strip (YYYY-MM-DD): only that day's tasks (today also shows the late ones)
+const chip2 = (tone, t) => `<span class="chip2 c-${tone}"><i></i>${esc(t)}</span>`;
+function stChip(it) {
+  const n = dayDiff(dueDate(it)), late = n < 0 ? `${-n} day${n === -1 ? "" : "s"} late` : "";
+  if (it._ft) return n < 0 ? chip2("warn", "Follow-up " + late) : chip2("plain", "Follow up " + (n === 0 ? "today" : n === 1 ? "tomorrow" : dayName(dueDate(it))));
+  if (it.state === "Proposed") return chip2("prop", it.priority === 1 ? "Suggested · Urgent" : "Suggested");
+  if (it.priority === 1) return chip2("bad", late ? "Urgent · " + late : "Urgent");
+  if (late) return chip2("warn", late);
+  return chip2(n === 0 ? "today" : "plain", n === 0 ? "Today" : n === 1 ? "Tomorrow" : dayName(dueDate(it)));
+}
+function av2(label, secs, icon) {
+  const c = secs && secs.length === 1 ? secColor(secs[0]) : "var(--s-all)";
+  return `<span class="av2" style="--ac:${c}" aria-hidden="true">${icon ? ic(icon) : esc(initials(label))}</span>`;
+}
+// the parts of one task: who, what, sections, where it opens, and its quick actions (left = swipe right, right = swipe left)
+function taskParts(it, showOwner) {
+  if (it._ft) {
+    const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null, secs = window.secsOfLTask ? secsOfLTask(t) : [];
+    const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() : l.name) : "Buyer search";
+    return { id: t.id, go: "task:" + t.id, who, title: l ? `Follow up ${l.name}` : t.task, meta: [t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · "), secs,
+      left: [["ftdone", "check", "Done"]], right: [["fu3", "clock", "+3 days"]] };
+  }
+  const sugg = it.state === "Proposed", secs = window.secsOfItem ? secsOfItem(it) : [];
+  const who = it._me ? (it.owner || "Chris") : it.waiting_on;
+  const meta = [it._me ? "Our job" : "Waiting on " + it.waiting_on, typeof section !== "undefined" && section === "All" && secs.length === 1 ? secs[0] : "", sinceWords(it), showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
+  return { id: it.id, go: "item:" + it.id, who, me: it._me, title: it.waiting_for, meta, secs,
+    left: sugg ? [["confirm", "check", "Accept"]] : [["done", "check", "Done"]],
+    right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", "Tomorrow"], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chased", "refresh", "Chased"], ["tomorrow", "clock", "Tomorrow"]] };
+}
+const swBtn = (id, [act, icn, t]) => `<button type="button" class="sw-${act}" data-sw="${act}" data-id="${esc(id)}">${ic(icn)}<span>${t}</span></button>`;
+// one row: swipe right for the left action, swipe left for the right ones; tap the row to open it
+function swRow(it, showOwner) {
+  const p = taskParts(it, showOwner);
+  return `<div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
+    <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button></div>
+    <div class="sact r">${p.right.map(x => swBtn(p.id, x)).join("")}</div></div></div>`;
+}
+// the one thing to do next: urgent first, then late, then today, then the soonest
+function nextUp(list) {
+  const score = it => (it.priority === 1 ? 0 : 10) + Math.max(-5, Math.min(30, dayDiff(dueDate(it))));
+  return list.slice().sort((a, b) => score(a) - score(b) || dueDate(a) - dueDate(b))[0] || null;
+}
+function heroHtml(it, showOwner) {
+  const p = taskParts(it, showOwner), c = p.secs.length === 1 ? secColor(p.secs[0]) : "var(--s-all)";
+  return `<section class="hero2" style="--ac:${c}" aria-label="Next up"><div class="h2-top"><span class="h2-l">Next up</span>${stChip(it)}</div>
+    <button class="h2-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="h2-tx"><span class="h2-t">${esc(p.title)}</span><span class="h2-m">${esc(p.meta)}</span></span></button>
+    <div class="h2-acts">${[...p.left, ...p.right].slice(0, 3).map(x => swBtn(p.id, x)).join("")}</div></section>`;
+}
+// seven days from today: tap one to see only that day
+function weekStripHtml(list) {
+  const td = saKey(Date.now()), days = [...Array(7)].map((_, i) => saDayPlus(i));
+  const cnt = {}, late = list.filter(it => dayDiff(dueDate(it)) < 0).length;
+  for (const it of list) { const n = dayDiff(dueDate(it)); const k = n < 0 ? td : saKey(dueDate(it)); cnt[k] = (cnt[k] || 0) + 1; }
+  return `<div class="wkstrip" role="group" aria-label="Pick a day">${days.map((k, i) => { const d = new Date(k + "T08:00:00+02:00"), n = cnt[k] || 0, on = homeDay === k;
+    return `<button type="button" data-hday="${k}" class="${on ? "on" : ""}${i === 0 ? " today" : ""}" aria-pressed="${on}" aria-label="${i === 0 ? "Today" : dayName(d)}: ${n} task${n === 1 ? "" : "s"}"><span class="wd2">${i === 0 ? "Today" : WDAY[d.getUTCDay()]}</span><span class="dn2">${d.getUTCDate()}</span><span class="dots">${[...Array(Math.min(3, n))].map((_, j) => `<i${i === 0 && j < late ? ' class="late"' : ""}></i>`).join("")}</span></button>`; }).join("")}</div>`;
+}
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
   const { mine, list, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
-  const hr = SA().getUTCHours();
-  let h = `<section class="hello hello2"><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span><span class="hd">${dayName(Date.now())}</span></section>`;
+  const hr = SA().getUTCHours(), all = target === "All";
+  let h = `<section class="hello3"><span class="hd">${new Date(Date.now()).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" })}</span><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span></section>`;
   h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
-  const all = target === "All";
-  const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, today: g.today.length, week: g.tomorrow.length + g.week.length };
-  h += `<div class="htiles" role="group" aria-label="Show only">${HF.map(([k, tone, t, icn]) => `<button class="htile t-${tone}${homeFilter === k ? " on" : ""}" data-hf="${k}" aria-pressed="${homeFilter === k}"><span class="ht-top"><span class="ht-n">${cnt[k]}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`).join("")}</div>`;
-  const R = arr => arr.map(i => homeRow(i, all));
-  h += `<div class="hlist">`;
-  if (homeFilter) {
-    const only = homeFilter === "urgent" ? (arr => arr.filter(i => i.priority === 1)) : (arr => arr);
-    const cards = [["overdue", "over", "Overdue", g.overdue], ["today", "today", "Today", g.today], ["tomorrow", "tmrw", "Tomorrow", g.tomorrow], ["week", "week", "Next 7 days", g.week], ["later", "later", "Later than a week", g.later]]
-      .filter(([k]) => homeFilter === "urgent" || homeFilter === k || (homeFilter === "week" && k === "tomorrow"));
-    let out = cards.map(([k, tone, t, arr]) => hCard("f-" + k, tone, t, R(only(arr)))).join("");
-    if (homeFilter === "urgent") out = hCard("f-sugg", "prop", "Suggested", R(only(sugg))) + out;   // urgent suggestions too (open one to accept it)
-    const name = HF.find(x => x[0] === homeFilter)[2].toLowerCase();
-    h += out || `<div class="empty">Nothing ${homeFilter === "week" ? "due this week" : homeFilter === "today" ? "due today" : name} right now.</div>`;
-    h += `<button class="wide hf-all" data-hf="">Show everything</button></div>`;
-    return h;
+  h += weekStripHtml(list);
+  const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, sugg: sugg.length };
+  const R = arr => arr.map(i => swRow(i, all));
+  const cards = [["overdue", "over", "Overdue", g.overdue], ["today", "today", "Today", g.today], ["tomorrow", "tmrw", "Tomorrow", g.tomorrow], ["week", "week", "Next 7 days", g.week], ["later", "later", "Later than a week", g.later]];
+  const tiles = `<div class="htiles htiles3" role="group" aria-label="Show only">${[["urgent", "bad", "Urgent", "flag", cnt.urgent], ["overdue", "over", "Late", "clock", cnt.overdue], ["sugg", "prop", "Suggested", "sparkle", cnt.sugg]].map(([k, tone, t, icn, n]) => { const on = homeFilter === k; return `<button class="htile t-${tone}${on ? " on" : ""}" ${k === "sugg" ? 'data-jump="sugg"' : `data-hf="${k}"`} aria-pressed="${on}"><span class="ht-top"><span class="ht-n" data-count="${n}">${n}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`; }).join("")}</div>`;
+  // a day picked on the strip, or a tile: only those
+  if (homeDay || homeFilter) {
+    h += tiles + `<div class="hlist">`;
+    let out = "";
+    if (homeDay) {
+      const td = saKey(Date.now()), pick = list.filter(it => { const n = dayDiff(dueDate(it)); return homeDay === td ? n <= 0 : saKey(dueDate(it)) === homeDay; });
+      out = hCard("f-day", homeDay === td ? "today" : "week", homeDay === td ? "Today (and late)" : dayName(new Date(homeDay + "T08:00:00+02:00")), R(pick.sort(byPrioThenAge)));
+    } else {
+      const only = homeFilter === "urgent" ? (arr => arr.filter(i => i.priority === 1)) : (arr => arr);
+      out = cards.filter(([k]) => homeFilter === "urgent" || homeFilter === k).map(([k, tone, t, arr]) => hCard("f-" + k, tone, t, R(only(arr)))).join("");
+      if (homeFilter === "urgent") out = hCard("f-sugg", "prop", "Suggested", R(only(sugg))) + out;
+    }
+    h += out || `<div class="empty">Nothing ${homeDay ? "due that day" : homeFilter === "overdue" ? "late" : homeFilter} right now.</div>`;
+    return h + `<button class="wide hf-all" data-hf="">Show everything</button></div>`;
   }
+  const nx = nextUp(list); if (nx) h += heroHtml(nx, all);
+  h += tiles;
+  h += `<div class="hlist">`;
   // the brief: one line, tap to read it all
   const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
   const bOpen = isOpen("home:brief", false);
   if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">${ic("brief")}Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
   else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
     <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
-  // suggestions from the bot: accept all in one tap (a person decides; the bot never confirms)
-  h += hCard("sugg", "prop", "Suggested", sugg.map(i => homeRow(i, all)), { limit: 3, extra: `<button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button>` });
-  h += hCard("overdue", "over", "Overdue", R(g.overdue));
-  h += hCard("today", "today", "Today", R(g.today));
-  h += hCard("tomorrow", "tmrw", "Tomorrow", R(g.tomorrow));
-  h += hCard("week", "week", "Next 7 days", R(g.week));
-  h += hCard("later", "later", "Later than a week", R(g.later), { fold: true, dflt: false });
-  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}${typeof section !== "undefined" && section !== "All" ? " in " + esc(section) : ""}. Tap Ask to add a task.</div>`;
+  // suggestions: cards you swipe through sideways, each with Accept / Drop (a person decides; the bot never confirms)
+  if (sugg.length) h += `<section class="hcard t-prop sugg2" id="hsugg"><div class="hc-h"><i class="hc-dot" style="background:var(--g-prop)"></i><span class="hc-t">Suggested</span><span class="hc-n">${sugg.length}</span><button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button></div>
+    <div class="scar">${sugg.map(it => { const p = taskParts(it, all); return `<div class="scard hrow"><button class="sc-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs)}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button><div class="sc-acts">${swBtn(p.id, ["confirm", "check", "Accept"])}${swBtn(p.id, ["drop", "drop", "Drop"])}</div></div>`; }).join("")}</div></section>`;
+  for (const [k, tone, t, arr] of cards) h += hCard(k, tone, t, R(arr), k === "later" ? { fold: true, dflt: false } : undefined);
+  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${all ? "the list" : esc(target) + "'s list"}${typeof section !== "undefined" && section !== "All" ? " in " + esc(section) : ""}. Tap Ask to add a task.</div>`;
+  else if (list.length) h += `<div class="swhint">${ic("sparkle")}Swipe a task right for Done, left for Chased or Tomorrow. Tap it for everything else.</div>`;
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), { fold: true, dflt: false });
@@ -157,6 +219,27 @@ function todayHtml(items) {
   if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   return h;
 }
+// quick actions from a swipe, the hero or a suggestion card – the same saves as the task sheet's buttons
+async function swAct(act, id) {
+  const it = (window._items || []).find(i => i.id === id), tk = (window._ltasks || []).find(t => t.id === id);
+  const name = it ? it.waiting_for : tk ? tk.task : "";
+  const map = { done: ["done", null, "Done"], chased: ["chased", null, "Marked chased today"], tomorrow: ["due", saDayPlus(1), "Moved to tomorrow"], urgent: ["priority", "1", "Marked urgent"], normal: ["priority", "2", "Back to normal"], confirm: ["confirm", null, "Accepted"], drop: ["drop", null, "Dropped"] };
+  if (tk && (act === "ftdone" || act === "fu3")) {
+    const val = act === "fu3" ? saDayPlus(3) + "|" + (tk.outcome || "No reply yet") : null;
+    if (DEMO) { if (act === "ftdone") Object.assign(tk, { status: "done", done_by: me, done_at: new Date().toISOString() }); else tk.not_before = saDayPlus(3); }
+    else { const { error } = await sb.rpc("task_action", { p_id: tk.id, p_action: act === "ftdone" ? "done" : "followup", p_value: val }); if (error) { toast("Could not save: " + error.message, 6000); return; } }
+    toast(act === "ftdone" ? "Done: " + name : "Follow-up moved 3 days on"); if (window.buzz) buzz(); if (DEMO) render(); else load(); return;
+  }
+  const m = map[act]; if (!it || !m) return;
+  if (DEMO) { if (act === "done" || act === "drop") window._items = window._items.filter(x => x !== it); else if (act === "confirm") it.state = "Confirmed"; else if (act === "chased") it.last_chased = new Date().toISOString(); else if (act === "tomorrow") it.due_on = m[1]; else if (m[0] === "priority") it.priority = +m[1]; }
+  else { const { error } = await sb.rpc("item_action", { p_id: it.id, p_action: m[0], p_value: m[1] }); if (error) { toast("Could not save: " + error.message, 6000); return; } }
+  toast(`${m[2]}: ${name}${DEMO ? " (demo)" : ""}`); if (window.buzz) buzz(); if (DEMO) render(); else load();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-sw]"); if (b) { b.disabled = true; swAct(b.dataset.sw, b.dataset.id); return; }
+  const d = e.target.closest("button[data-hday]"); if (d) { homeDay = homeDay === d.dataset.hday ? null : d.dataset.hday; homeFilter = null; render(); return; }
+  const j = e.target.closest("button[data-jump='sugg']"); if (j) { const s = $("hsugg"); if (s) s.scrollIntoView({ block: "start", behavior: "smooth" }); }
+});
 // Overview (moved from Today to Deals, 26 Sep): progress rings, deal tiles, this week – for the section being viewed
 function overviewHtml() {
   const target = who === "All" ? "All" : (who || me || "Chris");
@@ -184,7 +267,7 @@ window.overviewHtml = overviewHtml;
 // tap a tile: only those tasks; tap it again (or Show everything) for the whole list
 $("list").addEventListener("click", e => {
   const f = e.target.closest("button[data-hf]"); if (!f) return;
-  const v = f.dataset.hf || null; homeFilter = v && homeFilter !== v ? v : null; render(); window.scrollTo(0, 0);
+  const v = f.dataset.hf || null; homeFilter = v && homeFilter !== v ? v : null; homeDay = null; render(); window.scrollTo(0, 0);
 });
 // Accept / Drop straight from the list, and Accept all
 async function quickItemAction(id, action) {
