@@ -14,7 +14,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - From the skill, everywhere: a small arrow on every task row (it opens), pressed feedback on everything tappable, a visible focus ring for keyboards, and no motion when the phone asks for less.
 - Checks: 204 screens – all readability rules pass, lowest contrast 5.03 (the Ask button got a solid blue under its gradient so it is measured right). flows.py 43 jobs PASS (new: the frame – bar order, section bar pinned on four pages only, Today without the moved parts, overview on Deals; routes to add things now go through Ask). Screenshots looked at, night and day, both sizes.
 - Next (screen by screen, each after Chris's OK): Deals · People · Board · Ask · deal page · calculators and the rest.
-- Commits: prototype branch (this commit); prototype link updated on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+- Commits: prototype branch 935b76a; prototype link updated by f49f32f on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: the bot opens things and prepares changes; "What you can ask" notes (not live)
 - Asked by Chris: "The bot must be able to do anything on this app you ask. If I tell him I want the deal with Piet on chrome he must bring it up. Give me a list of things he can do so that we can put some info notes." His rule (26 Sep): opening and finding happen at once; changes wait for one tap.
