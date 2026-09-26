@@ -761,3 +761,147 @@ body.boardview{padding-bottom:calc(290px + env(safe-area-inset-bottom))}
 .bigmic{margin-top:12px;min-height:56px;font-size:18px}
 .bigmic .ibw{font-size:18px;color:inherit}
 .bigmic svg.i{width:24px;height:24px}
+/* ---------- v17 step 2: the reader (photo, PDF, WhatsApp quote, voice note) and its review sheet ---------- */
+#rdSheet .row2{margin-top:12px}
+#rdClip{margin-top:8px}
+.rdimg{display:block;max-width:100%;max-height:220px;margin-top:12px;border-radius:var(--r3)}
+.rdfile{display:flex;gap:8px;align-items:center;margin-top:12px;padding:12px;border-radius:var(--r3);background:var(--card2);font-size:16px;overflow-wrap:anywhere}
+.rvsum{font-size:16px;line-height:1.5;margin:4px 0 6px}
+.rvq{padding:2px 12px;border-radius:var(--r3);background:var(--card2)}
+.rvq .kv .v{text-align:right}
+.rvmiss .ez-ul{font-size:16px;line-height:1.5}
+.rvrow{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.rvtick{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-8px;cursor:pointer}
+.rvtick{position:relative}
+.rvtick input{position:absolute;inset:0;width:44px;height:44px;min-height:44px;margin:0;opacity:0;cursor:pointer}
+.rvtick .bx{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;border:2px solid var(--line2);background:var(--field)}
+.rvtick input:checked+.bx{background:var(--primary);border-color:var(--primary)}
+.rvtick input:checked+.bx:after{content:"";width:7px;height:13px;margin-top:-3px;border:solid var(--on-primary);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.rvtick input:focus-visible+.bx{outline:2px solid var(--accent);outline-offset:2px}
+.rv-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.rv-t{font-size:16px;padding-top:10px}
+.rv-s,.rv-k{font-size:14px;color:var(--muted)}
+.rv-k{padding-top:2px}
+.rv-in{margin:0;min-height:44px}
+.rv-2{display:flex;gap:8px}
+.rv-2 label,.rv-d,.rv-f{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.rv-2 label>span,.rv-d>span,.rv-f>span{font-size:14px;color:var(--muted)}
+.rv-2 select,.rv-2 input,.rv-d select,.rv-f input{margin:0;min-height:44px}
+.rvfoot{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.rv-ta{min-height:44px;resize:none;overflow:hidden;line-height:1.4;padding:10px 14px}
+.rv-t{color:var(--text)}
+
+/* ======================================================================================
+   v17 tidy (26 Sep 2026, asked by Chris): one control size, one shape, equal columns.
+   - Controls 40px high (full-width main actions 48px). Radius: controls 12px, cards 16px.
+   - Every row of buttons is a grid of equal columns; choices are one segmented bar.
+   - Headings semibold (600). Titles at 24px stay medium (500): bold at 24px glares (keratoconus rule).
+   - Buttons are neutral; colour stays in the icons, dots and rails only.
+   ====================================================================================== */
+:root{--ctl:40px;--ctl-lg:48px;--r-ctl:12px;--pad:16px}
+
+/* headings */
+h1,.sheet-h{font-weight:500}
+h2,.h2{font:600 18px/1.3 var(--font);color:var(--text);margin:24px 0 10px;letter-spacing:0}
+.h2row h2{margin:0}
+.lbl{font-size:16px;font-weight:600;color:var(--text);margin:20px 0 8px;letter-spacing:0}
+.sheet .lbl{font-size:14px;margin:16px 0 6px}
+#rvSheet .lbl{font-size:16px;margin:20px 0 8px}
+.fld>span{font-size:14px;font-weight:600;color:var(--text)}
+.dn,.card-h .name,.ccard .t .n,.sec-h .st,.stg-h .st,.lsec-h .st,.libi summary,.pk-n{font-weight:600}
+.hg-l{font-weight:600;color:var(--text)}
+.easy .ez-t,.easy .ez-h,.nu-t{font-weight:600}
+.libx .dn{font-weight:500}
+
+/* header: three buttons, one shape */
+.backb,#botBtn,#menuBtn.avatar{height:var(--ctl);min-height:var(--ctl);padding:0 14px;border-radius:var(--r-ctl);border:0;box-shadow:none;background:var(--raise);color:var(--text);font:500 16px/1 var(--font)}
+.backb{padding-left:10px}
+#botBtn svg.i{width:18px;height:18px}
+
+/* compact icon buttons: neutral, 40px, icon keeps its colour */
+.ib{height:var(--ctl);min-height:var(--ctl);padding:0 12px;gap:6px;border-radius:var(--r-ctl);background:var(--raise)}
+.ib svg.i{width:18px;height:18px}
+.ib.on{outline:2px solid var(--ic);outline-offset:-2px}
+
+/* rows of icon buttons: equal tiles, icon over word, in straight columns */
+/* 1-3 buttons: one row; 4 or more: two equal columns (never a ragged row) */
+.tools{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin:12px 0 0}
+.tools:has(> :nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
+.tools .ib{width:100%;min-width:0;justify-content:flex-start;padding:0 12px}
+.tools .ib .ibw{overflow:hidden;text-overflow:ellipsis}
+.tools .ib .bdg{position:static;margin-left:auto}
+.ccard .tools{margin-top:14px}
+.pcard .pc-acts,.dfoot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 var(--pad) 14px}
+.pcard .pc-acts .ib,.pcard .pc-acts>button,.dfoot .ib{width:100%;min-width:0;padding:0 6px}
+.dfoot{padding-top:12px}
+.dfoot .fld{grid-column:1 / -1;max-width:none}
+
+/* rows of text buttons: equal halves (one button = full width) */
+.acts,.acts0{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;align-items:stretch}
+.acts>button,.acts0>button,.acts>.btnlink,.acts0>.btnlink{width:100%;min-width:0;min-height:var(--ctl);height:auto;padding:8px 12px;border-radius:var(--r-ctl);font-size:16px;justify-content:center;text-align:center}
+.acts .ib,.acts0 .ib{width:100%}
+.acts .grow{display:none}
+.sheet .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sheet .row2 button{min-height:var(--ctl-lg);padding:8px 12px}
+.wide{min-height:var(--ctl-lg);padding:10px 14px;border-radius:var(--r-ctl)}
+
+/* one-of-several choices: one bar, equal segments */
+.seg2,.segbar,.dtabs4{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;margin:6px 0 0;border-radius:14px;background:var(--field);border:1px solid var(--line)}
+.chips.segbar{display:grid;flex-wrap:nowrap}
+.seg2>button,.seg2>label,.segbar>button,.dtabs4>.dtab{display:flex;align-items:center;justify-content:center;min-width:0;min-height:var(--ctl);height:auto;padding:6px 4px;border:0;border-radius:10px;background:transparent;color:var(--text);font:500 14px/1.2 var(--font);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on{background:var(--primary);color:var(--on-primary);border:0}
+.seg2 svg.i,.segbar svg.i,.dtabs4 svg.i{display:none}
+.seg2>label.datepick{position:relative;margin:0;padding:6px 4px}
+.whochips{margin-bottom:12px}
+.dtabs4{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));margin:12px var(--pad) 4px}
+.calctabs{grid-auto-flow:column;grid-template-columns:none;margin:0 0 12px}
+.dr-t{margin-top:6px;font-size:14px;color:var(--muted)}
+
+/* other chips and small buttons: same height and corners as everything else */
+.chips button,.seg,.seg.sm,.hscroll button,[data-dealfilter]{min-height:var(--ctl);padding:8px 14px;border-radius:var(--r-ctl)}
+.sheet-h button,.kitline button,.h2row>button{min-height:var(--ctl);padding:0 14px;border-radius:var(--r-ctl);font-size:14px}
+.linkb{min-height:var(--ctl)}
+
+/* even insets: 16px on both sides of every card */
+.row{padding:14px var(--pad)}
+.deal-h{padding:14px var(--pad)}
+.sec-h{padding:12px var(--pad)}
+.sec-b{padding:4px var(--pad) var(--pad)}
+.dpanel{padding:6px var(--pad) 12px}
+.nextup{margin:12px var(--pad) 4px;padding:14px var(--pad)}
+.dsum{padding:14px var(--pad) 4px}
+.ccard{padding:var(--pad)}
+.pcard .hg-b{padding:0 var(--pad) 12px}
+.kitline{margin:12px 0 4px}
+.hr-main{padding:12px var(--pad) 12px calc(var(--pad) + 4px)}
+.sbar{padding:8px 8px 8px calc(var(--pad) + 4px)}
+.tools:not(:has(> :nth-child(4))) .ib{justify-content:center;padding:0 4px}
+.h2row h2{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h2row>button{flex:none}
+/* chips and choice buttons: filled, no outline, same as everything else */
+.seg,.chips button,.hscroll button,[data-dealfilter],.freq .seg,.composer .cmode .seg{border:0;background:var(--raise);color:var(--text)}
+.seg.on,.chips button.on,.hscroll button.on,[data-dealfilter].on,.composer .cmode .seg.on{background:var(--primary);color:var(--on-primary)}
+.segbar>button{background:transparent}
+.segbar>button.on{background:var(--primary)}
+.composer .cmode{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.composer .cmode .seg,.composer .cmode select{min-height:var(--ctl);height:auto;padding:6px 8px;border-radius:var(--r-ctl);font-size:14px}
+.composer .cmode select{padding-right:34px}
+/* the bot box: text box on top, Speak and Send under it in two equal halves */
+.ask{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px}
+.ask textarea{grid-column:1 / -1}
+.ask>button,.ask>.ib{width:100%;height:var(--ctl);min-height:var(--ctl);padding:0 12px;border-radius:var(--r-ctl)}
+/* archive and form headings match the rest */
+.ahits h3{font:600 18px/1.3 var(--font);color:var(--text);margin:24px 0 10px}
+.formh h3,.sech h3{font-weight:600}
+.pcard .pc-acts .ib{justify-content:center;padding:0 4px}
+/* + sheet: twelve identical tiles in a 3 x 4 grid */
+.addgrid{gap:8px}
+.addgrid button{height:88px;min-height:88px;gap:6px;padding:8px 4px;border-radius:14px;font-size:14px;line-height:1.2}
+.addgrid .qi{width:36px;height:36px;border-radius:11px}
+.addgrid .qi svg.i{width:20px;height:20px}
+/* light theme: buttons that sit on the page or a white card get a hairline so they never disappear */
+[data-theme="light"] :is(.ib,.backb,#botBtn,#menuBtn,.sheet-h button,.h2row>button,.kitline button,.acts>button:not(.primary),.acts0>button:not(.primary),.acts0>.btnlink,.acts>.btnlink,.row2 button:not(.primary),.wide:not(.primary),.seg:not(.on),.chips:not(.segbar) button:not(.on),.hscroll button:not(.on)){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+[data-theme="light"] .segbar>button:not(.on),[data-theme="light"] .seg2>button:not(.on),[data-theme="light"] .seg2>label:not(.on){box-shadow:none;background:transparent}
+.addgrid button{justify-content:flex-start;padding-top:12px}
+.h2row{align-items:stretch}
+.h2row h2{align-self:center}

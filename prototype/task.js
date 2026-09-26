@@ -63,11 +63,11 @@ $("tsAdd").onclick = async () => {
 
 // ---------- "Due" on a task (in the task sheet) ----------
 function dueRowHtml(it) {
-  const set = !!it.due_on;
-  return `<div class="duerow"><div class="dr-t">${set ? "Due " + dayWords(dueDate(it)) : `No due date – chase ${dayWords(dueDate(it))}`}</div><div class="dr-b">
-    <button type="button" data-a="due" data-v="${saDayPlus(0)}">Today</button><button type="button" data-a="due" data-v="${saDayPlus(1)}">Tomorrow</button>
-    <label class="datepick"><span>Pick a date</span><input type="date" data-duepick="${it.id}" value="${esc(it.due_on || "")}" aria-label="Pick a due date"></label>
-    ${set ? `<button type="button" data-a="due" data-v="">No date</button>` : ""}</div></div>`;
+  const d = it.due_on || "", t0 = saDayPlus(0), t1 = saDayPlus(1), other = d && d !== t0 && d !== t1;
+  const b = (v, label) => `<button type="button"${d === v ? ' class="on" aria-pressed="true"' : ` data-a="due" data-v="${v}" aria-pressed="false"`}>${label}</button>`;
+  return `<div class="lbl">Due</div><div class="seg2 dr-b" role="group" aria-label="Due">${b("", "No date")}${b(t0, "Today")}${b(t1, "Tomorrow")}
+    <label class="datepick${other ? " on" : ""}"><span>${other ? esc(dayName(dueDate(it))) : "Pick date"}</span><input type="date" data-duepick="${it.id}" value="${esc(d)}" aria-label="Pick a due date"></label></div>
+    <div class="dr-t">${d ? "Due " + dayWords(dueDate(it)) : dayDiff(dueDate(it)) < 0 ? `No due date – the chase was due ${dayWords(dueDate(it))}` : `No due date – we chase it ${dayWords(dueDate(it))}`}</div>`;
 }
 window.dueRowHtml = dueRowHtml;
 $("list").addEventListener("change", async e => {

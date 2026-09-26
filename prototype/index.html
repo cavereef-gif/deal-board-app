@@ -79,15 +79,17 @@
   <div class="sheet-b">
     <div class="sheet-h"><span>Add</span><button id="addClose" type="button">Close</button></div>
     <div class="addgrid">
-      <button type="button" data-add="task" class="t-me"><span class="qi" data-ico="checkbox"></span>Task for Chris or Annemarie</button>
+      <button type="button" data-add="task" class="t-me"><span class="qi" data-ico="checkbox"></span>New task</button>
       <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
       <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
       <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
       <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
       <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
+      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Read photo or PDF</button>
+      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>WhatsApp quote</button>
       <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Calculators</button>
-      <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search the archive</button>
+      <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search archive</button>
       <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
     </div>
   </div>
@@ -101,7 +103,7 @@
     <div class="lbl">Who does it</div>
     <div class="seg2" role="group" aria-label="Who does it"><button type="button" data-towner="Chris">Chris</button><button type="button" data-towner="Annemarie">Annemarie</button></div>
     <div class="lbl">Due</div>
-    <div class="seg2 wrap" role="group" aria-label="Due"><button type="button" data-tdue="">No date</button><button type="button" data-tdue="0">Today</button><button type="button" data-tdue="1">Tomorrow</button><button type="button" data-tdue="pick">Pick a date</button></div>
+    <div class="seg2" role="group" aria-label="Due"><button type="button" data-tdue="">No date</button><button type="button" data-tdue="0">Today</button><button type="button" data-tdue="1">Tomorrow</button><button type="button" data-tdue="pick">Pick date</button></div>
     <label class="fld hidden" id="tsDateBox"><span>Due date</span><input type="date" id="tsDate"></label>
     <details class="tsmore"><summary>More: deal, holding up, next step, area, urgent</summary>
       <label class="fld"><span>Deal</span><select id="tsDeal"><option value="">No deal</option></select></label>
@@ -123,7 +125,7 @@
     <div id="vnAudio"></div>
     <label class="fld"><span>Save it on</span><select id="vnFor"></select></label>
     <div class="row2"><button id="vnSave" type="button" data-ico="note">Save as note</button><button class="primary" id="vnTasks" type="button" data-ico="bot">Make tasks from it</button></div>
-    <div class="quiet">"Make tasks from it" sends the words to the bot. It suggests tasks; you accept or drop them.</div>
+    <div class="quiet">"Make tasks from it" sends the words to Claude to read. You then tick which tasks and notes to save.</div>
     <div class="msg" id="vnMsg"></div>
   </div>
 </div>
@@ -142,6 +144,35 @@
     <button class="wide primary" id="ndsAdd" type="button" data-ico="check">Create deal</button>
     <div class="quiet">It gets the deal kit checklist (local sale by truck for minerals). Change the route on the deal's page.</div>
     <div class="msg" id="ndsMsg"></div>
+  </div>
+</div>
+<div id="rdSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="rdTitle">Read a photo or PDF</span><button id="rdClose" type="button">Close</button></div>
+    <div id="rdFileBox">
+      <div class="lbl" style="margin-top:4px">What is it?</div>
+      <div class="seg2" role="group" aria-label="What is it"><button type="button" data-rdwhat="notes">Notes or a card</button><button type="button" data-rdwhat="doc">A deal document</button></div>
+      <div class="quiet" id="rdHint"></div>
+      <div class="row2"><button class="primary" id="rdCam" type="button" data-ico="camera">Take a photo</button><button id="rdPick" type="button" data-ico="clip">Choose a photo or PDF</button></div>
+      <div id="rdPreview"></div>
+    </div>
+    <div id="rdTextBox" class="hidden">
+      <label class="fld"><span>The WhatsApp message</span><textarea id="rdText" rows="6" placeholder="Paste the message here"></textarea></label>
+      <button id="rdClip" type="button" data-ico="copy">Paste from clipboard</button>
+    </div>
+    <label class="fld"><span>About (optional)</span><select id="rdAbout"></select></label>
+    <label class="tick" id="rdKeepBox"><input type="checkbox" id="rdKeep" checked><span>Keep the photo or PDF (on the deal or contact above, or on the notice board)</span></label>
+    <button class="wide primary" id="rdGo" type="button">Read it</button>
+    <div class="quiet">Sent to Claude (Anthropic) to read. You check every line before anything is saved.</div>
+    <div class="msg" id="rdMsg"></div>
+  </div>
+</div>
+<input type="file" id="rdCamInput" class="hidden" accept="image/*" capture="environment">
+<input type="file" id="rdFileInput" class="hidden" accept="image/*,application/pdf,.pdf">
+<div id="rvSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="rvTitle">Check before saving</span><button id="rvClose" type="button">Close</button></div>
+    <div id="rvBody"></div>
   </div>
 </div>
 <div id="pickSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="pkTitle">
@@ -300,6 +331,7 @@ $("addSheet").addEventListener("click", e => {
   if (a === "calc" || a === "archive") { goView(a); return; }
   if (a === "chat") { openPickSheet(); return; }
   if (a === "voice") { if (window.openVoiceNote) openVoiceNote(); return; }
+  if (a === "read" || a === "quote") { if (window.openReader) openReader({ kind: a === "quote" ? "quote" : "photo" }); return; }
 });
 
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -460,7 +492,7 @@ function rowHtml(it, n){
     <div class="acts">
       ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Accept</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Done</button>${ib("clock", "warn", `data-a="chased"`, "Chased – asked again today")}`}
     </div>
-    <div class="whoseg" role="group" aria-label="Who does it">${ic("assign")}<span>Who does it</span>${["Chris", "Annemarie"].map(n => n === owner ? `<button class="seg sm on" type="button" aria-pressed="true">${n}</button>` : `<button class="seg sm" type="button" data-a="assign" data-v="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
+    <div class="lbl">Who does it</div><div class="seg2" role="group" aria-label="Who does it">${["Chris", "Annemarie"].map(n => n === owner ? `<button class="on" type="button" aria-pressed="true">${n}</button>` : `<button type="button" data-a="assign" data-v="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
     ${window.dueRowHtml ? dueRowHtml(it) : ""}
     <div class="tools">
       ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2" class="on"`, "Urgent – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make urgent")}
@@ -492,11 +524,11 @@ function contactHtml(c){
   const wa = c.whatsapp || toWa(c.phone);
   const fN = attsFor("contact", c.id).length, nN = contactNotes(c.id).length;
   const sub = [c.company, c.role].filter(Boolean).join(" · ");
-  return `<div class="ccard" data-cid="${c.id}"><div class="t"><span class="av">${esc(initials(c.name))}</span><div style="flex:1;min-width:0"><div class="n">${esc(c.name)}</div><div class="s" style="margin-top:2px">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div></div>${c.phone ? ib("phone", "call", `data-call="${esc(c.phone)}"`, "Call") : ""}${wa ? ib("chat", "wa", `data-wa1="${esc(wa)}"`, "WhatsApp") : ""}</div>
+  return `<div class="ccard" data-cid="${c.id}"><div class="t"><span class="av">${esc(initials(c.name))}</span><div style="flex:1;min-width:0"><div class="n">${esc(c.name)}</div><div class="s" style="margin-top:2px">${esc(sub) || "No company or role yet"}${c.project ? ` · ${esc(c.project)}` : ""}</div></div></div>
     <div class="k">${c.phone ? esc(c.phone) + (c.whatsapp && c.whatsapp !== toWa(c.phone) ? ` · WhatsApp +${esc(c.whatsapp)}` : "") : (c.whatsapp ? `WhatsApp +${esc(c.whatsapp)}` : "No number saved yet")}${c.email ? `\n${esc(c.email)}` : ""}</div>
     ${c.notes ? `<div class="k" style="color:var(--muted)">${esc(c.notes)}</div>` : ""}
     ${window.draftHtml ? draftHtml("contact", c.id, wa) : ""}
-    <div class="tools">${ib("note", "note", `data-panel="contact:${c.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}${ib("chatin", "wa", `data-dchat="contact:${c.id}"`, "Add a WhatsApp chat")}${ib("me", "me", `data-emailcontact="${c.id}"`, "Email me this contact")}${ib("edit", "file", `data-cedit="${c.id}"${edit ? ' class="on"' : ""}`, "Edit")}${ib("bot", "bot", `data-botcontact="${esc(c.name)}"`, "Ask the bot")}${window.checksButton ? checksButton(c.company || c.name, "contact:" + c.id) : ""}</div>
+    <div class="tools">${c.phone ? ib("phone", "call", `data-call="${esc(c.phone)}"`, "Call") : ""}${wa ? ib("chat", "wa", `data-wa1="${esc(wa)}"`, "WhatsApp") : ""}${ib("note", "note", `data-panel="contact:${c.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}${ib("chatin", "wa", `data-dchat="contact:${c.id}"`, "Add a WhatsApp chat")}${ib("me", "me", `data-emailcontact="${c.id}"`, "Email me this contact")}${ib("edit", "file", `data-cedit="${c.id}"${edit ? ' class="on"' : ""}`, "Edit")}${ib("bot", "bot", `data-botcontact="${esc(c.name)}"`, "Ask the bot")}${window.checksButton ? checksButton(c.company || c.name, "contact:" + c.id) : ""}</div>
     ${open ? `<div class="npanel"><div class="lbl" style="margin-top:0">Notes</div>${notesBlock(contactNotes(c.id), "contact", c.id)}<div class="lbl">Files</div>${filesHtml("contact", c.id)}</div>` : ""}
     ${edit ? contactFormHtml(c) : ""}
     <div class="meta">Saved by ${esc(c.created_by || "")}${c.updated_at ? " · updated " + fmtWhen(c.updated_at) : ""}</div></div>`;
@@ -535,7 +567,7 @@ window.waitingPeopleHtml = waitingPeopleHtml; window.savedContactsHtml = savedCo
 function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
   return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
-    <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh the app</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
+    <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
     <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(me) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
@@ -679,7 +711,7 @@ function areaHtml(name, arr){
 function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = `<div class="h2row"><div class="chips" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  let h = `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
   if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
       <label class="fld"><span>Type</span><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
       ${window.KIT ? `<label class="fld" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
@@ -783,7 +815,7 @@ function navSnap(){ return { view, dealPage, y: window.scrollY, keys: [...openKe
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
 // Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
 let sheetHist = false, ignorePop = false;
-const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet")].filter(x => x && !x.classList.contains("hidden"));
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet")].filter(x => x && !x.classList.contains("hidden"));
 function syncSheetHist(){
   const any = openSheets().length > 0 || !!window._sheetItem;
   if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
@@ -1188,6 +1220,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="calc.js?v=17"></script>
 <script src="archive.js?v=17"></script>
 <script src="extras.js?v=17"></script>
+<script src="reader.js?v=17"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>

@@ -148,6 +148,7 @@ function addMics(root) {
   (root || document).querySelectorAll("#tsWhat, #tsFrom, #tsNext, #cText, #q, #vnText, input[data-noteinput], input[data-evid]").forEach(f => {
     if (f.dataset.micAdded) return; f.dataset.micAdded = "1";
     if (f.id === "vnText") { f.closest(".fld").insertAdjacentHTML("beforebegin", `<button type="button" class="wide primary mic bigmic" data-mic="#vnText" aria-label="Speak – the words appear in the box">${ic("mic")}<span class="ibw">Speak</span></button>`); return; }
+    if (f.id === "q") { const send = document.querySelector('.ask button[data-bot="ask"]'); if (send) { send.insertAdjacentHTML("beforebegin", micButton("#q")); return; } }
     if (f.id === "cText") { $("cSend").insertAdjacentHTML("beforebegin", micButton("#cText")); return; }   // board: box on its own line, File · Speak · Send under it
     const key = f.id ? "#" + f.id : f.dataset.noteinput ? `input[data-noteinput="${f.dataset.noteinput}"]` : `input[data-evid="${f.dataset.evid}"]`;
     const wrap = document.createElement("div"); wrap.className = "micwrap" + (f.tagName === "TEXTAREA" ? " ta" : "");
@@ -167,7 +168,7 @@ function vnTargets() {
     (window._contacts || []).map(c => `<option value="contact:${c.id}">Contact: ${esc(c.name)}</option>`).join("");
 }
 function openVoiceNote() {
-  $("vnText").value = ""; vnBlob = null; $("vnAudio").innerHTML = ""; $("vnMsg").textContent = "";
+  vnSavedKey = ""; $("vnText").value = ""; vnBlob = null; $("vnAudio").innerHTML = ""; $("vnMsg").textContent = "";
   $("vnFor").innerHTML = vnTargets();
   $("vnSpeakHint").textContent = SR ? "Tap Speak and talk – the words appear below. Or record the sound to keep it as a file." : "On this phone: tap the box and use the mic on your keyboard. Or record the sound to keep it as a file.";
   $("vnSheet").classList.remove("hidden"); addMics($("vnSheet"));
@@ -185,30 +186,33 @@ async function vnRecordToggle() {
   vnRec.start(); const t0 = Date.now();
   vnTimer = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); b.innerHTML = ic("pause") + `Stop recording (${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")})`; }, 500);
 }
+let vnSavedKey = "";   // stops a second tap (e.g. after a failed read) saving the same note twice
 async function vnSave(makeTasks) {
   const text = $("vnText").value.trim(), target = $("vnFor").value;
   if (!text && !vnBlob) { $("vnMsg").textContent = "Say or type something first, or record the sound."; return; }
-  if (makeTasks && !text) { $("vnMsg").textContent = "Tap Speak (or type) first – the bot reads the words, not the recording."; return; }
+  if (makeTasks && !text) { $("vnMsg").textContent = "Tap Speak (or type) first – the reader reads the words, not the recording."; return; }
   const label = "Voice note from " + (me || "us") + (text ? ": " + text : " (recording attached)");
-  if (DEMO) { $("vnSheet").classList.add("hidden"); toast(makeTasks ? "Demo – the bot needs a real login." : "Saved (demo – not saved)."); return; }
-  $("vnMsg").textContent = "Saving…";
-  let postId = null, err = null;
-  const [type, id] = target ? target.split(":") : ["post", null];
-  if (!target) { const r = await sb.rpc("add_post", { p_body: label, p_deal: null, p_kind: "check" }); err = r.error; postId = r.data; }
-  else { const row = { field: "note", new_value: label, source: "app" }; row[type + "_id"] = id; const r = await sb.from("events").insert(row); err = r.error; }
-  if (!err && vnBlob) {
-    const ext = /mp4|m4a|aac/.test(vnBlob.type) ? "m4a" : /ogg/.test(vnBlob.type) ? "ogg" : "webm";
-    const path = `${target ? type : "post"}/${target ? id : postId}/${Date.now()}-voice-note.${ext}`;   // same folders as other files
-    const up = await sb.storage.from("files").upload(path, vnBlob, { contentType: vnBlob.type || "audio/webm", upsert: false });
-    if (up.error) err = up.error;
-    else { const r = await sb.from("attachments").insert({ target_type: target ? type : "post", target_id: String(target ? id : postId), path, name: "Voice note " + dayName(Date.now()) + "." + ext, size: vnBlob.size, mime: vnBlob.type || "" }); err = r.error; }
+  const key = target + "|" + text + "|" + (vnBlob ? vnBlob.size : 0);
+  const read = () => runReader({ kind: "voice", text, about: target }, $("vnMsg"), () => $("vnSheet").classList.add("hidden"));
+  if (DEMO) { if (makeTasks) return read(); $("vnSheet").classList.add("hidden"); toast("Saved (demo – not saved)."); return; }
+  if (vnSavedKey !== key) {
+    $("vnMsg").textContent = "Saving…";
+    let postId = null, err = null;
+    const [type, id] = target ? target.split(":") : ["post", null];
+    if (!target) { const r = await sb.rpc("add_post", { p_body: label, p_deal: null, p_kind: "check" }); err = r.error; postId = r.data; }
+    else { const row = { field: "note", new_value: label, source: "app" }; row[type + "_id"] = id; const r = await sb.from("events").insert(row); err = r.error; }
+    if (!err && vnBlob) {
+      const ext = /mp4|m4a|aac/.test(vnBlob.type) ? "m4a" : /ogg/.test(vnBlob.type) ? "ogg" : "webm";
+      const path = `${target ? type : "post"}/${target ? id : postId}/${Date.now()}-voice-note.${ext}`;   // same folders as other files
+      const up = await sb.storage.from("files").upload(path, vnBlob, { contentType: vnBlob.type || "audio/webm", upsert: false });
+      if (up.error) err = up.error;
+      else { const r = await sb.from("attachments").insert({ target_type: target ? type : "post", target_id: String(target ? id : postId), path, name: "Voice note " + dayName(Date.now()) + "." + ext, size: vnBlob.size, mime: vnBlob.type || "" }); err = r.error; }
+    }
+    if (err) { $("vnMsg").textContent = "Could not save: " + err.message; return; }
+    vnSavedKey = key;
   }
-  if (err) { $("vnMsg").textContent = "Could not save: " + err.message; return; }
-  $("vnSheet").classList.add("hidden"); toast("Voice note saved.");
-  if (makeTasks && text) {
-    const where = target ? ` It is about ${type === "deal" ? "the deal " + ((dealById(id) || {}).name || "") : "my contact " + ((((window._contacts || []).find(c => c.id === id)) || {}).name || "")}.` : "";
-    askBot(`This is a voice note I just recorded.${where} Turn it into tasks (propose them – I will accept or drop) and notes on the right deals or people. Keep each task short. Voice note: "${text}"`, "ask");
-  } else load();
+  if (makeTasks) { await read(); load(); return; }   // the review sheet opens; the note is already saved
+  $("vnSheet").classList.add("hidden"); toast("Voice note saved."); load();
 }
 document.addEventListener("click", e => {
   if (e.target.id === "vnSheet" || e.target.closest("#vnClose")) { if (vnRec) vnRec.stop(); micStop(); $("vnSheet").classList.add("hidden"); return; }
@@ -283,12 +287,12 @@ function transportCalcHtml() {
   const tdeals = liveDeals().filter(d => d.kind === "transport" && d.params && d.params.route);
   return `<div class="card calcc">
     ${tdeals.length ? `<label class="fld" style="margin-top:0"><span>Fill in from a deal</span><select id="trDeal"><option value="">Choose a transport deal…</option>${tdeals.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</select></label>` : ""}
-    ${f("from", "From (town or address)", "e.g. Middelburg, Mpumalanga", "text")}${f("to", "To (town or address)", "e.g. City Deep, Johannesburg", "text")}
+    ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}
     <div class="acts0"><button class="primary" data-trgo="1">${ic("globe")}Find the road distance</button>${TR.km ? `<a class="btnlink" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(TR.from)}&destination=${encodeURIComponent(TR.to)}">${ic("open")}Open in Google Maps</a>` : ""}</div>
     <div id="trMap" class="trmap${TR.geo ? "" : " hidden"}"></div>
-    <div class="calc">${f("km", "Kilometres one way", "or type it yourself")}<label class="fld"><span>Count the empty trip back?</span><select data-tr="ret"><option${TR.ret === "Yes" ? " selected" : ""}>Yes</option><option${TR.ret === "No" ? " selected" : ""}>No</option></select></label>
-      ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client pays per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
-      ${f("lp100", "Diesel use, litres per 100 km (optional)", "e.g. 45")}${f("diesel", "Diesel price per litre (optional)", "e.g. 22.50")}</div>
+    <div class="calc">${f("km", "Km one way", "or type it")}<label class="fld"><span>Empty trip back?</span><select data-tr="ret"><option${TR.ret === "Yes" ? " selected" : ""}>Yes</option><option${TR.ret === "No" ? " selected" : ""}>No</option></select></label>
+      ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
+      ${f("lp100", "Diesel l/100 km", "e.g. 45")}${f("diesel", "Diesel R/litre", "e.g. 22.50")}</div>
     <div class="cres" id="trRes">${tripResults()}</div>
     <label class="fld"><span>Save on</span><select id="trSaveOn"><option value="">The notice board</option>${liveDeals().map(d => `<option value="${d.id}"${TR.deal === d.id ? " selected" : ""}>Deal: ${esc(d.name)}</option>`).join("")}</select></label>
     <div class="acts0"><button data-trsave="1">${ic("note")}Save</button><button data-trcopy="1">${ic("copy")}Copy</button></div>
@@ -303,7 +307,7 @@ function everydayCalcHtml() {
     ${(window._ecHist || []).length ? `<div class="lbl">Earlier</div>${window._ecHist.slice(0, 6).map(h => `<div class="kv"><span class="k">${esc(h[0])}</span><span class="v">${esc(h[1])}</span></div>`).join("")}` : ""}</div>`;
 }
 function calcTabsPage() {
-  const tabs = [["transport", "truck", "Transport"], ["chrome", "gem", "Chrome and ore"], ["everyday", "calc", "Everyday"]];
+  const tabs = [["transport", "truck", "Transport"], ["chrome", "gem", "Chrome & ore"], ["everyday", "calc", "Everyday"]];
   let h = `<div class="dtabs4 calctabs">${tabs.map(([k, icn, t]) => `<button class="dtab${calcTab === k ? " on" : ""}" data-calctab="${k}">${ic(icn)}${t}</button>`).join("")}</div>`;
   if (calcTab === "transport") h += transportCalcHtml();
   else if (calcTab === "everyday") h += everydayCalcHtml();
