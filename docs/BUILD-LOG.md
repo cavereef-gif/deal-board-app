@@ -16,7 +16,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - New tasks start in the section being viewed; the deal's Area list includes added sections.
 - Prototype link: tools/make_preview.py --stamp adds the build time to the file links, so a reload shows the new version at once (Chris's Mac was showing the version from before the last change).
 - Checks: 192 screens with the real font – all readability rules pass, lowest contrast 5.03. flows.py 38 jobs PASS (new: the switch is on all four pages and Chrome shows only chrome work; adding section Coal makes it appear). Screenshots looked at, night and day, both sizes.
-- Commits: prototype branch (this commit); prototype link updated on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+- Commits: prototype branch d384601; prototype link updated by c53a45b on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: follow-ups, a clearer Transport calculator, Today in colour-coded cards (not live)
 - Asked by Chris: "[the buyer] didn't respond so it shouldn't be treated as done but rather a follow up. Transport section gets confusing with all the ticks and sections. I want the today list better grouped and colour coded, maybe tiles – more tidy."
