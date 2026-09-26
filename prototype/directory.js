@@ -122,7 +122,7 @@ function fuDefault(t) {
     const k = `${yr}-${String(mi + 1).padStart(2, "0")}-${String(+d).padStart(2, "0")}`;
     if (k > td && Date.parse(k) - Date.parse(td) <= 60 * 864e5) out.push(k); return m;
   });
-  return out[0] || saDayPlus(3);
+  return out[0] || workDayPlus(3);
 }
 function fuWords(t) { const d = new Date(t.not_before + "T08:00:00+02:00"), n = dayDiff(d); return n < 0 ? "Follow-up overdue (" + dayName(d) + ")" : "Follow up " + dayWords(d); }
 function taskHtml(t, n) {

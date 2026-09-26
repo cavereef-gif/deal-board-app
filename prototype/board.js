@@ -35,7 +35,7 @@ function postHtml(p) {
 function boardHtml() {
   const P = (window._posts || []).filter(p => !window.inSecPost || inSecPost(p)).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   const pinned = P.filter(p => p.pinned && !p.done);
-  let h = "";
+  let h = portsCardHtml();
   if (pinned.length) h += `<div class="sech pinned-h"><h3>Pinned</h3></div><div class="feed">${pinned.map(postHtml).join("")}</div>`;
   h += `<div class="sech"><h3>Between Chris and Annemarie</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
   if (!P.length) return h + `<div class="empty">${typeof section !== "undefined" && section !== "All" ? `No messages about ${esc(section)} yet. Pick All to see every message.` : "No messages yet. Write the first one below – you can attach photos or files, and log checks."}</div>`;
@@ -86,3 +86,46 @@ $("list").addEventListener("click", async e => {
   if (error) { toast("Could not update: " + error.message, 5000); b.disabled = false; return; }
   load();
 });
+
+// ---- Ports and borders (26 Sep 2026, free services): the weekly border report, rain and wind at the three ore ports, and
+// links to the berthing lists. Read-only – nothing here changes a deal or a task.
+const PORTS = [{ name: "Durban", lat: -29.87, lon: 31.03 }, { name: "Richards Bay", lat: -28.80, lon: 32.04 }, { name: "Maputo", lat: -25.97, lon: 32.57 }];
+const BERTH_LINKS = [["Transnet: terminal berthing lists (Durban, Richards Bay and the rest)", "https://www.transnet.net/SubsiteRender.aspx?id=8153370"],
+  ["Transnet: terminal updates", "https://www.transnet.net/TPTTerminalUpdates"], ["Maputo port: in port today", "https://www.portmaputo.com/whats-new/in-port-today/"]];
+const wxBad = d => d.rain >= 10 || d.wind >= 50;
+async function loadPortsInfo(force) {
+  if (!force && window._portsAt && Date.now() - window._portsAt < 3600e3) return;
+  window._portsAt = Date.now();
+  if (typeof DEMO !== "undefined" && DEMO) {
+    const d = n => saDayPlus(n);
+    window._borderNote = { week_ending: "2026-08-23", summary: "Slow: Chirundu (Zambia to Zimbabwe) 27 h, Beitbridge (into Zimbabwe) 20 h, Kazungula (Botswana to Zambia) 19 h in the queue. Quicker: Ressano Garcia (Mozambique into SA) 4 h, Lebombo (into Mozambique) 4 h, Kazungula (Zambia to Botswana) 5 h.", source_url: "https://www.wcoesarpsg.org/" };
+    window._portWx = PORTS.map((p, i) => ({ name: p.name, days: [0, 1, 2].map(n => ({ date: d(n), rain: i === 0 && n === 1 ? 14.2 : 0.4 * n, wind: i === 0 && n === 1 ? 52 : 20 + 5 * n })) }));
+    return;
+  }
+  try { const { data } = await sb.from("weekly_notes").select("week_ending,summary,source_url").eq("kind", "borders").order("week_ending", { ascending: false }).limit(1); window._borderNote = (data || [])[0] || null; } catch (e) {}
+  try { const { data } = await sb.functions.invoke("tools", { body: { action: "weather", points: PORTS } }); window._portWx = (data && data.weather) || null; } catch (e) {}
+  if (view === "board" || view === "worklist") render();
+}
+function portsCardHtml() {
+  if (typeof section !== "undefined" && !["All", "Transport"].includes(section)) return "";
+  const open = isOpen("board:ports", false), n = window._borderNote, wx = window._portWx || [];
+  const bad = wx.filter(p => p.days.some(wxBad));
+  const day = s => new Date(s + "T12:00:00").toLocaleDateString("en-ZA", { weekday: "short" });
+  const sub = bad.length ? `Weather to watch: ${bad.map(p => p.name).join(", ")}` : wx.length ? "Ports: no heavy rain or wind" : "";
+  let h = `<div class="card portsc"><div class="sec-h" role="button" tabindex="0" data-tog="board:ports" data-dflt="0" aria-expanded="${open}"><span class="st">${ic("truck")}Ports and borders</span><span class="cnt">${esc(sub)}</span><span class="chev"></span></div>`;
+  if (open) {
+    h += `<div class="pc-b">`;
+    if (n) h += `<div class="lbl">Border queues – week ending ${esc(dayName(new Date(n.week_ending + "T08:00:00+02:00")))}</div><p class="pc-t">${esc(n.summary)}</p><div class="quiet">From the weekly WCO cross-border report, read by the bot. It comes out a few weeks late.</div><a class="btnlink wide" target="_blank" rel="noopener" href="${esc(n.source_url)}">${ic("open")}Open the report</a>`;
+    else h += `<div class="quiet">No border report yet – it is read every Monday morning.</div>`;
+    if (wx.length) h += `<div class="lbl">Weather at the ports (next 3 days)</div>${wx.map(p => `<div class="trwx"><i class="dot" style="background:${p.days.some(wxBad) ? "var(--warn)" : "var(--muted)"}"></i><div><b>${esc(p.name)}</b><small>${p.days.map(d => `${day(d.date)} ${d.rain} mm${d.wind >= 40 ? `, wind ${d.wind} km/h` : ""}`).join(" · ")}</small></div></div>`).join("")}<div class="quiet">Weather: MET Norway. Heavy rain (10 mm+) or strong wind (50 km/h+) can stop loading.</div>`;
+    h += `<div class="lbl">Berthing lists</div>${BERTH_LINKS.map(([t, u]) => `<a class="btnlink wide" target="_blank" rel="noopener" href="${esc(u)}">${ic("open")}${esc(t)}</a>`).join("")}</div>`;
+  }
+  return h + `</div>`;
+}
+(window._after ||= []).push(() => { if (view === "board" || view === "worklist") loadPortsInfo(); });
+window.portWeatherNote = function () {   // for Today: one plain line only when a port has weather to watch
+  const bad = (window._portWx || []).map(p => ({ p, d: p.days.find(wxBad) })).filter(x => x.d);
+  if (!bad.length) return "";
+  const dd = s => new Date(s + "T12:00:00").toLocaleDateString("en-ZA", { weekday: "short" });
+  return `<div class="holnote"><i class="dot" style="background:var(--warn)"></i>${bad.map(({ p, d }) => `${esc(p.name)} port: ${d.rain} mm rain${d.wind >= 50 ? `, wind ${d.wind} km/h` : ""} on ${dd(d.date)}`).join(" · ")} – loading may stop.</div>`;
+};
