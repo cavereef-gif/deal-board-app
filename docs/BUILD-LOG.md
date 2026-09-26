@@ -14,7 +14,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - Ask page: "What you can ask" notes – 23 example phrases in four groups (Find and open · Add · Change · Write and work out) plus the "never on its own" line; tap one to put it in the box. Open while the chat is empty, folded after.
 - Your own chat lines are graphite, not blue.
 - Checks: 204 screens – all readability rules pass, lowest contrast 5.03. flows.py 42 jobs PASS (new: six quick commands, "Which one?" choice, open at once + four Do it cards saving a date, a tick and a term while the private target is refused, the notes fill the box). The function was type-checked with Deno before deploying; its answers are tested the first time Chris asks it something (the key lives in Vault, so no test calls were made).
-- Commits: prototype branch (this commit); prototype link updated on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+- Commits: prototype branch f78ace4; prototype link updated by 16fc58e on main (prototype/ folder only); ask v10 deployed to Supabase. Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: Chrome · Manganese · Transport sections, Graphite colours (not live)
 - Asked by Chris: "I need different sections – chrome, manganese and transport. The main screen is too much blue. Everything looks very boring. On the black drop-down there is no option to add stuff." His choices (26 Sep, in the app's question card): a switch on every page · graphite with a colour per section · the bot prepares, he taps once · one Section choice with Add.
