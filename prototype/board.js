@@ -63,7 +63,7 @@ $("cFileInput").addEventListener("change", () => {
 $("cText").addEventListener("input", () => { const t = $("cText"); t.style.height = "auto"; t.style.height = Math.min(140, t.scrollHeight) + "px"; });
 $("cSend").onclick = async () => {
   const body = ($("cText").value || "").trim() || (composerFile ? "📎 " + composerFile.name : "");
-  if (!body) { $("cText").focus(); return; }
+  if (!body) { $("cText").focus(); toast("Type a message first (or tap File to attach one)."); return; }
   if (DEMO) { (window._posts ||= []).unshift({ id: "dp" + Date.now(), author: me, kind: composerMode, body, deal_id: $("cDeal").value || null, pinned: false, done: false, created_at: new Date().toISOString() }); $("cText").value = ""; composerFile = null; $("cFile").classList.add("hidden"); render(); window.scrollTo(0, document.body.scrollHeight); return; }
   const btn = $("cSend"); btn.disabled = true;
   const { data: id, error } = await sb.rpc("add_post", { p_body: body, p_deal: $("cDeal").value || null, p_kind: composerMode });

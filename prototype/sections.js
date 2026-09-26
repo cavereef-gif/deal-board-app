@@ -43,6 +43,9 @@ function inSecDeal(d) { return section === "All" || d.area === section; }
 function inSecLead(l) { return inSec(secsOfLead(l)); }
 function inSecLTask(t) { return inSec(secsOfLTask(t)); }
 function inSecPost(p) { return inSec(secsOfPost(p)); }
+// saved contacts: their area (Transport, Chrome …); people with no section area show under every section
+function secsOfContact(c) { const a = c.project || ""; if (a === "Buyer search") return ["Chrome", "Manganese"]; if (a && !SEC_NOT.includes(a)) return [a]; const t = secsOfText([c.role, c.company, c.notes].join(" ")); return t.length ? t : ["Chrome", "Manganese", "Transport"]; }
+function inSecContact(c) { return section === "All" || secsOfContact(c).includes(section); }
 // the main section of an item, for its colour (first match) – "" when it has none
 function secOfItem(it) { const s = secsOfItem(it); return s.length === 1 ? s[0] : ""; }
 

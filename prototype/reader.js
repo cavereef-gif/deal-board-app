@@ -19,7 +19,7 @@ function rdPaint() {
   $("rdTextBox").classList.toggle("hidden", !isQuote);
   $("rdKeepBox").classList.toggle("hidden", isQuote);
   document.querySelectorAll("#rdSheet [data-rdwhat]").forEach(b => b.classList.toggle("on", b.dataset.rdwhat === rdWhat));
-  $("rdHint").textContent = isQuote ? "Long-press the message in WhatsApp › Copy, then tap Paste below. You get a tidy card and what is missing (VAT, payment, validity …)."
+  $("rdHint").textContent = isQuote ? "Long-press the message in WhatsApp › Copy, then tap Paste below. Messy is fine: every load in it gets its own card, with what is missing (VAT, payment, start …)."
     : rdWhat === "doc" ? "A contract, offer, assay, invoice or bank letter. The deal terms come out, each with the words they came from."
     : "Handwritten notes, a whiteboard, a business card or a screenshot. Tasks, contacts and notes come out.";
   $("rdGo").innerHTML = ic("bot") + (isQuote ? "Decode it" : "Read it");
@@ -123,12 +123,15 @@ function openReview() {
     if ((q.missing || []).length) h += `<div class="rvmiss"><div class="lbl" style="margin-top:10px">Not stated – ask before you rely on it</div><ul class="ez-ul">${q.missing.map(m => `<li>${esc(m)}</li>`).join("")}</ul></div>`;
     h += `<label class="rvrow"><span class="rvtick"><input type="checkbox" data-rv="quote" checked><span class="bx" aria-hidden="true"></span></span><span class="rv-b"><span class="rv-t">Save the tidy quote as a note</span><span class="rv-s">${about ? "On " + esc(rvTargetName(about)) : "On the notice board"}</span></span></label>`;
   }
+  const LD = r.loads || [];
+  if (LD.length) h += `<div class="lbl">${LD.length > 1 ? "Loads in the message · " + LD.length : "The load"}</div>${LD.length > 1 ? `<div class="rv-s" style="margin:-2px 0 6px">Tick the loads you want to work on – each becomes its own deal.</div>` : ""}` + LD.map((l, i) => rvLoadHtml(l, i, LD.length)).join("");
+  const newOpts = LD.map((l, i) => `<option value="new:${i}">New deal: ${esc(rvLoadName(l))}</option>`).join("");
   const T = r.tasks || [];
   if (T.length) h += `<div class="lbl">Tasks · ${T.length}</div>` + T.map((t, i) => `<div class="rvrow"><label class="rvtick"><input type="checkbox" data-rv="task:${i}" checked aria-label="Save this task"><span class="bx" aria-hidden="true"></span></label><span class="rv-b">
       <textarea class="rv-in rv-ta" rows="2" data-rvf="task:${i}:what" aria-label="Task">${esc(t.what)}</textarea>
       <span class="rv-s">${t.waiting_on && t.waiting_on !== "Me" ? "Waiting on " + esc(t.waiting_on) : "Our job"}${t.why ? " · “" + esc(t.why) + "”" : ""}</span>
       <span class="rv-2"><label><span>Who</span><select data-rvf="task:${i}:owner">${rvWho(t.owner || me || "Chris")}</select></label><label><span>Due</span><input type="date" data-rvf="task:${i}:due" value="${esc(/^\d{4}-\d\d-\d\d$/.test(t.due || "") ? t.due : "")}"></label></span>
-      <label class="rv-d"><span>Deal</span><select data-rvf="task:${i}:deal">${dealOpts(t.deal_id || aboutDeal)}</select></label></span></div>`).join("");
+      <label class="rv-d"><span>Deal</span><select data-rvf="task:${i}:deal">${dealOpts(t.deal_id || aboutDeal)}${newOpts}</select></label></span></div>`).join("");
   const C = r.contacts || [];
   if (C.length) h += `<div class="lbl">Contacts · ${C.length}</div>` + C.map((c, i) => `<div class="rvrow"><label class="rvtick"><input type="checkbox" data-rv="contact:${i}" checked aria-label="Save this contact"><span class="bx" aria-hidden="true"></span></label><span class="rv-b">
       ${["name", "company", "role", "phone", "email"].map(k => `<label class="rv-f"><span>${{ name: "Name", company: "Company", role: "Role", phone: "Phone", email: "Email" }[k]}</span><input class="rv-in" data-rvf="contact:${i}:${k}" value="${esc(c[k] || "")}"${k === "phone" ? ' type="tel"' : k === "email" ? ' type="email"' : ""}></label>`).join("")}
@@ -141,10 +144,42 @@ function openReview() {
     const td = aboutDeal || (T.find(t => t.deal_id) || {}).deal_id || "";
     h += `<div class="lbl">Deal terms · ${TM.length}</div><label class="fld" style="margin-top:0"><span>Save the terms on</span><select id="rvTermDeal">${dealOpts(td)}</select></label><div id="rvTerms">${rvTermsHtml(td)}</div>`;
   }
-  if (!T.length && !C.length && !N.length && !TM.length && !(q && q.is_quote)) h += `<div class="quiet">Nothing to save was found. Try a clearer photo, or type it instead.</div>`;
+  if (!LD.length && !T.length && !C.length && !N.length && !TM.length && !(q && q.is_quote)) h += `<div class="quiet">Nothing to save was found. Try a clearer photo, or type it instead.</div>`;
   h += `<div class="rvfoot"><button class="wide primary" id="rvSave" type="button">${ic("check")}Save the ticked lines</button><button class="wide" id="rvCopy" type="button">${ic("copy")}Copy all as text</button>
     <div class="quiet">Read by ${esc(/sonnet/i.test(r.model || "") ? "Claude Sonnet" : /haiku/i.test(r.model || "") ? "Claude Haiku" : "Claude")}. Check names and numbers against the original.</div><div class="msg" id="rvMsg"></div></div>`;
   $("rvBody").innerHTML = h; $("rvSheet").classList.remove("hidden"); $("rvSheet").querySelector(".sheet-b").scrollTop = 0; rvFit();
+  // a task with no deal goes on the new deal when the message holds just one load
+  if (LD.length === 1) T.forEach((t, i) => { const s = $("rvBody").querySelector(`[data-rvf="task:${i}:deal"]`); if (s && !s.value) s.value = LD[0].deal_id || "new:0"; });
+}
+// ---------- loads: one card per load in a messy WhatsApp (27 Sep 2026) ----------
+const rvBlank = v => { const s = String(v == null ? "" : v).trim(); return /^(not stated|not given|unknown|n\/?a|none|-+|\?+)$/i.test(s) ? "" : s; };
+const RV_SIDE = { they_need_trucks: "They need trucks", they_offer_trucks: "They offer trucks", selling: "Selling", buying: "Buying" };
+function rvLoadName(l) {
+  const short = x => rvBlank(x).replace(/\s*\([^)]*\)/g, "").trim() || "?", c = rvBlank(l.commodity);
+  return l.kind === "ore" ? `${c || "Ore"} – ${short(l.from)}${rvBlank(l.to) ? " → " + short(l.to) : ""}` : `Transport – ${short(l.from)} → ${short(l.to)}${c ? " (" + c + ")" : ""}`;
+}
+function rvLoadHtml(l, i, n) {
+  const d = l.deal_id ? dealById(l.deal_id) : null, side = RV_SIDE[l.side] || "";
+  const miss = (l.missing || []).filter(Boolean), flags = (l.flags || []).filter(Boolean);
+  const F = [["from", "From", 1], ["to", "To", 1], ["commodity", l.kind === "ore" ? "Product" : "Cargo"], ["trucks", "Trucks"], ["rate", "Rate"], ["unit", "Per"], ["vat", "VAT"], ["volume", "How many"], ["payment", "Payment"], ["start", "Starts"], ["extras", "Extras", 1], ["contact", "Contact", 1]];
+  const f = ([k, lab, wide]) => `<label class="rv-f${wide ? " w" : ""}"><span>${lab}</span><input class="rv-in" data-rvf="load:${i}:${k}" value="${esc(rvBlank(l[k]))}" placeholder="Not given"></label>`;
+  // short read-only view first; "Fix the details" opens the boxes
+  const kv = (k, v) => v ? `<div class="kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>` : "";
+  const rate = [rvBlank(l.rate), rvBlank(l.unit)].filter(Boolean).join(" ") + (/incl/i.test(l.vat || "") ? " incl VAT" : /excl/i.test(l.vat || "") ? " excl VAT" : "");
+  const where = `<option value="new"${d ? "" : " selected"}>A new deal</option>` + liveDeals().map(x => `<option value="${x.id}"${d && d.id === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  return `<div class="rvload" data-load="${i}">
+    <div class="rvl-h">${n > 1 ? `<span class="rvl-n" aria-hidden="true">${i + 1}</span>` : ""}<span class="rvl-r">${ic(l.kind === "ore" ? "gem" : "truck")}<span>${esc(rvBlank(l.from) || "?")} → ${esc(rvBlank(l.to) || "?")}</span></span></div>
+    ${side || l.words ? `<div class="rv-s">${[side, l.words ? "“" + esc(l.words) + "”" : ""].filter(Boolean).join(" · ")}</div>` : ""}
+    <div class="rvl-kv">${kv(l.kind === "ore" ? "Product" : "Cargo", rvBlank(l.commodity))}${kv("Trucks", rvBlank(l.trucks))}${kv("Rate", rate)}${kv("How many", rvBlank(l.volume))}${kv("Payment", rvBlank(l.payment))}${kv("Starts", rvBlank(l.start))}${kv("Extras", rvBlank(l.extras))}${kv("Contact", rvBlank(l.contact))}</div>
+    ${flags.length ? `<div class="rvflags">${flags.map(x => `<div class="rvflag"><span class="dot" aria-hidden="true"></span><span>${esc(x)}</span></div>`).join("")}</div>` : ""}
+    ${miss.length ? `<div class="rvl-ask"><div class="rv-k">Not in the message – ask back</div><ul class="ez-ul">${miss.map(m => `<li>${esc(m)}</li>`).join("")}</ul></div>` : ""}
+    <button class="wide rvl-fix" type="button" data-rvfix="${i}" aria-expanded="false">${ic("edit")}Fix the details</button>
+    <div class="rvl-g hidden">${F.map(f).join("")}<label class="rv-f w"><span>Ask back – one question a line</span><textarea class="rv-in rv-ta" rows="2" data-rvf="load:${i}:ask">${esc(miss.join("\n"))}</textarea></label></div>
+    <div class="rvrow"><label class="rvtick"><input type="checkbox" data-rv="load:${i}"${n === 1 || d ? " checked" : ""} aria-label="Save this load"><span class="bx" aria-hidden="true"></span></label><span class="rv-b"><span class="rv-t">${d ? "Add it to the deal" : "Make it a deal"}</span>
+      <label class="rv-d"><span>Save on</span><select data-rvf="load:${i}:where">${where}</select></label>
+      <label class="rv-f rvname${d ? " hidden" : ""}"><span>New deal name</span><textarea class="rv-in rv-ta" rows="1" data-rvf="load:${i}:name">${esc(rvLoadName(l))}</textarea></label>
+      <span class="rv-s">${d ? "Fills in only the details the deal does not have yet" : "The details above go on the deal"}${miss.length ? ", and the questions become one task on it" : ""}.</span></span></div>
+  </div>`;
 }
 window.openReview = openReview;
 // text boxes grow to show all their words (no cut-off lines)
@@ -158,18 +193,37 @@ function rvTermsHtml(dealId) {
       <span class="rv-s">${d ? (same ? "Already the same on the deal" : now ? "On the deal now: " + esc(now) + " – tick to replace" : "Not set on the deal yet") : "Pick a deal above to save terms"}${t.evidence ? " · “" + esc(t.evidence) + "”" : ""}</span></span></div>`; }).join("");
 }
 $("rvClose").onclick = () => $("rvSheet").classList.add("hidden");
-$("rvSheet").addEventListener("change", e => { if (e.target.id === "rvTermDeal") { $("rvTerms").innerHTML = rvTermsHtml(e.target.value); rvFit($("rvTerms")); } });
+$("rvSheet").addEventListener("change", e => {
+  if (e.target.id === "rvTermDeal") { $("rvTerms").innerHTML = rvTermsHtml(e.target.value); rvFit($("rvTerms")); }
+  const w = e.target.closest("[data-rvf$=':where']");
+  if (w) { const card = w.closest(".rvload"), isNew = w.value === "new"; card.querySelector(".rvname").classList.toggle("hidden", !isNew); card.querySelector(".rv-t").textContent = isNew ? "Make it a deal" : "Add it to the deal";
+    const tk = card.querySelector("[data-rv^='load:']"); if (tk) tk.checked = true; }
+});
 $("rvSheet").addEventListener("input", e => { if (e.target.matches("textarea.rv-ta")) rvFit(e.target.parentNode); });
 $("rvSheet").addEventListener("click", async e => {
   if (e.target.id === "rvSheet") { $("rvSheet").classList.add("hidden"); return; }
   if (e.target.closest("#rvCopy")) { try { await navigator.clipboard.writeText(rvAllText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }
   if (e.target.closest("#rvSave")) rvSave();
+  const fx = e.target.closest("[data-rvfix]");
+  if (fx) { const g = fx.parentNode.querySelector(".rvl-g"), open = g.classList.toggle("hidden") === false; fx.setAttribute("aria-expanded", open); fx.innerHTML = ic(open ? "check" : "edit") + (open ? "Done fixing" : "Fix the details"); fx.parentNode.querySelector(".rvl-kv").classList.toggle("hidden", open); const ak = fx.parentNode.querySelector(".rvl-ask"); if (ak) ak.classList.toggle("hidden", open); if (open) rvFit(g); else rvLoadKv(fx.parentNode, +fx.dataset.rvfix); }
 });
+// after fixing, the short view shows the new words
+function rvLoadKv(card, i) {
+  const v = k => rvVal(`load:${i}:${k}`), kv = (k, x) => x ? `<div class="kv"><span class="k">${k}</span><span class="v">${esc(x)}</span></div>` : "";
+  const l = (rdResult.loads || [])[i] || {}, vat = v("vat");
+  card.querySelector(".rvl-kv").innerHTML = kv(l.kind === "ore" ? "Product" : "Cargo", v("commodity")) + kv("Trucks", v("trucks")) + kv("Rate", [v("rate"), v("unit")].filter(Boolean).join(" ") + (/incl/i.test(vat) ? " incl VAT" : /excl/i.test(vat) ? " excl VAT" : "")) + kv("How many", v("volume")) + kv("Payment", v("payment")) + kv("Starts", v("start")) + kv("Extras", v("extras")) + kv("Contact", v("contact"));
+  card.querySelector(".rvl-r>span").textContent = `${v("from") || "?"} → ${v("to") || "?"}`;
+  const qs = v("ask").split("\n").map(x => x.trim()).filter(Boolean), ak = card.querySelector(".rvl-ask");
+  if (ak) ak.querySelector("ul").innerHTML = qs.map(m => `<li>${esc(m)}</li>`).join("");
+}
 const rvVal = k => { const el = $("rvBody").querySelector(`[data-rvf="${k}"]`); return el ? el.value.trim() : ""; };
 const rvOn = k => { const el = $("rvBody").querySelector(`[data-rv="${k}"]`); return !!(el && el.checked); };
 function rvAllText() {
   const r = rdResult, L = [r.summary || ""];
   if (r.quote && r.quote.is_quote) L.push("", quoteText(r.quote));
+  (r.loads || []).forEach((l, i) => { L.push("", `Load ${i + 1}: ${rvVal(`load:${i}:from`) || "?"} → ${rvVal(`load:${i}:to`) || "?"}`);
+    [["Cargo", "commodity"], ["Trucks", "trucks"], ["Rate", "rate"], ["Per", "unit"], ["VAT", "vat"], ["How many", "volume"], ["Payment", "payment"], ["Starts", "start"], ["Extras", "extras"], ["Contact", "contact"]].forEach(([a, k]) => { const v = rvVal(`load:${i}:${k}`); if (v) L.push(`${a}: ${v}`); });
+    const ask = rvVal(`load:${i}:ask`); if (ask) L.push("Ask back: " + ask.split("\n").map(x => x.trim()).filter(Boolean).join(" · ")); });
   (r.tasks || []).forEach((t, i) => L.push("• " + (rvVal(`task:${i}:what`) || t.what)));
   (r.contacts || []).forEach((c, i) => L.push("• " + ["name", "company", "phone", "email"].map(k => rvVal(`contact:${i}:${k}`)).filter(Boolean).join(", ")));
   (r.notes || []).forEach((n, i) => L.push("• " + (rvVal(`note:${i}:text`) || n.text)));
@@ -178,7 +232,7 @@ function rvAllText() {
 }
 async function rvSave() {
   const r = rdResult, about = r._req.about, src = { photo: "a photo", document: "a document", quote: "a WhatsApp quote", voice: "a voice note" }[r._req.kind] || "the reader";
-  const done = { tasks: 0, contacts: 0, notes: 0, terms: 0, files: 0 }, errs = [];
+  const done = { tasks: 0, contacts: 0, notes: 0, terms: 0, files: 0, deals: 0, dealsUpd: 0 }, errs = [], newDeal = {}, newArea = {};
   const btn = $("rvSave"); btn.disabled = true; $("rvMsg").textContent = "Saving…";
   const note = async (text, t) => {   // t = "deal:<id>" | "contact:<id>" | ""
     if (DEMO) return null;
@@ -194,11 +248,55 @@ async function rvSave() {
     if (DEMO) { done.contacts++; continue; }
     const { error } = await sb.from("contacts").insert(row); if (error) errs.push(row.name + ": " + error.message); else done.contacts++;
   }
+  // loads: each ticked load becomes a deal (or fills in an existing one), with its ask-back questions as one task
+  const addTask = async (body, what) => {
+    if (DEMO) { const now = new Date().toISOString(); const it = { id: "r" + Date.now() + Math.random().toString(36).slice(2, 6), project: body.p_project, deal_id: body.p_deal, waiting_on: body.p_waiting_on, waiting_for: what, state: "Confirmed", priority: 2, owner: body.p_owner, nudge_after_days: 3, last_chased: now, created_at: now, due_on: body.p_due };
+      it._days = 0; it._me = isMe(it); it._stale = it.due_on ? dayDiff(dueDate(it)) < 0 : false; (window._items ||= []).push(it); return null; }
+    let { error } = await sb.rpc("add_item", body);
+    if (error && /p_due|function/i.test(error.message)) { const b2 = { ...body }; delete b2.p_due; ({ error } = await sb.rpc("add_item", b2)); }
+    return error;
+  };
+  for (const [i, l] of (r.loads || []).entries()) {
+    if (!rvOn(`load:${i}`)) continue;
+    const v = k => rvVal(`load:${i}:${k}`), ore = l.kind === "ore";
+    const route = v("from") || v("to") ? `${v("from") || "?"} → ${v("to") || "?"}` : "";
+    const rate = [v("rate"), v("unit")].filter(Boolean).join(" "), vat = /incl/i.test(v("vat")) ? "Included" : /excl/i.test(v("vat")) ? "Excluded" : "";
+    const extras = [v("extras"), v("start") ? "Starts: " + v("start") : ""].filter(Boolean).join("; ");
+    const P = ore ? { commodity: v("commodity"), volume: v("volume"), price: rate, port: v("from"), vat } : { cargo: v("commodity"), route, trucks: v("trucks"), client_rate: rate, loads: v("volume"), payment: v("payment"), extras, vat };
+    Object.keys(P).forEach(k => { if (!P[k]) delete P[k]; });
+    const contact = v("contact"), who = contact.replace(/\+?\d[\d\s()-]{6,}\d/g, "").replace(/[\s,;:–-]+$/, "").trim();
+    const facts = [`From ${src}, ${dayName(Date.now())}${l.words ? ": “" + l.words + "”" : ""}`, ore && v("payment") ? "Payment: " + v("payment") : "", ore && v("trucks") ? "Trucks: " + v("trucks") : "", ore && extras ? extras : "", contact ? "Contact: " + contact : "", (l.flags || []).length ? "Watch: " + l.flags.join("; ") : ""].filter(Boolean).join("\n");
+    const where = v("where"), area = ore ? (/mang/i.test(v("commodity")) ? "Manganese" : /chrom/i.test(v("commodity")) ? "Chrome" : "Other") : "Transport";
+    let dealId = "", d = where && where !== "new" ? dealById(where) : null;
+    if (d) {   // existing deal: fill in only what it does not have yet
+      const params = { ...(d.params || {}) }; let n = 0;
+      Object.entries(P).forEach(([k, x]) => { if (!String(params[k] || "").trim() || (k === "vat" && params[k] === "Not agreed")) { params[k] = x; n++; } });
+      dealId = d.id;
+      if (n) { if (DEMO) d.params = params; else { const { error } = await sb.rpc("save_deal", { p_id: d.id, p_params: params }); if (error) { errs.push(d.name + ": " + error.message); continue; } } done.dealsUpd++; }
+    } else {
+      const name = v("name").replace(/\s+/g, " ") || rvLoadName(l);
+      if (DEMO) { dealId = "nd" + Date.now() + i; const now = new Date().toISOString();
+        (window._deals ||= []).push({ id: dealId, name, kind: ore ? "mineral" : "transport", area, status: "Active", summary: RV_SIDE[l.side] || "", stage: "", key_facts: facts, contacts: who, next_milestone: "", params: P, sort: 99, created_at: now, updated_at: now, updated_by: me, kit: true, kit_route: ore ? "local" : null });
+        if (window.kitDemoSteps) (window._steps ||= []).push(...kitDemoSteps(dealId, ore ? "mineral" : "transport", "local")); }
+      else { const { data, error } = await sb.rpc("save_deal", { p_id: null, p_name: name, p_kind: ore ? "mineral" : "transport", p_area: area, p_route: ore ? "local" : null, p_params: P, p_summary: RV_SIDE[l.side] || "", p_key_facts: facts, p_contacts: who });
+        if (error) { errs.push(name + ": " + error.message); continue; } dealId = data; }
+      done.deals++;
+    }
+    newDeal[i] = dealId; newArea[dealId] = area;
+    const qs = v("ask").split("\n").map(x => x.replace(/^[•\-\s]+/, "").trim()).filter(Boolean);
+    if (qs.length && dealId) {
+      const what = (who ? "" : "Ask back: ") + qs.join(" · ");
+      const error = await addTask({ p_project: area, p_waiting_on: who || "Me", p_waiting_for: what, p_blocks: "", p_next: "", p_priority: 2, p_owner: me || "Chris", p_deal: dealId, p_due: null }, what);
+      if (error) errs.push("Questions: " + error.message); else done.tasks++;
+    }
+  }
   for (const [i, t] of (r.tasks || []).entries()) {
     if (!rvOn(`task:${i}`)) continue;
     const what = rvVal(`task:${i}:what`); if (!what) continue;
-    const dealId = rvVal(`task:${i}:deal`), d = dealById(dealId);
-    const body = { p_project: d && PROJECTS.includes(d.area) ? d.area : "Other", p_waiting_on: t.waiting_on && !/^me$/i.test(t.waiting_on) ? t.waiting_on : "Me", p_waiting_for: what, p_blocks: "", p_next: "", p_priority: 2, p_owner: rvVal(`task:${i}:owner`) || me || "Chris", p_deal: dealId || null, p_due: rvVal(`task:${i}:due`) || null };
+    let dealId = rvVal(`task:${i}:deal`);
+    if (dealId.startsWith("new:")) dealId = newDeal[dealId.slice(4)] || "";
+    const d = dealById(dealId);
+    const body = { p_project: d && PROJECTS.includes(d.area) ? d.area : newArea[dealId] || "Other", p_waiting_on: t.waiting_on && !/^me$/i.test(t.waiting_on) ? t.waiting_on : "Me", p_waiting_for: what, p_blocks: "", p_next: "", p_priority: 2, p_owner: rvVal(`task:${i}:owner`) || me || "Chris", p_deal: dealId || null, p_due: rvVal(`task:${i}:due`) || null };
     if (DEMO) { const now = new Date().toISOString(); const it = { id: "r" + Date.now() + i, project: body.p_project, deal_id: body.p_deal, waiting_on: body.p_waiting_on, waiting_for: what, state: "Confirmed", priority: 2, owner: body.p_owner, nudge_after_days: 3, last_chased: now, created_at: now, due_on: body.p_due };
       it._days = 0; it._me = isMe(it); it._stale = it.due_on ? dayDiff(dueDate(it)) < 0 : false; (window._items ||= []).push(it); done.tasks++; continue; }
     let { error } = await sb.rpc("add_item", body);
@@ -233,7 +331,7 @@ async function rvSave() {
     }
   }
   btn.disabled = false;
-  const parts = [done.tasks && `${done.tasks} task${done.tasks > 1 ? "s" : ""}`, done.contacts && `${done.contacts} contact${done.contacts > 1 ? "s" : ""}`, done.notes && `${done.notes} note${done.notes > 1 ? "s" : ""}`, done.terms && `${done.terms} term${done.terms > 1 ? "s" : ""}`, done.files && "the file"].filter(Boolean);
+  const parts = [done.deals && `${done.deals} new deal${done.deals > 1 ? "s" : ""}`, done.dealsUpd && `details on ${done.dealsUpd} deal${done.dealsUpd > 1 ? "s" : ""}`, done.tasks && `${done.tasks} task${done.tasks > 1 ? "s" : ""}`, done.contacts && `${done.contacts} contact${done.contacts > 1 ? "s" : ""}`, done.notes && `${done.notes} note${done.notes > 1 ? "s" : ""}`, done.terms && `${done.terms} term${done.terms > 1 ? "s" : ""}`, done.files && "the file"].filter(Boolean);
   if (errs.length) { $("rvMsg").textContent = (parts.length ? "Saved " + parts.join(", ") + ". " : "") + "Not saved: " + errs.join(" · "); if (!DEMO) load(); return; }
   $("rvSheet").classList.add("hidden");
   toast(parts.length ? `Saved ${parts.join(", ")}${DEMO ? " (demo – not saved)" : ""}.` : "Nothing was ticked, so nothing was saved.", 4000);
@@ -256,6 +354,13 @@ $("list").addEventListener("click", e => {
 // ---------- demo mode: sample answers so the review sheet can be tried ----------
 function demoRead(req) {
   const d = liveDeals()[0] || {}, today = saDayPlus(0), tmr = saDayPlus(1);
+  // a messy transport WhatsApp with several loads (fictional example)
+  if (req.kind === "quote" && /loads? avail|sidies|tauts|side tipper|\bST\b/i.test(req.text || "")) return { summary: "Two transport loads offered by Lee: chrome Rustenburg to Richards Bay, and coal Witbank to Maputo.", model: "claude-haiku-demo",
+    loads: [
+      { kind: "transport", side: "they_need_trucks", from: "Rustenburg", to: "RB (Richards Bay)", commodity: "Chrome", trucks: "10 side tippers", rate: "R385", unit: "per ton", vat: "", volume: "", payment: "", start: "", extras: "", contact: "Lee 082 555 0199", deal_id: "", words: "Rustenburg - RBay 10 x sidies R385/t chrome", missing: ["Is the rate incl or excl VAT?", "How many loads and for how long?", "Payment terms?", "When does it start?"], flags: [] },
+      { kind: "transport", side: "they_need_trucks", from: "WTB (Witbank / eMalahleni)", to: "Maputo", commodity: "Coal", trucks: "15", rate: "R620 or R600", unit: "per ton", vat: "", volume: "", payment: "", start: "ASAP", extras: "R600 if 34t payload", contact: "Lee 082 555 0199", deal_id: "", words: "Coal WTB to Maputo R620 per ton.... R600 if 34t payload. Need 15 trucks asap!!", missing: ["Is the rate incl or excl VAT?", "Truck type?", "Payment terms?", "Who pays tolls and diesel?"], flags: ["Cross-border: border time and papers not mentioned"] },
+    ],
+    tasks: [], contacts: [{ name: "Lee", company: "", role: "", phone: "082 555 0199", email: "" }], notes: [], terms: [] };
   if (req.kind === "quote") return { summary: "A supplier offers chrome concentrate at a price per ton, collected at the plant.", model: "claude-haiku-demo",
     quote: { is_quote: true, side: "offer", from_who: "Sam (Example Minerals)", product: "Chrome concentrate", grade: "Cr2O3 40–42%", quantity: "5 000 t a month", price: "R2 400", unit: "per ton", vat: "not stated", basis: "FOT", place: "Example plant, Rustenburg", payment: "", validity: "", other: "Trucks from Monday", missing: ["VAT included or not", "Payment terms", "How long the price is valid", "Moisture / DMT basis", "Which assay counts"] },
     tasks: [{ what: "Ask Sam: is R2 400 incl or excl VAT?", waiting_on: "Sam", owner: me || "Chris", due: tmr, deal_id: d.id || "", why: "R2400/t FOT" }, { what: "Ask Sam how long the price is valid", waiting_on: "Sam", owner: me || "Chris", due: "", deal_id: d.id || "" }],
