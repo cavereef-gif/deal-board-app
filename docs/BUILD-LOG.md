@@ -15,7 +15,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - Small fixes found while testing: pop-up messages now use the full width instead of wrapping into a narrow column; the task details sit on their own line under the status pill; suggestion cards run edge to edge without a cut-off shadow.
 - Checks: 204 screens – all readability rules pass (no coloured text, lowest contrast 5.03; the only small-target hits are tick boxes inside their labels, as before). flows.py 44 jobs PASS (new: tap a day in the strip filters to that day, a row's Done works, Next up's Tomorrow moves the task). Screenshots looked at, night and day, S22 and iPhone 8. A 37-second screen recording (S22, night) shows the switches, day strip, tiles, swipes and page movement.
 - Next: Chris's OK on this Today, then Deals.
-- Commits: prototype branch COMMIT_PROTO; prototype link updated by COMMIT_MAIN on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+- Commits: prototype branch 777d2b6; prototype link updated by 3e4a199 on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: redesign with the UI/UX skill – step 1: new page frame + Today (not live)
 - Asked by Chris: "I want the whole app redesigned with the skill" (the ui-ux-guidelines skill he saved on 26 Sep). His choices: keep Graphite + section colours · keep 40px buttons (the skill's minimum is 44px – his decision, recorded) · rethink the pages too · screen by screen, Today first. Page map approved by Chris on 26 Sep 2026 ("Approved – start with Today").
