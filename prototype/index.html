@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="velvetGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#964EC2"/><stop offset="1" stop-color="#FF7BBF"/></linearGradient><linearGradient id="tiGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4F3EF"/><stop offset=".5" stop-color="#C3C7CD"/><stop offset="1" stop-color="#7E858E"/></linearGradient><linearGradient id="tiGradDay" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5A6068"/><stop offset=".55" stop-color="#2A2D31"/><stop offset="1" stop-color="#0E0F11"/></linearGradient></defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="velvetGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#964EC2"/><stop offset="1" stop-color="#FF7BBF"/></linearGradient><linearGradient id="tiGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#CFE0FF"/><stop offset=".5" stop-color="#5B8DEF"/><stop offset="1" stop-color="#2A55A8"/></linearGradient><linearGradient id="tiGradDay" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7FA8F0"/><stop offset=".55" stop-color="#2F5FC0"/><stop offset="1" stop-color="#1A3A7C"/></linearGradient></defs></svg>
 <header class="appbar">
   <button id="backBtn" class="backb hidden" aria-label="Back" data-ico="back">Back</button>
   <div class="brand"><span class="logo" aria-hidden="true">DB</span><h1 id="pageTitle">Deal Board</h1></div>
@@ -302,7 +302,7 @@ function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" 
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
   const ti = document.documentElement.dataset.palette === "titanium";
-  document.querySelector('meta[name="theme-color"]').content = ti ? (t === "light" ? "#ECEBE7" : "#0E0F11") : (t === "light" ? "#F4F0E6" : "#12152B");
+  document.querySelector('meta[name="theme-color"]').content = ti ? (t === "light" ? "#E7EDF4" : "#0A0F17") : (t === "light" ? "#F4F0E6" : "#12152B");
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);

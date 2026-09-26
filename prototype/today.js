@@ -52,7 +52,8 @@ function dtile(d) {
 // One task = one line (what) + one line of plain words (kind · due · who). Suggestions carry Accept / Drop.
 function homeRow(it, showOwner, noWho) {
   const sugg = it.state === "Proposed", n = dayDiff(dueDate(it)), dw = dueWords(it);
-  const rail = n < 0 ? " r-warn" : sugg ? " r-prop" : it.priority === 1 ? " r-bad" : "";
+  // rail colour = priority first: urgent red, then overdue amber, suggested grey, low slate, normal (palette colour, blue in Titanium)
+  const rail = it.priority === 1 ? " r-bad" : n < 0 ? " r-warn" : sugg ? " r-prop" : it.priority === 3 ? " r-low" : "";
   const meta = [kindWords(it), it.priority === 1 ? "Urgent" : "", sugg ? sinceWords(it) : it._me ? dw : `${dw} · ${sinceWords(it)}`, showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
   return `<div class="hrow${rail}"><button class="hr-main" data-tgo="item:${it.id}"><span class="hr-t">${it._me || noWho ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="hr-m">${meta}</span></button></div>`;
 }
