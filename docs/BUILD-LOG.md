@@ -7,6 +7,14 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: Transport calculator fills itself (not live)
+- Type From and To (suggestions appear while typing: places already used first), tap Work it out. The server gives the truck distance and driving time, the toll gates on the way and the weather at both ends; the map shows the route and the gates.
+- Toll gates are listed with ticks and prices; Class 3 (3–4 axles) or Class 4 (5+ axles, the default). The tolls box fills itself (both ways when the truck is paid there and back); typing your own number takes over, and a button puts the ticked gates back. Side ramps are listed unticked.
+- Diesel check: the official 50ppm diesel price shows as "Suggested" with Use it (fills the price and marks it accepted). Nothing is filled without that tap.
+- If the server can't answer, the old free car route in the phone is the spare (said so on screen, tolls not checked). The bot's "open the numbers" now works the route out straight away when it has the places but no kilometres.
+- Credits shown: Powered by Geoapify / © OpenStreetMap contributors / MET Norway. Until Chris adds the Geoapify key it is a car route and says so.
+- Checks: flows.py 45 PASS (new: Work it out gives 564.8 km, 5 gates, R2 548 class 4 both ways, unticking a gate and class 3 change it, diesel Use it fills R29.5551). screens.py: no coloured letters, lowest contrast 5.68. Screenshots looked at, S22 and iPhone 8, night and day. The map tiles can't load in the test sandbox (blocked there), so the map itself was not seen in the test.
+
 ## 26 Sep 2026 – v17 prototype: free services on the server (not live)
 - Asked by Chris (20:31): "i want all the free api". Everything below costs R0 a month except a few cents of Claude when the monthly diesel document and the weekly border report are read.
 - New server function `tools` (deployed from the Claude project, record copy in supabase/functions/tools/index.ts): truck distance and time between two places (Geoapify truck routes once Chris adds the key; OpenStreetMap car route until then; TomTom as a check if its key is added), the toll plazas on the way (SANRAL table from 1 March 2026 – 73 plazas; ramps are offered unticked), place suggestions, the official diesel price (DMPR monthly documents) as a "Suggested" price, the weekly cross-border report (WCO ESA), public holidays (Nager.Date) and weather (MET Norway).

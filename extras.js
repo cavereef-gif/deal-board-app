@@ -255,7 +255,8 @@ window.checksButton = (name, target) => ib("shield", "file", `data-checks="${esc
 
 // ---------- Calculators: Transport (distance to money) · Chrome and ore · Everyday ----------
 let calcTab = "transport"; try { calcTab = localStorage.getItem("calcTab") || "transport"; } catch (e) {}
-const TR = window._trip = window._trip || { from: "", to: "", km: null, mins: null, geo: null, ret: "Yes", tpl: 34, rkm: "", toll: "", client: "", loads: "", lp100: "", diesel: "" };
+const TR = window._trip = window._trip || { from: "", to: "", km: null, mins: null, geo: null, ret: "Yes", tpl: 34, rkm: "", toll: "", client: "", loads: "", lp100: "", diesel: "",
+  cls: "4", plazas: [], tollAuto: true, provider: "", checkKm: null, wx: null, busy: false, err: "" };
 function num(v) { const n = parseFloat(String(v || "").replace(/\s/g, "").replace(",", ".")); return isFinite(n) ? n : 0; }
 // Numbers the same on every phone: space between thousands, a point for decimals (R 39 720 · 12.5)
 function nfmt(n, dp) { const neg = n < 0, s = Math.abs(n).toFixed(dp || 0).replace(/\.?0+$/, m => dp ? "" : m); const [a, b] = s.split("."); return (neg ? "−" : "") + a.replace(/\B(?=(\d{3})+$)/g, "\u00a0") + (b ? "." + b : ""); }
@@ -281,7 +282,9 @@ function tripTop() {
 function tripResults() {
   if (!TR.km) return `<div class="quiet">Type where from and where to, then tap Find the road distance. Or type the kilometres yourself.</div>`;
   const c = tripCalc(), rows = [];
-  rows.push(["Road distance", `${nfmt(Math.round(TR.km))} km one way${TR.mins ? ` · about ${Math.floor(TR.mins / 60)} h ${Math.round(TR.mins % 60)} min by car (trucks are slower)` : ""}`]);
+  const truckRoute = /truck/i.test(TR.provider || "");
+  rows.push(["Road distance", `${nfmt(Math.round(TR.km))} km one way${TR.mins ? ` · about ${Math.floor(TR.mins / 60)} h ${Math.round(TR.mins % 60)} min ${truckRoute ? "driving (truck route)" : "by car (trucks are slower)"}` : ""}`]);
+  if (num(TR.toll)) rows.push(["Tolls per trip", fRand(num(TR.toll)) + (TR.tollAuto && TR.plazas.length ? ` (class ${TR.cls}${TR.ret === "Yes" ? ", both ways" : ""})` : "")]);
   rows.push(["Kilometres per trip", `${nfmt(Math.round(c.kmTrip))} km${TR.ret === "Yes" ? " (there and back)" : " (one way)"}`]);
   if (c.fuel != null) rows.push(["Diesel for the trip", `${fRand(c.fuel)} (${Math.round(c.kmTrip * num(TR.lp100) / 100)} litres)`]);
   if (c.byKm != null) {
@@ -295,33 +298,69 @@ function tripResults() {
   }
   return rows.map(([k, v, big]) => `<div class="kv${big ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
 }
+// Route part (26 Sep 2026, free services): the server works out the truck distance and time, the toll gates on the way and
+// the weather at both ends; the official diesel price arrives as "Suggested" and is used only when a person taps Use it.
+function tollOneWay() { return TR.plazas.filter(z => z.pick).reduce((a, z) => a + (+z["c" + TR.cls] || 0), 0); }
+function tollAutoFill() { if (TR.tollAuto && TR.plazas.length) TR.toll = String(Math.round(tollOneWay() * (TR.ret === "Yes" ? 2 : 1))); }
+function tollsHtml() {
+  if (!TR.plazas.length) return TR.km && /truck|car/i.test(TR.provider || "") ? `<div class="quiet">No toll gates found on this route.</div>` : "";
+  const one = tollOneWay();
+  return `<div class="fld"><span>Toll gates on the way (${TR.plazas.length})</span></div>
+    <div class="segbar" role="group" aria-label="Toll class"><button type="button" data-trcls="3" class="${TR.cls === "3" ? "on" : ""}" aria-pressed="${TR.cls === "3"}">Class 3 · 3–4 axles</button><button type="button" data-trcls="4" class="${TR.cls === "4" ? "on" : ""}" aria-pressed="${TR.cls === "4"}">Class 4 · 5+ axles</button></div>
+    <div class="trtolls">${TR.plazas.map((z, i) => `<label class="trtoll"><input type="checkbox" data-trplaza="${i}"${z.pick ? " checked" : ""}><span class="tt-n">${esc(z.name)}<small>${esc(z.road || "")}${z.ramp ? " · side ramp – tick only if you use it" : ""}</small></span><span class="tt-v">${fRand(+z["c" + TR.cls] || 0)}</span></label>`).join("")}</div>
+    <div class="trtsum"><span>Ticked gates, one way</span><span>${fRand(one)}</span></div>
+    <div class="quiet">SANRAL toll table from 1 March 2026. ${TR.tollAuto ? "The tolls box below fills itself" + (TR.ret === "Yes" ? " (both ways)" : "") + "; type over it to use your own." : "You typed your own tolls."}</div>${TR.tollAuto ? "" : `<button type="button" class="wide" data-trtollauto="1">Use the ticked gates again</button>`}`;
+}
+function fuelHtml() {
+  const f = (window._fuel || [])[0];
+  if (!f || !(f.inland || f.coastal)) return "";
+  const price = f.inland || f.coastal, where = f.inland ? "inland" : "coast", when = new Date(f.effective + "T00:00:00");
+  const d = when.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+  const using = num(TR.diesel) && Math.abs(num(TR.diesel) - price) < 0.005;
+  return `<div class="trfuel${f.status === "suggested" ? " sug" : ""}"><i class="dot" style="background:${f.status === "suggested" ? "var(--prop)" : "var(--ok)"}"></i>
+    <div class="tf-t"><b>${f.status === "suggested" ? "Suggested diesel" : "Official diesel"}: R${price.toFixed(2)} a litre</b><small>50ppm wholesale, ${where}, from ${esc(d)} (government price list)</small></div>
+    ${using ? `<span class="tf-ok">In use</span>` : `<button type="button" class="ib" data-trfuel="${f.id}">${ic("check")}<span class="ibw">Use it</span></button>`}</div>`;
+}
+function weatherHtml() {
+  const w = TR.wx; if (!w || !w.length) return "";
+  const day = s => new Date(s + "T12:00:00").toLocaleDateString("en-ZA", { weekday: "short" });
+  return `<div class="fld"><span>Weather at both ends (next 3 days)</span></div>${w.map(p => {
+    const bad = p.days.some(d => d.rain >= 10 || d.wind >= 50);
+    return `<div class="trwx"><i class="dot" style="background:${bad ? "var(--warn)" : "var(--muted)"}"></i><div><b>${esc(p.name)}</b><small>${p.days.map(d => `${day(d.date)} ${d.rain} mm${d.wind >= 40 ? `, wind ${d.wind} km/h` : ""}`).join(" · ")}</small></div></div>`; }).join("")}
+    <div class="quiet">Weather: MET Norway.</div>`;
+}
 function transportCalcHtml() {
-  const f = (k, label, ph, type) => `<label class="fld"><span>${label}</span><input data-tr="${k}" ${type === "text" ? "" : 'inputmode="decimal"'} value="${esc(TR[k] == null ? "" : String(TR[k]))}" placeholder="${esc(ph)}" autocomplete="off"></label>`;
+  const f = (k, label, ph, type) => `<label class="fld"><span>${label}</span><input data-tr="${k}" ${type === "text" ? 'list="trPlaces" enterkeyhint="next"' : 'inputmode="decimal"'} value="${esc(TR[k] == null ? "" : String(TR[k]))}" placeholder="${esc(ph)}" autocomplete="off"></label>`;
   const step = (n, t) => `<div class="trs"><span class="trs-n">${n}</span><span class="trs-t">${t}</span></div>`;
   const tdeals = liveDeals().filter(d => d.kind === "transport" && d.params && d.params.route);
-  const dOn = TR.deal && dealById(TR.deal), dieselOpen = isOpen("calc:diesel", !!(TR.lp100 || TR.diesel));
+  const dOn = TR.deal && dealById(TR.deal), dieselOpen = isOpen("calc:diesel", !!(TR.lp100 || TR.diesel || (window._fuel || []).length));
+  const credit = /geoapify/i.test(TR.provider || "") ? "Route: Powered by Geoapify · © OpenStreetMap contributors." : TR.provider ? "Route: © OpenStreetMap contributors (car route – add the Geoapify key in Settings for truck routes)." : "";
   return `<div class="card calcc trc">
     <div class="trtop" id="trTop">${tripTop()}</div>
     ${step(1, "Route")}
     ${tdeals.length ? `<div class="fld"><span>Fill in from a deal</span></div><div class="tools trdeals">${tdeals.map(d => `<button type="button" class="ib${TR.deal === d.id ? " on" : ""}" data-trdeal="${d.id}" aria-pressed="${TR.deal === d.id}">${ic("truck")}<span class="ibw">${esc(d.name)}</span></button>`).join("")}</div>` : ""}
-    ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}
-    <button class="primary wide trfind" data-trgo="1">${ic("globe")}Find the road distance</button>
+    ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}<datalist id="trPlaces"></datalist>
+    <button class="primary wide trfind" data-trgo="1"${TR.busy ? " disabled" : ""}>${ic("globe")}${TR.busy ? "Working it out…" : "Work it out"}</button>
+    ${TR.err ? `<div class="trwarn"><i class="dot" style="background:var(--warn)"></i>${esc(TR.err)}</div>` : ""}
     <div id="trMap" class="trmap${TR.geo ? "" : " hidden"}"></div>
+    ${TR.checkKm ? `<div class="quiet">Check: TomTom's truck route is ${nfmt(Math.round(TR.checkKm))} km.</div>` : ""}
     ${TR.km && TR.from && TR.to ? `<a class="btnlink wide trmaps" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(TR.from)}&destination=${encodeURIComponent(TR.to)}">${ic("open")}Open the route in Google Maps</a>` : ""}
-    ${f("km", "Km one way", "found above, or type it")}
+    ${f("km", "Km one way", "worked out above, or type it")}
     <div class="fld"><span>The truck is paid for</span></div>
     <div class="segbar" role="group" aria-label="The truck is paid for"><button type="button" data-trret="Yes" class="${TR.ret === "Yes" ? "on" : ""}" aria-pressed="${TR.ret === "Yes"}">There and back</button><button type="button" data-trret="No" class="${TR.ret === "No" ? "on" : ""}" aria-pressed="${TR.ret === "No"}">One way only</button></div>
+    <div id="trTolls">${tollsHtml()}</div>
+    <div id="trWx">${weatherHtml()}</div>
     ${step(2, "Truck")}
     <div class="calc">${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}</div>
     ${f("tpl", "Tons per load", "34")}
     <button type="button" class="trfold" data-tog="calc:diesel" data-dflt="${dieselOpen ? 1 : 0}" aria-expanded="${dieselOpen}"><span>Diesel check (optional)</span><span class="chev"></span></button>
-    ${dieselOpen ? `<div class="calc">${f("lp100", "Litres per 100 km", "e.g. 45")}${f("diesel", "Diesel price (R/litre)", "e.g. 22.50")}</div>` : ""}
+    ${dieselOpen ? `${fuelHtml()}<div class="calc">${f("lp100", "Litres per 100 km", "e.g. 45")}${f("diesel", "Diesel price (R/litre)", "e.g. 22.50")}</div>` : ""}
     ${step(3, "Client")}
     <div class="calc">${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads a month", "e.g. 20")}</div>
     <div class="trs trs-plain"><span class="trs-t">How it adds up</span></div>
     <div class="cres" id="trRes">${tripResults()}</div>
     <div class="tools trsave"><button type="button" class="ib" data-trsave="1">${ic("note")}<span class="ibw">Save</span></button><button type="button" class="ib" data-trcopy="1">${ic("copy")}<span class="ibw">Copy</span></button></div>
-    <div class="quiet">${dOn ? `Save puts it in the notes of ${esc(dOn.name)}.` : "Save puts it on the notice board."} Distance is the car route from OpenStreetMap (free) – check the truck route and toll gates.</div></div>`;
+    <div class="quiet">${dOn ? `Save puts it in the notes of ${esc(dOn.name)}.` : "Save puts it on the notice board."} ${credit}</div></div>`;
 }
 const EK_NAME = { "C": "Clear", "⌫": "Delete last", "%": "Percent", "÷": "Divide", "×": "Times", "−": "Minus", "+": "Plus", "=": "Equals", ".": "Point", "+VAT": "Add 15% VAT" };
 function everydayCalcHtml() {
@@ -372,15 +411,26 @@ document.addEventListener("click", async e => {
     return;
   }
   if (e.target.closest("button[data-trgo]")) { tripFind(); return; }
+  const tc = e.target.closest("button[data-trcls]");
+  if (tc) { TR.cls = tc.dataset.trcls; tollAutoFill(); render(); return; }
+  if (e.target.closest("button[data-trtollauto]")) { TR.tollAuto = true; tollAutoFill(); render(); return; }
+  const tf = e.target.closest("button[data-trfuel]");
+  if (tf) {
+    const f = (window._fuel || []).find(x => String(x.id) === tf.dataset.trfuel); if (!f) return;
+    TR.diesel = String(f.inland || f.coastal);
+    if (f.status === "suggested" && !DEMO) { const r = await sb.rpc("fuel_price_decide", { p_id: f.id, p_status: "accepted" }); if (!r.error) f.status = "accepted"; }
+    else if (DEMO) f.status = "accepted";
+    toast("Diesel price filled in."); render(); return;
+  }
   const rt = e.target.closest("button[data-trret]");
-  if (rt) { TR.ret = rt.dataset.trret; document.querySelectorAll("button[data-trret]").forEach(b => { const on = b === rt; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); tripRefresh(); return; }
+  if (rt) { TR.ret = rt.dataset.trret; tollAutoFill(); render(); return; }
   const td = e.target.closest("button[data-trdeal]");
   if (td) {
     if (TR.deal === td.dataset.trdeal) { TR.deal = ""; render(); return; }   // tap again = not linked to a deal
     const d = dealById(td.dataset.trdeal); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
     if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
     const p = (d && d.params) || {}; const cr = String(p.client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TR.client = cr[0];
-    TR.deal = td.dataset.trdeal; TR.km = null; TR.geo = null; render(); return;
+    TR.deal = td.dataset.trdeal; tripClearRoute(); render(); return;
   }
   if (e.target.closest("button[data-trcopy]")) { try { await navigator.clipboard.writeText(tripText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }
   if (e.target.closest("button[data-trsave]")) {
@@ -394,14 +444,76 @@ document.addEventListener("click", async e => {
 });
 document.addEventListener("input", e => {
   const el = e.target.closest && e.target.closest("[data-tr]"); if (!el) return;
-  TR[el.dataset.tr] = el.value; if (el.dataset.tr === "km") { TR.km = num(el.value) || null; TR.mins = null; }
+  const k = el.dataset.tr; TR[k] = el.value;
+  if (k === "km") { TR.km = num(el.value) || null; TR.mins = null; TR.plazas = []; TR.provider = ""; tollAutoFill(); }
+  if (k === "toll") TR.tollAuto = false;
+  if (k === "from" || k === "to") placeSuggest(el.value);
+  tripRefresh();
+});
+document.addEventListener("change", e => {
+  const cb = e.target.closest && e.target.closest("input[data-trplaza]"); if (!cb) return;
+  const z = TR.plazas[+cb.dataset.trplaza]; if (!z) return;
+  z.pick = cb.checked; TR.tollAuto = true; tollAutoFill();
+  const t = $("trTolls"); if (t) t.innerHTML = tollsHtml();
+  const inp = document.querySelector('[data-tr="toll"]'); if (inp) inp.value = TR.toll;
   tripRefresh();
 });
 function tripRefresh() { const r = $("trRes"), t = $("trTop"); if (r) r.innerHTML = tripResults(); if (t) t.innerHTML = tripTop(); }
+function tripClearRoute() { Object.assign(TR, { km: null, mins: null, geo: null, plazas: [], provider: "", checkKm: null, wx: null, err: "" }); if (TR.tollAuto) TR.toll = ""; }
 function tripText() {
   const lines = [`Transport costing – ${TR.from || "?"} to ${TR.to || "?"} (${fmtWhen(new Date())})`];
   document.querySelectorAll("#trRes .kv").forEach(r => lines.push(r.querySelector(".k").textContent + ": " + r.querySelector(".v").textContent));
+  const picked = TR.plazas.filter(z => z.pick);
+  if (picked.length) lines.push(`Toll gates (class ${TR.cls}): ` + picked.map(z => `${z.name} ${fRand(+z["c" + TR.cls] || 0)}`).join(", "));
   return lines.join("\n");
+}
+// place suggestions while typing: pinned places first, then the map service (one request after a short pause)
+let _plT = 0;
+function placeSuggest(q) {
+  clearTimeout(_plT); q = String(q || "").trim(); if (q.length < 2) return;
+  _plT = setTimeout(async () => {
+    let list = [];
+    if (DEMO) list = ["City Deep, Johannesburg", "Durban Harbour", "Richards Bay", "Middelburg", "Steelpoort", "Rustenburg", "Maputo"].filter(n => n.toLowerCase().includes(q.toLowerCase())).map(name => ({ name }));
+    else { try { const { data } = await sb.functions.invoke("tools", { body: { action: "places", q } }); list = (data && data.places) || []; } catch (x) { return; } }
+    const dl = $("trPlaces"); if (dl) dl.innerHTML = list.map(p => `<option value="${esc(p.name)}">${esc(p.label || "")}</option>`).join("");
+  }, 350);
+}
+// demo: a made-up but realistic answer (the real toll figures for these five N3 gates, class 4 = R1 274 one way)
+const DEMO_ROUTE = { km: 564.8, minutes: 402, provider: "Geoapify truck route (demo)", check_km: null,
+  a: { lat: -26.2167, lon: 28.0936 }, b: { lat: -29.8716, lon: 31.0262 },
+  line: { type: "LineString", coordinates: [[28.0936, -26.2167], [28.38982, -26.66395], [28.6261, -27.04055], [29.56166, -28.46228], [30.0036, -29.21807], [30.3794, -29.6006], [30.80277, -29.82305], [31.0262, -29.8716]] },
+  plazas: [["de-hoek", "De Hoek", 160, 230], ["wilge", "Wilge", 215, 304], ["tugela", "Tugela", 260, 359], ["mooi", "Mooi River", 240, 324], ["mariannhill", "Mariannhill", 37, 57]]
+    .map(([id, name, c3, c4], i) => ({ id, name, road: "N3", c3, c4, pick: true, ramp: false, lat: [-26.66395, -27.04055, -28.46228, -29.21807, -29.82305][i], lon: [28.38982, 28.6261, 29.56166, 30.0036, 30.80277][i] })) };
+async function tripFind() {
+  if (!TR.from || !TR.to) { toast("Type where from and where to first."); return; }
+  tripClearRoute(); TR.busy = true; render();
+  try {
+    let j;
+    if (DEMO) { await new Promise(r => setTimeout(r, 400)); j = JSON.parse(JSON.stringify(DEMO_ROUTE)); }
+    else {
+      const { data, error } = await sb.functions.invoke("tools", { body: { action: "route", from: TR.from, to: TR.to } });
+      if (error || !data || !data.ok) throw new Error((data && data.error) || (error && error.message) || "the route service didn't answer");
+      j = data;
+    }
+    TR.km = j.km; TR.mins = j.minutes; TR.provider = j.provider || ""; TR.checkKm = j.check_km || null;
+    TR.geo = { a: j.a, b: j.b, line: j.line }; TR.plazas = (j.plazas || []).map(z => Object.assign({}, z));
+    tollAutoFill();
+    tripWeather(j.a, j.b);
+  } catch (err) {
+    // the server is the main way; the browser's own free lookup is the spare (car route, no tolls)
+    try { await tripFindInBrowser(); TR.err = "Used the spare car route – toll gates not checked (" + String(err.message || err).replace(/^need_key: /, "") + ")."; }
+    catch (e2) { TR.err = "Couldn't work out the distance (" + String(err.message || err).replace(/^need_key: /, "") + "). Check the place names, or type the kilometres yourself."; }
+  }
+  TR.busy = false; render(); if (TR.geo) drawTrip();
+}
+async function tripWeather(a, b) {
+  const pts = [{ name: TR.from, lat: a.lat, lon: a.lon }, { name: TR.to, lat: b.lat, lon: b.lon }];
+  try {
+    if (DEMO) { const t = new Date(); const d = n => { const x = new Date(t); x.setDate(t.getDate() + n); return x.toISOString().slice(0, 10); };
+      TR.wx = [{ name: TR.from, days: [{ date: d(0), rain: 0, wind: 18 }, { date: d(1), rain: 2.1, wind: 22 }, { date: d(2), rain: 0, wind: 15 }] }, { name: TR.to, days: [{ date: d(0), rain: 0.4, wind: 30 }, { date: d(1), rain: 14.2, wind: 52 }, { date: d(2), rain: 3, wind: 28 }] }]; }
+    else { const { data } = await sb.functions.invoke("tools", { body: { action: "weather", points: pts } }); TR.wx = (data && data.weather) || null; }
+  } catch (x) { TR.wx = null; }
+  const w = $("trWx"); if (w) w.innerHTML = weatherHtml();
 }
 async function geocode(q) {
   const u = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=za,mz,bw,zw,na,sz,ls&q=${encodeURIComponent(q)}`;
@@ -409,16 +521,19 @@ async function geocode(q) {
   const j = await r.json(); if (!j.length) throw new Error(`couldn't find "${q}"`);
   return { lat: +j[0].lat, lon: +j[0].lon, name: j[0].display_name };
 }
-async function tripFind() {
-  if (!TR.from || !TR.to) { toast("Type where from and where to first."); return; }
-  const r = $("trRes"); if (r) r.innerHTML = `<div class="quiet">Finding the road distance…</div>`;
-  try {
-    const a = await geocode(TR.from); await new Promise(res => setTimeout(res, 1100)); const b = await geocode(TR.to);
-    const u = `https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=simplified&geometries=geojson`;
-    const j = await (await fetch(u)).json(); if (!j.routes || !j.routes.length) throw new Error("no road route found");
-    TR.km = j.routes[0].distance / 1000; TR.mins = j.routes[0].duration / 60; TR.geo = { a, b, line: j.routes[0].geometry };
-    render(); drawTrip();
-  } catch (err) { if (r) r.innerHTML = `<div class="quiet">Couldn't work out the distance (${esc(err.message)}). Check the place names, or type the kilometres yourself.</div>`; }
+async function tripFindInBrowser() {
+  const a = await geocode(TR.from); await new Promise(res => setTimeout(res, 1100)); const b = await geocode(TR.to);
+  const u = `https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=simplified&geometries=geojson`;
+  const j = await (await fetch(u)).json(); if (!j.routes || !j.routes.length) throw new Error("no road route found");
+  TR.km = j.routes[0].distance / 1000; TR.mins = j.routes[0].duration / 60; TR.geo = { a, b, line: j.routes[0].geometry }; TR.provider = "OpenStreetMap car route";
+}
+// the official diesel price (suggested until a person uses or accepts it)
+async function loadFuel() {
+  if (window._fuelAt && Date.now() - window._fuelAt < 3600e3) return;
+  window._fuelAt = Date.now();
+  if (DEMO) { window._fuel = [{ id: 1, effective: "2026-09-02", inland: 29.5551, coastal: null, status: "suggested" }]; return; }
+  try { const { data } = await sb.from("fuel_prices").select("id,effective,inland,coastal,status").neq("status", "dropped").order("effective", { ascending: false }).limit(1); window._fuel = data || []; } catch (x) { window._fuel = []; }
+  if (view === "calc" && calcTab === "transport") render();
 }
 function loadLeaflet() {
   if (window.L) return Promise.resolve();
@@ -432,11 +547,12 @@ async function drawTrip() {
   try { await loadLeaflet(); } catch (e) { el.classList.add("hidden"); return; }
   el.classList.remove("hidden"); el.innerHTML = "";
   const m = L.map(el, { zoomControl: true, attributionControl: true });
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(m);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap contributors" }).addTo(m);
   const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();   // map colours follow the palette
   const line = L.geoJSON(TR.geo.line, { style: { color: cv("--route") || "#3A3F46", weight: 5 } }).addTo(m);
+  for (const z of TR.plazas) L.circleMarker([z.lat, z.lon], { radius: 5, color: cv("--route-a") || "#1B1D20", weight: 2, fillColor: z.pick ? (cv("--warn") || "#D6A55A") : "#FFFFFF", fillOpacity: 1 }).bindTooltip(z.name).addTo(m);
   L.circleMarker([TR.geo.a.lat, TR.geo.a.lon], { radius: 7, color: cv("--route-a") || "#1B1D20", fillOpacity: 1 }).addTo(m);
   L.circleMarker([TR.geo.b.lat, TR.geo.b.lon], { radius: 7, color: cv("--route-b") || "#8E959E", fillOpacity: 1 }).addTo(m);
   m.fitBounds(line.getBounds(), { padding: [20, 20] });
 }
-(window._after ||= []).push(() => { if (view === "calc" && calcTab === "transport" && TR.geo) drawTrip(); });
+(window._after ||= []).push(() => { if (view === "calc" && calcTab === "transport") { loadFuel(); if (TR.geo) drawTrip(); } });

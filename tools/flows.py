@@ -144,6 +144,16 @@ async def main():
             nsel=await ev("document.querySelectorAll('.trc select').length")
             check("Transport: answer on top, One way only halves the km, no drop-down lists", "R 292 a ton" in top and "R 39 720" in top and "169 km (one way)" in r2 and "R 152 a ton" in top2 and nsel==0, f"{top.replace(chr(10),' | ')} || {top2.replace(chr(10),' | ')} || selects {nsel}")
             await tap("button[data-trret=Yes]")
+            # 13b free services (26 Sep 2026): Work it out fills km, toll gates (class 4 both ways), weather; unticking a gate and class 3 change the tolls; diesel "Use it" fills the price
+            await ev("TR.tollAuto=true; TR.toll=''"); await pg.fill("input[data-tr=from]", "City Deep, Johannesburg"); await pg.fill("input[data-tr=to]", "Durban Harbour")
+            await tap("button[data-trgo]"); await pg.wait_for_timeout(1500)
+            t1=await ev("({ km: TR.km, gates: document.querySelectorAll('.trtoll').length, toll: document.querySelector('[data-tr=toll]').value, wx: document.querySelectorAll('.trwx').length })")
+            await tap("input[data-trplaza='4']"); t2=await ev("document.querySelector('[data-tr=toll]').value")
+            await tap("button[data-trcls='3']"); t3=await ev("document.querySelector('[data-tr=toll]').value")
+            await tap("input[data-trplaza='4']"); await tap("button[data-trcls='4']")
+            if not await ev("!!document.querySelector('[data-trfuel]')"): await tap("button[data-tog='calc:diesel']")
+            await tap("button[data-trfuel]"); t4=await ev("({ d: document.querySelector('[data-tr=diesel]').value, inuse: !!document.querySelector('.tf-ok') })")
+            check("Transport: Work it out gives 564.8 km, 5 toll gates, tolls R2 548 both ways (class 4), weather at both ends; untick Mariannhill = R2 434; class 3 = R1 750; diesel Use it fills 29.5551", t1['km']==564.8 and t1['gates']==5 and t1['toll']=="2548" and t1['wx']==2 and t2=="2434" and t3=="1750" and t4['d']=="29.5551" and t4['inuse'], f"{t1} {t2} {t3} {t4}")
             await tap("button[data-calctab=chrome]"); ch=await ev("!!document.getElementById('calcDealSel')")
             check("Chrome and ore calculator is its own tab", ch)
             # 14 guides read as short points

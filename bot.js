@@ -114,8 +114,12 @@ function actCalc(a) {
   const map = { from: "from", to: "to", km: "km", rate_km: "rkm", tolls: "toll", tons_per_load: "tpl", client_per_ton: "client", loads_per_month: "loads" };
   for (const [k, v] of Object.entries(map)) if (c[k] != null && c[k] !== "") TRp[v] = k === "km" ? (parseFloat(c[k]) || null) : String(c[k]);
   if (a.target_type === "deal" && dealById(a.target_id)) TRp.deal = a.target_id;
+  if (c.tolls != null && c.tolls !== "") TRp.tollAuto = false;
+  const findIt = c.from && c.to && !(c.km > 0);   // places but no distance: work the route out at once (tolls and weather too)
+  if (c.from || c.to || c.km) Object.assign(TRp, { plazas: [], geo: null, provider: "", checkKm: null, wx: null, err: "", mins: null });
   try { localStorage.setItem("calcTab", "transport"); } catch (e) {} if (typeof calcTab !== "undefined") calcTab = "transport";
   goView("calc"); window.scrollTo(0, 0);
+  if (findIt && typeof tripFind === "function") tripFind();
 }
 // what a person taps: "Do it" carries out one prepared change (the same saves the app's own buttons make)
 async function runAct(a) {
