@@ -33,12 +33,12 @@ function postHtml(p) {
       <button class="pbtn" data-postact="${p.id}" data-v="${p.done ? "open" : "done"}" aria-label="${p.done ? "Mark as open" : "Mark as done"}" title="${p.done ? "Mark as open" : "Mark as done"}">${ic(p.done ? "undo" : "check")}<span>${p.done ? "Reopen" : "Done"}</span></button></div></div>`;
 }
 function boardHtml() {
-  const P = (window._posts || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const P = (window._posts || []).filter(p => !window.inSecPost || inSecPost(p)).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   const pinned = P.filter(p => p.pinned && !p.done);
-  let h = "";
+  let h = window.secBarHtml ? secBarHtml() : "";
   if (pinned.length) h += `<div class="sech pinned-h"><h3>Pinned</h3></div><div class="feed">${pinned.map(postHtml).join("")}</div>`;
   h += `<div class="sech"><h3>Between Chris and Annemarie</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
-  if (!P.length) return h + `<div class="empty">No messages yet. Write the first one below – you can attach photos or files, and log checks.</div>`;
+  if (!P.length) return h + `<div class="empty">${typeof section !== "undefined" && section !== "All" ? `No messages about ${esc(section)} yet. Pick All to see every message.` : "No messages yet. Write the first one below – you can attach photos or files, and log checks."}</div>`;
   let day = "", f = "";
   for (const p of P) { const d = fmtDay(p.created_at); if (d !== day) { f += `<div class="fday">${d}</div>`; day = d; } f += postHtml(p); }
   return h + `<div class="feed">${f}</div>`;

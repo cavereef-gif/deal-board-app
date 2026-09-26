@@ -57,15 +57,19 @@ function homeRow(it, showOwner, noWho) {
     const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null;
     const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() + " – " + l.name : l.name) : t.task;
     const meta = ["Follow up", n < 0 ? "Overdue" : dw, t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · ");
-    return `<div class="hrow${n < 0 ? " r-warn" : ""}"><button class="hr-main" data-tgo="task:${t.id}"><span class="hr-t">${esc(who)}</span><span class="hr-m">${esc(meta)}</span></button></div>`;
+    const fs = window.secsOfLTask ? secsOfLTask(t) : [], fc = fs.length === 1 ? secColor(fs[0]) : "var(--s-all)";
+    return `<div class="hrow${n < 0 ? " r-warn" : ""}" style="--rc:${fc}"><button class="hr-main" data-tgo="task:${t.id}"><span class="hr-t">${esc(who)}</span><span class="hr-m">${secTag(fs)}${esc(meta)}</span></button></div>`;
   }
   const sugg = it.state === "Proposed";
   const rail = it.priority === 1 ? " r-bad" : n < 0 ? " r-warn" : sugg ? " r-prop" : it.priority === 3 ? " r-low" : "";
   const meta = [kindWords(it), it.priority === 1 ? "Urgent" : "", sugg ? sinceWords(it) : it._me ? dw : `${dw} · ${sinceWords(it)}`, showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
-  return `<div class="hrow${rail}"><button class="hr-main" data-tgo="item:${it.id}"><span class="hr-t">${it._me || noWho ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="hr-m">${meta}</span></button></div>`;
+  const ss = window.secsOfItem ? secsOfItem(it) : [], rc = ss.length === 1 ? secColor(ss[0]) : "var(--s-all)";
+  return `<div class="hrow${rail}" style="--rc:${rc}"><button class="hr-main" data-tgo="item:${it.id}"><span class="hr-t">${it._me || noWho ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="hr-m">${secTag(ss)}${meta}</span></button></div>`;
 }
-function linkRow(go, title, meta, rail) {
-  return `<div class="hrow${rail ? " " + rail : ""}"><button class="hr-main" data-tgo="${esc(go)}"><span class="hr-t">${title}</span><span class="hr-m">${meta}</span></button></div>`;
+// section tag in front of the plain words (only when the list shows every section): a coloured dot + the name
+function secTag(ss) { return typeof section === "undefined" || section !== "All" || ss.length !== 1 ? "" : `<span class="stag"><i style="background:${secColor(ss[0])}"></i>${esc(ss[0])}</span> · `; }
+function linkRow(go, title, meta, rail, rc) {
+  return `<div class="hrow${rail ? " " + rail : ""}"${rc ? ` style="--rc:${rc}"` : ""}><button class="hr-main" data-tgo="${esc(go)}"><span class="hr-t">${title}</span><span class="hr-m">${meta}</span></button></div>`;
 }
 function hLabel(title, rows) {
   if (!rows.length) return "";
@@ -91,9 +95,9 @@ function hCard(key, tone, title, rows, o) {
 // Groups for Home. Suggestions stay apart (a person accepts them first). Buyer-search follow-ups join the day they are due.
 function homeGroups(items, target) {
   const own = x => target === "All" || (x.owner || "Chris") === target;
-  const mine = items.filter(own);
+  const mine = items.filter(own).filter(i => !window.inSecItem || inSecItem(i));
   const sugg = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
-  const fu = (window._ltasks || []).filter(t => window.isFollowUp && isFollowUp(t) && own(t))
+  const fu = (window._ltasks || []).filter(t => window.isFollowUp && isFollowUp(t) && own(t) && (!window.inSecLTask || inSecLTask(t)))
     .map(t => ({ _ft: t, id: "ft:" + t.id, due_on: t.not_before, owner: t.owner || "Chris", priority: 2, _days: 0, state: "Confirmed", created_at: t.created_at }));
   const list = mine.filter(i => i.state !== "Proposed").concat(fu);
   const g = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
@@ -104,17 +108,18 @@ function homeGroups(items, target) {
 }
 // Tiles on top: tap one to see only those; tap it again (or "Show everything") for the whole list.
 let homeFilter = null;
-const HF = [["urgent", "bad", "Urgent"], ["overdue", "over", "Overdue"], ["today", "today", "Today"], ["week", "week", "This week"]];
+const HF = [["urgent", "bad", "Urgent", "flag"], ["overdue", "over", "Overdue", "clock"], ["today", "today", "Today", "sun"], ["week", "week", "This week", "list"]];
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
   const { mine, list, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
   const hr = SA().getUTCHours();
   let h = `<section class="hello"><div class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")} · ${dayName(Date.now())}</div></section>`;
+  if (window.secBarHtml) h += secBarHtml();
   h += `<div class="chips whochips segbar">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   const all = target === "All";
   const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, today: g.today.length, week: g.tomorrow.length + g.week.length };
-  h += `<div class="htiles" role="group" aria-label="Show only">${HF.map(([k, tone, t]) => `<button class="htile t-${tone}${homeFilter === k ? " on" : ""}" data-hf="${k}" aria-pressed="${homeFilter === k}"><span class="ht-n">${cnt[k]}</span><span class="ht-l">${t}</span></button>`).join("")}</div>`;
+  h += `<div class="htiles" role="group" aria-label="Show only">${HF.map(([k, tone, t, icn]) => `<button class="htile t-${tone}${homeFilter === k ? " on" : ""}" data-hf="${k}" aria-pressed="${homeFilter === k}"><span class="ht-top"><span class="ht-n">${cnt[k]}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`).join("")}</div>`;
   const R = arr => arr.map(i => homeRow(i, all));
   h += `<div class="hlist">`;
   if (homeFilter) {
@@ -143,14 +148,15 @@ function todayHtml(items) {
     <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
   if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${target === "All" ? "the list" : esc(target) + "'s list"}. Tap + to add a task.</div>`;
   // next steps on deals and the buyer search (open where the work is done)
-  const ld = liveDeals();
-  const dealRows = ld.map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next).map(({ d, pg }) => linkRow(`deal:${d.id}:${pg.next.id}`, esc(pg.next.title), `Next step · ${esc(d.name)}`, "r-deal"));
+  const ld = liveDeals().filter(d => !window.inSecDeal || inSecDeal(d));
+  const dealRows = ld.map(d => ({ d, pg: dealProgress(d.id) })).filter(x => x.pg.next).map(({ d, pg }) => linkRow(`deal:${d.id}:${pg.next.id}`, esc(pg.next.title), `${secTag([d.area])}Next step · ${esc(d.name)}`, "", secColor(d.area)));
   h += hCard("deals", "deal", "Next step on each deal", dealRows, { fold: true });
   const td = saKey(Date.now());
   const gOpen = k => ((window._gates || []).find(x => x.key === k) || {}).status === "open";
-  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(window.isFollowUp && isFollowUp(t)) && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
+  const queue = (window._ltasks || []).filter(t => t.status === "open" && !(window.isFollowUp && isFollowUp(t)) && (!window.inSecLTask || inSecLTask(t)) && !(t.gates || []).some(gOpen) && (!t.not_before || t.not_before <= td)).sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, 3);
   h += hCard("buyers", "buyer", "Buyer search – next 3", queue.map(t => { const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "r-deal"); }), { fold: true });
+    const qs = window.secsOfLTask ? secsOfLTask(t) : [];
+    return linkRow(ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, esc(t.task), secTag(qs) + ["Buyer search", t.kind ? kindName(t.kind) : "", ls.length > 1 ? ls.length + " leads" : ""].filter(Boolean).join(" · "), "", qs.length === 1 ? secColor(qs[0]) : "var(--s-all)"); }), { fold: true });
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), { fold: true, dflt: false });

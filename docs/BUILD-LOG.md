@@ -7,6 +7,17 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: Chrome · Manganese · Transport sections, Graphite colours (not live)
+- Asked by Chris: "I need different sections – chrome, manganese and transport. The main screen is too much blue. Everything looks very boring. On the black drop-down there is no option to add stuff." His choices (26 Sep, in the app's question card): a switch on every page · graphite with a colour per section · the bot prepares, he taps once · one Section choice with Add.
+- Sections: one switch at the top of Today, Deals, Contacts and Board – All · Chrome · Manganese · Transport (+ any added section). Remembered on the phone. A section is the deal's Area (or the task's Area when it has no deal); buyer-search work counts for Chrome and Manganese; leads go by commodity. New file sections.js.
+- Colours ("Graphite", the default; Velvet still in Settings): charcoal and graphite surfaces, silver lines, blue only on main buttons (Accept all, Create deal, +). Chosen segments are raised graphite instead of blue. Each section has its colour – Chrome steel blue, Manganese plum, Transport teal (added sections: bronze, lime, rose) – shown as the line under the switch, the rail on rows and deal cards, and a small dot + name in each row's plain words. Urgent red, overdue amber, suggested grey and low slate still win on the rail. Words stay neutral.
+- Today tiles now show an icon (flag, clock, sun, list) and read on two lines, so no word is cut off. Time groups fade from white (Today) to slate (Later).
+- New deal (Deals page and the small sheet): Type and Area replaced by one Section choice – Chrome · Manganese · Transport · (added) · Other · + Add a section. The checklist follows: Chrome and Manganese get the mineral kit, Transport the transport kit, Other none; a new section asks which (Mineral · Transport · None). The first deal saved in a new section makes it appear in the switch.
+- New tasks start in the section being viewed; the deal's Area list includes added sections.
+- Prototype link: tools/make_preview.py --stamp adds the build time to the file links, so a reload shows the new version at once (Chris's Mac was showing the version from before the last change).
+- Checks: 192 screens with the real font – all readability rules pass, lowest contrast 5.03. flows.py 38 jobs PASS (new: the switch is on all four pages and Chrome shows only chrome work; adding section Coal makes it appear). Screenshots looked at, night and day, both sizes.
+- Commits: prototype branch (this commit); prototype link updated on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+
 ## 26 Sep 2026 – v17 prototype: follow-ups, a clearer Transport calculator, Today in colour-coded cards (not live)
 - Asked by Chris: "[the buyer] didn't respond so it shouldn't be treated as done but rather a follow up. Transport section gets confusing with all the ticks and sections. I want the today list better grouped and colour coded, maybe tiles – more tidy."
 - The real buyer record Chris meant (name kept out of this public repo) was fixed in the database at his request: the buyer-search step was set back from Done to open, follow up Tue 29 Sep, note "No reply yet (asked 22 Sep, checked 26 Sep)"; the change is in the history as "Claude (for Chris)". Database change 002 adds a "followup" action (applied; docs/db/002-task-followup.sql).

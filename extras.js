@@ -82,8 +82,7 @@ document.addEventListener("change", e => {
   s.value = s.dataset.prev != null ? s.dataset.prev : def ? def.value : "";
   ndFrom = { id: s.id, dealsel: s.dataset.dealsel || "", leaddeal: s.dataset.dleaddeal || "" };
   $("ndsName").value = ""; $("ndsMsg").textContent = "";
-  $("ndsKind").innerHTML = Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
-  $("ndsArea").innerHTML = AREAS.map(a => `<option>${esc(a)}</option>`).join(""); $("ndsArea").value = "Chrome";
+  $("ndsSecBox").innerHTML = secPickHtml("nds");   // one Section choice: Chrome · Manganese · Transport · … · Other · + Add a section
   $("ndSheet").classList.remove("hidden"); setTimeout(() => $("ndsName").focus(), 60);
 }, true);
 function ndTarget() {
@@ -101,11 +100,11 @@ function ndApply(id, name) {
 }
 $("ndsClose").onclick = () => { ndFrom = null; $("ndSheet").classList.add("hidden"); };
 $("ndSheet").addEventListener("click", e => { if (e.target.id === "ndSheet") { ndFrom = null; $("ndSheet").classList.add("hidden"); } });
-$("ndsKind").addEventListener("change", () => { const k = $("ndsKind").value, a = $("ndsArea");
-  if (k === "transport") a.value = "Transport"; else if (k === "mineral" && a.value === "Transport") a.value = "Chrome"; });
 $("ndsAdd").onclick = async () => {
-  const name = $("ndsName").value.trim(), kind = $("ndsKind").value, area = $("ndsArea").value;
+  const name = $("ndsName").value.trim();
   if (!name) { $("ndsMsg").textContent = "Give the deal a name."; $("ndsName").focus(); return; }
+  if (!secPickReady("nds")) { $("ndsMsg").textContent = "Give the new section a name."; return; }
+  const kind = $("ndsKind").value, area = $("ndsArea").value;
   if (DEMO) {
     const id = "nd" + Date.now(), now = new Date().toISOString();
     (window._deals ||= []).push({ id, name, kind, area, status: "Active", summary: "", stage: "", key_facts: "", contacts: "", next_milestone: "", params: {}, sort: 99, created_at: now, updated_at: now, updated_by: me, kit: kind !== "general", kit_route: kind === "mineral" ? "local" : null });

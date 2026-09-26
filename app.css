@@ -982,3 +982,47 @@ button.hc-h .hc-n{margin-right:0}
 /* lead links on a step: full 40px tap height like every other control */
 .task .tm .lk{min-height:var(--ctl);padding:0 12px 0 10px;border-radius:var(--r-ctl)}
 .trdeals .ib:is(.on,#_) .ibw{color:var(--on-primary)}
+
+/* ======================================================================================
+   Sections (26 Sep 2026, asked by Chris): All · Chrome · Manganese · Transport (+ any added), each with its own colour.
+   Colour sits in the underline of the switch, the rail of a row or deal, and the dot of a small section tag – never in the words.
+   ====================================================================================== */
+:root{--s-all:#B9B4C9;--s-chrome:#8FB0E0;--s-manganese:#D48AD8;--s-transport:#3CCFC0;--s-other:#8C8AA0;--s-x1:#D6A46B;--s-x2:#A7CC6E;--s-x3:#E48BAA}
+:root[data-theme="light"]{--s-all:#6B6780;--s-chrome:#3E6FC0;--s-manganese:#9A3FA8;--s-transport:#0E8F7E;--s-other:#7E7C92;--s-x1:#A8691F;--s-x2:#5E8A1E;--s-x3:#B8406A}
+/* the switch: one recessed bar; each segment sized to its word, a colour line under it; the chosen one raised with a ring */
+.secbar{display:flex;gap:4px;padding:4px;margin:0 0 12px;border-radius:12px;background:var(--field);border:1px solid var(--line)}
+.secbar>button{position:relative;flex:1 1 auto;min-width:0;min-height:var(--ctl);height:auto;padding:6px 10px 9px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:var(--text);font:500 14px/1.2 var(--font);white-space:nowrap;justify-content:center}
+.secbar>button:after{content:"";position:absolute;left:12px;right:12px;bottom:5px;height:3px;border-radius:2px;background:var(--sc);opacity:.85}
+.secbar>button.on{background:var(--raise-2);box-shadow:inset 0 0 0 2px var(--sc)}
+.secbar>button.on:after{opacity:1}
+.secbar.many{flex-wrap:wrap}
+.secbar.many>button{flex:1 1 30%}
+.dtools .secbar{margin:10px 0 0}
+/* the section picker in the new-deal form: 3 across, Add a section spans two */
+.secpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px}
+.secpick>button{position:relative;min-width:0;min-height:var(--ctl);height:auto;padding:8px 8px 11px;border-radius:var(--r-ctl);font:500 14px/1.2 var(--font);justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.secpick>button:after{content:"";position:absolute;left:14px;right:14px;bottom:5px;height:3px;border-radius:2px;background:var(--sc,transparent)}
+.secpick>button.on{box-shadow:inset 0 0 0 2px var(--sc,var(--accent));background:var(--raise-2)}
+.secpick>button.secadd{grid-column:span 2;gap:6px}
+.secpick>button.secadd.on{box-shadow:inset 0 0 0 2px var(--accent)}
+.secnew{margin-top:4px}
+.secnew .segbar{margin-top:6px}
+/* section tag in the plain words of a row */
+.stag{display:inline-flex;align-items:center;gap:6px;color:var(--text)}
+.stag i{display:inline-block;width:8px;height:8px;border-radius:50%}
+/* rows and deals: the rail takes the section colour (urgent, overdue, suggested and low still win) */
+.hrow:before{background:var(--rc,var(--rail-default,var(--line2)))}
+.deal.srail{position:relative}
+.deal.srail:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--rc);z-index:1}
+/* Home tiles: an icon in the tile's colour on the right */
+.htile .ht-l{flex:1}
+.ht-i{flex:none;display:grid;place-items:center;width:28px;height:28px;margin-left:auto}
+.ht-i svg.i{width:20px;height:20px;color:var(--tc)}
+/* a chosen deal in the Transport calculator: raised with a ring, not blue */
+.trdeals .ib:is(.on,#_),[data-theme="light"] .trdeals .ib:is(.on,#_){background:var(--raise-2);color:var(--text);outline:0;box-shadow:inset 0 0 0 2px var(--s-transport)}
+.trdeals .ib:is(.on,#_) .ibw,.trdeals .ib:is(.on,#_) svg.i{color:var(--text)}
+/* tiles: number and icon on top, the word underneath (two short lines, never cut off) */
+.htile{flex-direction:column;align-items:stretch;justify-content:center;gap:2px;height:auto;min-height:72px;padding:10px 12px 10px 20px}
+.ht-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.htile .ht-l{flex:none}
+.ht-i{margin-left:0}

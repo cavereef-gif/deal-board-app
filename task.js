@@ -19,7 +19,11 @@ function openTaskSheet(opts) {
   $("tsUrgent").checked = false; $("tsMsg").textContent = "";
   $("tsDeal").innerHTML = `<option value="">No deal</option>` + liveDeals().map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("") + `<option value="__newdeal">+ New deal…</option>`;
   $("tsDeal").value = opts.deal && dealById(opts.deal) ? opts.deal : "";
-  const d = dealById($("tsDeal").value); $("tsArea").value = d && PROJECTS.includes(d.area) ? d.area : "Transport";
+  // Area list = the fixed areas plus any added section; it starts on the deal's section, else the section being viewed
+  const areas = [...new Set([...PROJECTS, ...(window.sectionsList ? sectionsList() : [])])];
+  $("tsArea").innerHTML = areas.map(a => `<option>${esc(a)}</option>`).join("");
+  const d = dealById($("tsDeal").value), cur = typeof section !== "undefined" && section !== "All" ? section : "";
+  $("tsArea").value = d && areas.includes(d.area) ? d.area : cur && areas.includes(cur) ? cur : "Transport";
   document.querySelector("#taskSheet .tsmore").open = !!opts.deal;
   const sb0 = document.querySelector("#taskSheet .seenbox"); if (sb0) sb0.innerHTML = "";
   tsPaint();
@@ -35,7 +39,7 @@ $("taskSheet").addEventListener("click", e => {
   const o = e.target.closest("[data-towner]"); if (o) { tsOwner = o.dataset.towner; tsPaint(); return; }
   const d = e.target.closest("[data-tdue]"); if (d) { tsDue = d.dataset.tdue; tsPaint(); if (tsDue === "pick") $("tsDate").focus(); return; }
 });
-$("tsDeal").addEventListener("change", () => { const d = dealById($("tsDeal").value); if (d && PROJECTS.includes(d.area)) $("tsArea").value = d.area; });
+$("tsDeal").addEventListener("change", () => { const d = dealById($("tsDeal").value); if (d && [...$("tsArea").options].some(o => o.value === d.area)) $("tsArea").value = d.area; });
 $("tsAdd").onclick = async () => {
   const what = $("tsWhat").value.trim(), from = $("tsFrom").value.trim();
   if (!what) { $("tsMsg").textContent = "Type what needs doing first."; $("tsWhat").focus(); return; }

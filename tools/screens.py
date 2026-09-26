@@ -82,6 +82,9 @@ async def run(p, dev, theme, results, errors):
     await go("worklist"); await js("document.querySelector('[data-hf=urgent]').click()"); await snap("home-urgent"); await js("document.querySelector('[data-hf=urgent]').click()")
     await js("goTo('task:t2')"); await pg.wait_for_timeout(500); await snap("step-followup")
     await js("goTo('lead:l4')"); await pg.wait_for_timeout(300); await js("const t = document.querySelector('.tnote'); if (t) t.scrollIntoView({block:'center'})"); await snap("step-followup-set")
+    # sections (26 Sep): Today on Chrome, the new-deal form with + Add a section
+    await go("worklist"); await js("document.querySelector('.secbar [data-sec=Chrome]').click()"); await snap("home-chrome"); await js("document.querySelector('.secbar [data-sec=All]').click()")
+    await go("deals"); await js("document.querySelector('[data-newdeal]').click()"); await js("document.querySelector('[data-secpick=\"+\"]').click()"); await snap("deal-new-section"); await js("document.querySelector('[data-newdeal]').click()")
     await js("openVoiceNote()"); await snap("voice-note"); await js("document.getElementById('vnClose').click()")
     await js("openChecks('Example Mining (Pty) Ltd', 'contact:c1')"); await snap("checks"); await js("document.getElementById('ckClose').click()")
     await js("openTaskSheet()"); await snap("new-task-mics"); await js("document.getElementById('tsClose').click()")
