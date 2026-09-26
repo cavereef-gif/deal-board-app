@@ -9,7 +9,9 @@
 // ---------- a very small PDF maker (A4, Helvetica, text, lines and shaded boxes) ----------
 const PDF_MAP = { "–": "\x96", "—": "\x97", "‘": "\x91", "’": "\x92", "“": "\x93", "”": "\x94", "•": "\x95", "…": "\x85", "€": "\x80", "−": "-", "→": "->", " ": " ", " ": " " };
 const pdfEnc = s => String(s == null ? "" : s).replace(/[\s\S]/g, ch => PDF_MAP[ch] || (ch.charCodeAt(0) < 256 ? ch : "?")).replace(/[\\()]/g, m => "\\" + m);
-const PDF_W = { " ": 278, ".": 278, ",": 278, "-": 333, "/": 278, ":": 278, "%": 889, "(": 333, ")": 333, "R": 722, "U": 722, "S": 667, "$": 556, "t": 278, "i": 222, "l": 222, "f": 278, "j": 222, "r": 333, "m": 833, "w": 722, "I": 278, "M": 833, "W": 944 };
+// Helvetica widths (per 1000): most small letters are 556 wide – counting them as 500 let long lines run past the margin
+const PDF_W = { a: 556, b: 556, d: 556, e: 556, g: 556, h: 556, n: 556, o: 556, p: 556, q: 556, u: 556, c: 500, k: 500, s: 500, v: 500, x: 500, y: 500, z: 500,
+  A: 667, B: 667, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, J: 500, K: 667, L: 556, N: 722, O: 778, P: 667, Q: 778, T: 611, V: 667, X: 667, Y: 667, Z: 611, " ": 278, ".": 278, ",": 278, "-": 333, "/": 278, ":": 278, "%": 889, "(": 333, ")": 333, "R": 722, "U": 722, "S": 667, "$": 556, "t": 278, "i": 222, "l": 222, "f": 278, "j": 222, "r": 333, "m": 833, "w": 722, "I": 278, "M": 833, "W": 944 };
 function pdfWidth(s, size) { let w = 0; for (const ch of String(s)) w += PDF_W[ch] || (/[0-9]/.test(ch) ? 556 : /[A-Z]/.test(ch) ? 667 : 500); return w / 1000 * size; }
 function pdfWrap(s, size, maxW) {
   const out = [];
@@ -90,6 +92,8 @@ const docNo = p => { const d = new Date(Date.now() + 2 * 3600e3); return p + "-"
 const longDay = k => new Date(k + "T08:00:00+02:00").toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Johannesburg" });
 
 // ---------- the document sheet ----------
+const QUOTE_EX = "Excl. VAT", QUOTE_IN = "Incl. VAT", QUOTE_ZERO = "0% VAT";   // short so all three fit on a small phone
+const CROSS_BORDER = /ressano|maputo|matola|mozambi|beira|nacala|komatipoort border|zimbabwe|harare|bulawayo|botswana|gaborone|francistown|zambia|lusaka|ndola|kitwe|copperbelt|namibia|windhoek|walvis|lesotho|maseru|eswatini|swaziland|mbabane|manzini|malawi|lilongwe|blantyre|\bdrc\b|congo|lubumbashi|kolwezi|tanzania|dar es salaam/i;
 let DOC = null;   // { kind: "quote" | "comm", f: {...} }
 function docField(k, label, ph, opts) {
   const v = DOC.f[k] == null ? "" : String(DOC.f[k]);
@@ -100,12 +104,14 @@ function docField(k, label, ph, opts) {
 function docRows() {
   const f = DOC.f, n = k => num(f[k]);
   if (DOC.kind === "quote") {
-    const rate = n("rate"), ex = f.vat === "Including VAT" ? rate / 1.15 : rate, tpl = n("tpl") || 34, rows = [];
+    // 27 Sep 2026: transport from South Africa to another country is zero-rated (VAT Act s11(2)(a)) – "0% VAT (cross-border)"
+    const zero = f.vat === QUOTE_ZERO, incl = f.vat === QUOTE_IN, tag = zero ? " (0% VAT)" : incl ? " (incl. VAT)" : " (excl. VAT)";
+    const rate = n("rate"), ex = incl ? rate / 1.15 : rate, tpl = n("tpl") || 34, rows = [];
     rows.push([`Road transport ${f.fromPlace || "?"} to ${f.toPlace || "?"}${n("km") ? ` (about ${Math.round(n("km"))} km one way)` : ""}`, ""]);
-    rows.push(["Rate per ton" + (f.vat === "Including VAT" ? " (including 15% VAT)" : " (excluding VAT)"), randR2(rate), 1]);
-    if (f.vat !== "Including VAT") rows.push(["Rate per ton including 15% VAT", randR2(rate * 1.15)]);
-    rows.push([`Per load of ${tpl} tons` + (f.vat === "Including VAT" ? " (incl. VAT)" : " (excl. VAT)"), randR(rate * tpl)]);
-    if (n("loads")) rows.push([`${n("loads")} loads a month` + (f.vat === "Including VAT" ? " (incl. VAT)" : " (excl. VAT)"), randR(rate * tpl * n("loads"))]);
+    rows.push(["Rate per ton" + (zero ? " (0% VAT – transport to another country)" : incl ? " (including 15% VAT)" : " (excluding VAT)"), randR2(rate), 1]);
+    if (!zero && !incl) rows.push(["Rate per ton including 15% VAT", randR2(rate * 1.15)]);
+    rows.push([`Per load of ${tpl} tons` + tag, randR(rate * tpl)]);
+    if (n("loads")) rows.push([`${n("loads")} loads a month` + tag, randR(rate * tpl * n("loads"))]);
     return { rows, ok: rate > 0, ex };
   }
   const q = n("qty"), rate = n("rate"), sub = q * rate, vat = f.vat === "Add 15% VAT" ? sub * 0.15 : 0;
@@ -119,7 +125,8 @@ function docSheetHtml() {
   return (q
     ? docField("to", "Quote to (client)", "Company or person") + docField("from", "From (your name – remembered)", "e.g. your trading name") +
       `<div class="calc">${docField("rate", "Rate per ton (R)", "e.g. 420", "num")}${docField("tpl", "Tons per load", "34", "num")}</div>` +
-      docField("vat", "The rate is", "", ["Excluding VAT", "Including VAT"]) +
+      docField("vat", "The rate is", "", [QUOTE_EX, QUOTE_IN, QUOTE_ZERO]) +
+      (DOC.f.vat === QUOTE_ZERO ? `<div class="quiet">0% VAT is for transport from South Africa to another country (zero-rated, VAT Act section 11(2)(a)). Keep the delivery note, transport papers and proof of payment.</div>` : "") +
       `<div class="calc">${docField("loads", "Loads a month", "optional", "num")}${docField("valid", "Valid (days)", "7", "num")}</div>` +
       docField("notes", "Notes on the quote", "e.g. Payment 30 days from POD. Weighbridge at loading counts.", "area")
     : docField("to", "Statement to (who pays the commission)", "Company") + docField("from", "From (your name – remembered)", "e.g. your trading name") +
@@ -132,7 +139,7 @@ function docSheetHtml() {
     + `<button class="primary wide" data-docmake="1"${r.ok ? "" : " disabled"}>${ic("file")}Make the PDF and share it</button>`;
 }
 function openDocSheet(kind, f) {
-  DOC = { kind, f: Object.assign({ from: easyGet("docFrom"), valid: "7", tpl: "34", vat: kind === "quote" ? "Excluding VAT" : "No VAT" }, f) };
+  DOC = { kind, f: Object.assign({ from: easyGet("docFrom"), valid: "7", tpl: "34", vat: kind === "quote" ? (CROSS_BORDER.test((f && f.toPlace) || "") ? QUOTE_ZERO : QUOTE_EX) : "No VAT" }, f) };
   $("docTitle").textContent = kind === "quote" ? "Quote PDF" : "Commission statement PDF";
   $("docBody").innerHTML = docSheetHtml(); $("docSheet").classList.remove("hidden");
 }

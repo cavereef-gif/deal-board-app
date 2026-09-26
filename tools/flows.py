@@ -163,12 +163,12 @@ async def main():
             await ev("goView('calc')"); await W()
             # 13e Google link (26 Sep 2026): the code makes a ready script; Today shows meetings; a deal shows its Drive folder
             await ev("goView('settings')"); await W(); await tap("button[data-gnew]"); await W(500)
-            gs=await ev("({ code: /LINK_CODE = 'demo-code/.test(window._gScript||''), fns: ['setup','hourly','morning','emailIn','syncFolders','syncContacts','pushMeetings'].every(f => (window._gScript||'').includes('function '+f+'(')), steps: !!document.querySelector('.gsteps'), share: !!document.querySelector('[data-gshare]') })")
+            gs=await ev("({ code: /LINK_CODE = 'demo-code/.test(window._gScript||''), fns: ['setup','hourly','morning','emailIn','syncFolders','syncContacts','pushMeetings'].every(f => (window._gScript||'').includes('function '+f+'(')), steps: !!document.querySelector('.gsteps'), share: !!document.querySelector('[data-gshare]') === !!(navigator.share && matchMedia('(pointer: coarse)').matches), copy: !!document.querySelector('[data-gcopy]') })")
             await ev("goView('worklist')"); await W(400)
             gm=await ev("document.querySelectorAll('.meets .mt-r').length")
             await ev("openDealPage('dm1'); goView('deal'); dealTab['dm1']='notes'; render()"); await W()
             gd=await ev("!!document.querySelector('a[href*=\"drive.google.com\"]')")
-            check("Google link: the code makes a ready script (setup, hourly, morning email, email-in, folders, contacts, meetings) with steps and Share; Today shows meetings; a deal shows its Drive folder", gs['code'] and gs['fns'] and gs['steps'] and gs['share'] and gm==2 and gd, f"{gs} meetings {gm} drive {gd}")
+            check("Google link: the code makes a ready script (setup, hourly, morning email, email-in, folders, contacts, meetings) with steps, Copy it again, and Share only on a phone; Today shows meetings; a deal shows its Drive folder", gs['code'] and gs['fns'] and gs['steps'] and gs['share'] and gs['copy'] and gm==2 and gd, f"{gs} meetings {gm} drive {gd}")
             await ev("dealTab['dm1']='steps'; goView('calc')"); await W()
             # 13f phone reminders (26 Sep 2026): Settings has the card; turning on (demo) shows On and a test button
             # headless Chrome always answers "denied" for notifications, so the screen logic is tested as "not asked yet";
@@ -234,6 +234,17 @@ async def main():
             await tap("#rvSave"); await W(400)
             n1=await ev("window._items.length"); closed=await ev("document.getElementById('rvSheet').classList.contains('hidden')")
             check("Decode a WhatsApp quote: tidy card, what is missing, tasks ticked, Save adds them", rv['open'] and rv['card'] and rv['missing']>=3 and rv['ticked']==2 and n1==n0+2 and closed, f"{rv} items {n0}->{n1}")
+            # 27 Sep 2026: a messy WhatsApp with several loads – one card per load, what is missing, "Make it a deal" makes the deal and one ask-back task on it
+            d0=await ev("window._deals.length"); n0=await ev("window._items.length")
+            await tap("#askTab"); await tap("button[data-askadd=quote]")
+            await pg.fill("#rdText", "*LOADS AVAILABLE* 1) Rustenburg - RBay 10 x sidies R385/t chrome 2) Coal WTB to Maputo R620 per ton.... R600 if 34t payload. Need 15 trucks asap!! Lee 082 555 0199")
+            await tap("#rdGo"); await W(700)
+            ml=await ev("({ cards: document.querySelectorAll('#rvBody .rvload').length, ask: document.querySelectorAll('#rvBody .rvl-ask li').length, flags: document.querySelectorAll('#rvBody .rvflag').length, ticked: document.querySelectorAll('#rvBody [data-rv^=\"load:\"]:checked').length, sw: document.documentElement.scrollWidth })")
+            await tap("[data-rvfix='1']"); await pg.fill("[data-rvf='load:1:vat']", "excl"); await tap("[data-rvfix='1']")
+            kvv=await ev("[...document.querySelectorAll('.rvload[data-load=\"1\"] .rvl-kv .kv')].map(x=>x.textContent).join('|')")
+            await ev("document.querySelector('#rvBody [data-rv=\"load:1\"]').checked = true; document.querySelector('#rvBody [data-rv=\"contact:0\"]').checked = false"); await tap("#rvSave"); await W(400)
+            nd=await ev("(() => { const d = window._deals[window._deals.length-1]; const t = window._items.filter(i => i.deal_id === d.id); return { n: window._deals.length, name: d.name, kind: d.kind, area: d.area, p: d.params, tasks: t.map(i => i.waiting_on + ': ' + i.waiting_for) } })()")
+            check("Messy WhatsApp: one card per load, what is missing, a warning; Make it a deal saves route, cargo, rate, VAT and one ask-back task on Lee", ml['cards']==2 and ml['ask']>=6 and ml['flags']==1 and ml['ticked']==0 and ml['sw']<=375 and 'excl VAT' in kvv and nd['n']==d0+1 and nd['kind']=="transport" and nd['area']=="Transport" and nd['p'].get('route','').startswith('WTB') and nd['p'].get('cargo')=="Coal" and nd['p'].get('vat')=="Excluded" and nd['p'].get('client_rate')=="R620 or R600 per ton" and len(nd['tasks'])==1 and nd['tasks'][0].startswith('Lee:'), f"{ml} {kvv} {nd}")
             png=__import__("base64").b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
             await tap("#askTab"); await tap("button[data-askadd=read]")
             await pg.set_input_files("#rdCamInput", files=[{"name": "notes.png", "mimeType": "image/png", "buffer": png}]); await W(500)

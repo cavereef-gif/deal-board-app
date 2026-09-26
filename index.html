@@ -571,6 +571,7 @@ function savedContactsHtml(q){
   q = (q || "").trim().toLowerCase();
   let contacts = window._contacts || [];
   if (q) contacts = contacts.filter(c => [c.name, c.company, c.role, c.phone, c.email, c.notes].join(" ").toLowerCase().includes(q));
+  if (window.inSecContact) contacts = contacts.filter(inSecContact);
   let html = `<div class="h2row" id="contactsHead"><h2>Saved contacts · ${contacts.length}</h2><button data-cnew="">${ic("userplus")}New contact</button></div>`;
   if (newContact) html += `<div class="ccard">${contactFormHtml(newContact)}</div>`;
   html += contacts.map(contactHtml).join("") || `<div class="quiet">${q ? "No saved contact matches." : "No contacts saved yet. Tap New contact, or tell the bot someone's number."}</div>`;
@@ -1029,7 +1030,7 @@ $("list").addEventListener("click", async e => {
   if (w1) { location.href = "https://wa.me/" + w1.dataset.wa1; return; }
   const nb = e.target.closest("button[data-note]");
   if (nb) {
-    const inp = document.querySelector(`input[data-noteinput="${nb.dataset.note}"]`); const text = ((inp && inp.value) || "").trim(); if (!text) { inp && inp.focus(); return; }
+    const inp = document.querySelector(`input[data-noteinput="${nb.dataset.note}"]`); const text = ((inp && inp.value) || "").trim(); if (!text) { inp && inp.focus(); toast("Type the note first, then Save."); return; }
     if (DEMO) { alert("Demo mode — nothing saved"); return; }
     const [ntype, nid] = nb.dataset.note.split(":");
     nb.disabled = true; nb.textContent = "…";
@@ -1199,7 +1200,7 @@ $("list").addEventListener("click", e => {
     return;
   }
   if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
-  const q = ($("q") && $("q").value.trim()) || ""; if (!q) return;
+  const q = ($("q") && $("q").value.trim()) || ""; if (!q) { $("q") && $("q").focus(); toast("Type or say what you want first – or tap one of the examples."); return; }
   if (window.botQuick && botQuick(q)) return;   // "open the deal with Pat on chrome": the app opens it itself, no bot call
   askBot(q, "ask");
 });

@@ -175,18 +175,20 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '
 // ---------- Settings › Google link ----------
 window.googleSettingsHtml = () => {
   const st = window._gStatus || {}, fresh = window._gScript;
+  // "Share the script" only on a phone – on a computer it would just download a text file (Chris, 26 Sep)
+  const phone = !!(navigator.share && window.matchMedia && matchMedia("(pointer: coarse)").matches);
   const when = s => s ? new Date(s).toLocaleString("en-ZA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Johannesburg" }) : "";
   let h = `<div class="card setc"><div class="lbl" style="margin-top:0">Google link</div>
     <div class="quiet">Links your Google account (free): a shared "Deal Board" calendar with task dates, your meetings on Today, saved contacts in Google Contacts, a Drive folder per deal, emails you label "Deal Board" as suggested tasks, and a short email at 06:30 on weekdays.</div>`;
   h += `<div class="kv"><span class="k">Status</span><span class="v">${st.linked ? (st.seen ? "Working – last heard " + esc(when(st.seen)) : "Code made " + esc(when(st.made)) + " – waiting for the script") : "Not linked"}</span></div>`;
   if (fresh) h += `<div class="gsteps"><div class="lbl">Do this once on a computer (about 10 minutes)</div><ol>
-      <li>Easiest: open this app on the computer (same link), sign in, go to More › Settings › Google link and tap the button there – the script is copied straight away. Or tap <b>Share the script</b> below and email it to yourself; <b>delete that email after pasting</b> (the script holds the secret code).</li>
+      <li>${phone ? "Easiest: open this app on the computer (same link), sign in, go to More › Settings › Google link and tap the button there – the script is copied straight away. Or tap <b>Share the script</b> below and email it to yourself; <b>delete that email after pasting</b> (the script holds the secret code)." : "The script is already copied. If you copied something else since, tap <b>Copy it again</b> below."}</li>
       <li>On the computer open <a href="https://script.google.com/create" target="_blank" rel="noopener">script.google.com/create</a> while signed in to your Google account.</li>
       <li>Select everything in the page's text box, delete it, and paste (Ctrl+V).</li>
-      <li>At the left, next to Services, tap <b>+</b>, pick <b>People API</b>, tap Add. Do the same for <b>Google Calendar API</b>.</li>
+      <li>At the left, next to Services, tap <b>+</b>, pick <b>Google Calendar API</b>, tap Add. (<b>People API</b> is optional – add it the same way only if you want contacts copied to Google Contacts.)</li>
       <li>Tap the save icon. At the top, pick <b>setup</b> and tap <b>Run</b>. Allow it (Advanced › Go to project, if Google warns – it is your own script).</li>
       <li>Done. Come back here: the status says "Working" within a minute.</li></ol>
-      <div class="acts0"><button data-gshare="1">${ic("send")}Share the script</button><button data-gcopy="1">${ic("copy")}Copy it again</button></div></div>`;
+      <div class="acts0">${phone ? `<button data-gshare="1">${ic("send")}Share the script</button>` : ""}<button data-gcopy="1">${ic("copy")}Copy it again</button></div></div>`;
   h += st.linked
     ? `<div class="acts0"><button data-gnew="1">${ic("refresh")}Make a new code</button><button data-gdrop="1">${ic("drop")}Remove the link</button></div>`
     : `<button class="primary wide" data-gnew="1">${ic("link")}Make the link code and copy the script</button>`;
@@ -203,7 +205,7 @@ document.addEventListener("click", async e => {
     if (DEMO) code = "demo-code-not-real-0000000000000000";
     else { const { data, error } = await sb.rpc("google_link_new"); if (error) { toast("Could not make the code: " + error.message, 6000); return; } code = data; }
     window._gScript = googleScriptText(code);
-    try { await navigator.clipboard.writeText(window._gScript); toast("Script copied – the steps are below."); } catch (x) { toast("The steps are below – use Share the script."); }
+    try { await navigator.clipboard.writeText(window._gScript); toast("Script copied – the steps are below."); } catch (x) { toast("The steps are below – tap Copy it again."); }
     window._gStatus = DEMO ? { linked: true, made: new Date().toISOString() } : window._gStatus; await gStatus(); render(); return;
   }
   if (e.target.closest("button[data-gshare]")) { const how = await shareFile(new Blob([window._gScript || ""], { type: "text/plain" }), "deal-board-google-script.txt", "Deal Board – Google script"); if (how === "saved") toast("Saved to your downloads."); return; }

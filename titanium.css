@@ -115,7 +115,7 @@ html[data-palette="titanium"] .sheet-b{background:var(--glass-bg);background-ima
 html[data-palette="titanium"] :is(.card,.deal,.ccard,.pinfo,.tsec,.hero,form.panel,.qteaser,.cnote,.brief,.lead,.bub.a,.ask,.post,.sbar,.hrow,.dpage,.bl-main,.fcard:not(.hot),.dtile,.hcard,.bothelp,.composer){background:var(--surface);box-shadow:var(--soft-up);border:0}
 html[data-palette="titanium"] :is(.card,.deal,.ccard,.dpage,.lead,.ask,.brief,.pinfo,.tsec,.hero,.qteaser,.cnote,.hcard,.bothelp){border-radius:22px}
 html[data-palette="titanium"] :is(.hrow,.sbar,.bl-main){border-radius:16px}
-html[data-palette="titanium"] :is(.nextup,.rvq,.cres,.duerow,.step.next,.setc .kv,.pcard .hrow,.dpage .hrow,.kitban){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+html[data-palette="titanium"] :is(.nextup,.rvq,.rvload,.cres,.duerow,.step.next,.setc .kv,.pcard .hrow,.dpage .hrow,.kitban){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
 html[data-palette="titanium"] .pcard .hrow,html[data-palette="titanium"] .dpage .dpanel .hrow{border-radius:16px}
 html[data-palette="titanium"] .nextup:before{background:linear-gradient(180deg,var(--accent2),var(--accent))}
 html[data-palette="titanium"] .hlist .hcard{background:transparent;box-shadow:none}
@@ -206,6 +206,7 @@ html[data-palette="titanium"] .avs span{background:var(--plate)!important;color:
 
 /* ---------------- review sheet tick boxes, checklist boxes, keypads ---------------- */
 html[data-palette="titanium"] .rvtick .bx{background:var(--well);border-color:transparent;box-shadow:var(--soft-in)}
+html[data-palette="titanium"] .rvload .rvtick .bx{box-shadow:var(--soft-in),inset 0 0 0 2px var(--line2)}
 html[data-palette="titanium"] .rvtick input:checked+.bx{background:var(--btn-primary);border-color:transparent;box-shadow:var(--btn-primary-shadow)}
 html[data-palette="titanium"][data-theme="light"] .step.done .cbox{background:#8FD3B0;border-color:#6FBF97}
 html[data-palette="titanium"] .ecgrid button:not(.primary){background:var(--btn);box-shadow:var(--soft-up-sm);color:var(--text)}

@@ -3,7 +3,8 @@ let archQ = "";
 const normName = s => String(s || "").toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9& ]+/g, " ").replace(/\s+/g, " ").trim();
 function nameParts(s) { return normName(s).split(/\s*(?:&|,| and | en |\/)\s*/).map(x => x.trim()).filter(x => x.length > 2 && !["me", "us", "ours", "chris", "annemarie", "chris & annemarie", "chris and annemarie"].includes(x)); }
 const woName = i => /^(me|us|ours)$/i.test((i.waiting_on || "").trim()) ? (i.owner || "Chris") : i.waiting_on;
-function aHit(icon, tone, go, t1, t2) { return `<button class="ahit t-${tone}"${go ? ` data-tgo="${esc(go)}"` : ""}><span class="ai">${ic(icon)}</span><span class="ax"><span class="a1" style="display:block">${t1}</span>${t2 ? `<span class="a2" style="display:block">${t2}</span>` : ""}</span></button>`; }
+function aHit(icon, tone, go, t1, t2) { const tag = go ? "button" : "div";   // a row that opens nothing is not a button
+  return `<${tag} class="ahit t-${tone}${go ? "" : " static"}"${go ? ` data-tgo="${esc(go)}"` : ""}><span class="ai">${ic(icon)}</span><span class="ax"><span class="a1" style="display:block">${t1}</span>${t2 ? `<span class="a2" style="display:block">${t2}</span>` : ""}</span></${tag}>`; }
 // Where does this text appear? (deals incl. closed, open + done tasks, contacts, leads, notes, board)
 function findAll(q, opts) {
   opts = opts || {}; const t = normName(q); if (t.length < 3) return null;

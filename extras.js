@@ -291,6 +291,8 @@ function tripResults() {
     rows.push(["Trip cost at R" + num(TR.rkm) + " a km" + (num(TR.toll) ? " + tolls" : ""), fRand(c.byKm), 1]);
     rows.push(["Cost per ton (" + c.tpl + " t load)", fRand(c.perTon) + " a ton", 1]);
   } else rows.push(["Trip cost", "Type the rate per km in step 2"]);
+  // 27 Sep 2026: what the client's rate can pay a transporter per km (after tolls, before our margin)
+  if (num(TR.client) && c.kmTrip) { const be = (num(TR.client) * c.tpl - num(TR.toll)) / c.kmTrip; rows.push(["Most a transporter can cost", (be < 0 ? "-" : "") + "R" + Math.abs(be).toFixed(2) + " a km (after tolls, before your margin)", 1]); }
   if (c.left != null) {
     rows.push(["Client pays", fRand(num(TR.client)) + " a ton"], ["Left per ton after transport", fRand(c.left) + " a ton", 1], ["Left per load", fRand(c.left * c.tpl)]);
     if (c.month != null) rows.push([`Left per month (${num(TR.loads)} loads)`, fRand(c.month), 1]);

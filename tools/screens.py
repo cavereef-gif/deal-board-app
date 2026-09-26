@@ -96,6 +96,9 @@ async def run(p, dev, theme, results, errors):
     await js("openReader({kind:'photo'})"); await snap("reader-photo"); await js("document.getElementById('rdClose').click()")
     await js("openReader({kind:'quote', text:'Chrome conc 40-42% 5000t/month R2400/t FOT plant. Trucks from Monday.'})"); await snap("reader-quote")
     await js("document.getElementById('rdGo').click()"); await pg.wait_for_timeout(600); await snap("review-quote"); await js("document.getElementById('rvClose').click()")
+    # 27 Sep 2026: a messy WhatsApp with several loads – one card per load, and a card opened for fixing
+    await js("runReader({kind:'quote', text:'*LOADS AVAILABLE* 1) Rustenburg - RBay 10 x sidies R385/t chrome 2) Coal WTB to Maputo R620 per ton.... R600 if 34t payload', about:''})"); await pg.wait_for_timeout(600); await snap("review-loads")
+    await js("document.querySelector('[data-rvfix=\"1\"]').click(); document.querySelector('[data-rvfix=\"1\"]').scrollIntoView()"); await snap("review-loads-fix"); await js("document.getElementById('rvClose').click()")
     await js("runReader({kind:'photo', file:{data:'x', media_type:'image/jpeg'}, about:''})"); await pg.wait_for_timeout(600); await snap("review-photo"); await js("document.querySelector('#rvSheet .sheet-b').scrollTop = 900"); await snap("review-photo-terms"); await js("document.getElementById('rvClose').click()")
     await b.close()
 
