@@ -68,7 +68,7 @@ function mailOf(l, person) {
   return { subj, body: fill(s.body, l, person) };
 }
 function emailMe(subject, body) {
-  const to = me === "Annemarie" ? "annemarie.eagar@gmail.com" : "cavereef@gmail.com";
+  const to = window._myEmail || "";   // the signed-in person's own address (from the login, never written in this public code)
   location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent((body || "").slice(0, 6000))}`;
 }
 window.emailMe = emailMe;

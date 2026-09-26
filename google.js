@@ -68,7 +68,7 @@ function syncCalendar(data) {
   const cal = dealCalendar(data), map = getMap('events'), seen = {};
   const today = data.today;
   for (const t of data.tasks || []) {
-    if (!t.has_date || t.due < addDays(today, -7) || t.due > addDays(today, 90)) continue;
+    if (!t.has_date || t.suggested || t.due < addDays(today, -7) || t.due > addDays(today, 90)) continue;   // suggested tasks wait for Accept
     const title = (t.owner && t.owner !== 'Chris' ? t.owner + ' · ' : '') + (t.who === 'Me' ? t.title : 'Chase ' + t.who + ': ' + t.title) + (t.urgent ? ' (urgent)' : '');
     const start = new Date(t.due + 'T08:30:00+02:00'), end = new Date(t.due + 'T08:45:00+02:00');
     const desc = (t.deal ? 'Deal: ' + t.deal + '\\n' : '') + 'Open the app: ' + APP_URL;
@@ -85,7 +85,8 @@ function addDays(k, n) { const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.ge
 // ---- your meetings for the next 7 days, for the app's Today (the Deal Board calendar itself is left out) ----
 function pushMeetings(data) {
   const now = new Date(), until = new Date(now.getTime() + 7 * 864e5), from = new Date(now.getTime() - 12 * 3600e3);
-  const evs = CalendarApp.getDefaultCalendar().getEvents(from, until).filter(e => e.getMyStatus() !== CalendarApp.GuestStatus.NO);
+  const hidden = [CalendarApp.Visibility.PRIVATE, CalendarApp.Visibility.CONFIDENTIAL];   // private appointments stay private
+  const evs = CalendarApp.getDefaultCalendar().getEvents(from, until).filter(e => e.getMyStatus() !== CalendarApp.GuestStatus.NO && hidden.indexOf(e.getVisibility()) < 0);
   const list = evs.slice(0, 150).map(e => ({ id: e.getId() + '@' + e.getStartTime().getTime(), title: e.getTitle() || '(no title)', starts: e.getStartTime().toISOString(),
     ends: e.getEndTime().toISOString(), all_day: e.isAllDayEvent(), location: e.getLocation() || '' }));
   api('gs_put_events', { p_owner: myName(data), p_events: list });
@@ -179,7 +180,7 @@ window.googleSettingsHtml = () => {
     <div class="quiet">Links your Google account (free): a shared "Deal Board" calendar with task dates, your meetings on Today, saved contacts in Google Contacts, a Drive folder per deal, emails you label "Deal Board" as suggested tasks, and a short email at 06:30 on weekdays.</div>`;
   h += `<div class="kv"><span class="k">Status</span><span class="v">${st.linked ? (st.seen ? "Working – last heard " + esc(when(st.seen)) : "Code made " + esc(when(st.made)) + " – waiting for the script") : "Not linked"}</span></div>`;
   if (fresh) h += `<div class="gsteps"><div class="lbl">Do this once on a computer (about 10 minutes)</div><ol>
-      <li>Get the script onto the computer: tap <b>Share the script</b> below and email it to yourself (or open this app on the computer and tap the button there – then it is simply copied).</li>
+      <li>Easiest: open this app on the computer (same link), sign in, go to More › Settings › Google link and tap the button there – the script is copied straight away. Or tap <b>Share the script</b> below and email it to yourself; <b>delete that email after pasting</b> (the script holds the secret code).</li>
       <li>On the computer open <a href="https://script.google.com/create" target="_blank" rel="noopener">script.google.com/create</a> while signed in to your Google account.</li>
       <li>Select everything in the page's text box, delete it, and paste (Ctrl+V).</li>
       <li>At the left, next to Services, tap <b>+</b>, pick <b>People API</b>, tap Add. Do the same for <b>Google Calendar API</b>.</li>

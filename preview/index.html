@@ -47,7 +47,7 @@
   <form id="addForm" class="panel hidden">
     <div class="formh"><h3>New task</h3><button type="button" class="linkb" id="addCancel">Cancel</button></div>
     <label for="fFor">What are we waiting for?</label><input id="fFor" required placeholder="e.g. Permits">
-    <label for="fOn">From whom? (type Chris, Annemarie or Us if it's our own task)</label><input id="fOn" list="people" required placeholder="e.g. Jan & Lazarus"><div class="seen hidden" id="fOnSeen"></div>
+    <label for="fOn">From whom? (type Chris, Annemarie or Us if it's our own task)</label><input id="fOn" list="people" required placeholder="e.g. Sam & Lee"><div class="seen hidden" id="fOnSeen"></div>
     <datalist id="people"></datalist>
     <label for="fBlocks">What does it block?</label><input id="fBlocks" placeholder="e.g. Maize loads">
     <label for="fNext">Next step</label><input id="fNext" placeholder="e.g. WhatsApp on Monday">
@@ -269,10 +269,10 @@ let toastT; function toast(msg, ms){ $("toast").textContent = msg; $("toast").cl
 function demoItems(){
   const d = n => new Date(Date.now() - n*864e5).toISOString();
   return [
-    {id:"1",project:"Transport",deal_id:"dm2",waiting_on:"Jan & Lazarus",waiting_for:"Permits",blocks:"Maize loads",next_action:"Chase",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(4)},
-    {id:"2",project:"Transport",deal_id:"dm2",waiting_on:"Jan & Lazarus",waiting_for:"VAT: is R350/t including or excluding VAT?",blocks:"The whole split",next_action:"Ask in writing",state:"Confirmed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:d(1),created_at:d(1)},
-    {id:"3",project:"Transport",deal_id:"dm2",waiting_on:"Adrian",waiting_for:"Truck packs, spreadsheet, tracker logins",blocks:"Client onboarding",next_action:"After contract",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(0)},
-    {id:"4",project:"Chrome",deal_id:"dm1",waiting_on:"Piet",waiting_for:"NCNDA",blocks:"ICPO, then stockpile test",next_action:"Chase Piet",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(1)},
+    {id:"1",project:"Transport",deal_id:"dm2",waiting_on:"Sam & Lee",waiting_for:"Permits",blocks:"Maize loads",next_action:"Chase",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(4)},
+    {id:"2",project:"Transport",deal_id:"dm2",waiting_on:"Sam & Lee",waiting_for:"VAT: is R350/t including or excluding VAT?",blocks:"The whole split",next_action:"Ask in writing",state:"Confirmed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:d(1),created_at:d(1)},
+    {id:"3",project:"Transport",deal_id:"dm2",waiting_on:"Alex",waiting_for:"Truck packs, spreadsheet, tracker logins",blocks:"Client onboarding",next_action:"After contract",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(0)},
+    {id:"4",project:"Chrome",deal_id:"dm1",waiting_on:"Pat",waiting_for:"NCNDA",blocks:"ICPO, then stockpile test",next_action:"Chase Pat",state:"Proposed",priority:1,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(1)},
     {id:"5",project:"Verve admin",deal_id:null,waiting_on:"Me",waiting_for:"Logo file into site header + Formspree ID",blocks:"Website go-live",next_action:"Upload logo",state:"Confirmed",priority:2,owner:"Chris",nudge_after_days:3,last_chased:null,created_at:d(2)},
     {id:"6",project:"Verve admin",deal_id:null,waiting_on:"Annemarie",waiting_for:"Add Chris as CIPC director",blocks:"Bank FICA",next_action:"File CoR39",state:"Proposed",priority:2,owner:"Annemarie",nudge_after_days:3,last_chased:null,created_at:d(0)}
   ];
@@ -280,23 +280,23 @@ function demoItems(){
 function demoExtras(){
   const d = n => new Date(Date.now() - n*864e5).toISOString();
   window._contacts = [
-    {id:"c1",name:"Lazarus",phone:"078 219 5810",whatsapp:"27782195810",email:"",company:"",role:"Client-side intermediary (with Jan)",project:"Transport",notes:"Unverified.",created_by:"claude",updated_at:d(1)},
-    {id:"c2",name:"Piet (Pieter)",phone:"",whatsapp:"",email:"",company:"",role:"NDNCA pending",project:"Chrome",notes:"",created_by:"claude",updated_at:d(2)}
+    {id:"c1",name:"Lee (demo)",phone:"078 555 0107",whatsapp:"27785550107",email:"",company:"",role:"Client-side intermediary (with Sam)",project:"Transport",notes:"Unverified.",created_by:"claude",updated_at:d(1)},
+    {id:"c2",name:"Pat (demo seller)",phone:"",whatsapp:"",email:"",company:"",role:"NDNCA pending",project:"Chrome",notes:"",created_by:"claude",updated_at:d(2)}
   ];
-  window._notes = [{id:1,item_id:"1",deal_id:null,new_value:"Lazarus says the permit office wants the truck list first.",changed_by:"Annemarie",changed_at:d(1),source:"app"},{id:2,item_id:"1",deal_id:null,new_value:"Asked Jan for the reference number.",changed_by:"Chris",changed_at:d(2),source:"app"},{id:3,item_id:null,deal_id:"dm1",new_value:"Dolly wants the ICPO to go through SKATRADE.",changed_by:"Chris",changed_at:d(1),source:"app"}];
+  window._notes = [{id:1,item_id:"1",deal_id:null,new_value:"Lee says the permit office wants the truck list first.",changed_by:"Annemarie",changed_at:d(1),source:"app"},{id:2,item_id:"1",deal_id:null,new_value:"Asked Sam for the reference number.",changed_by:"Chris",changed_at:d(2),source:"app"},{id:3,item_id:null,deal_id:"dm1",new_value:"Dana wants the ICPO to go through Example Trading.",changed_by:"Chris",changed_at:d(1),source:"app"}];
   window._atts = [{id:"a1",target_type:"item",target_id:"1",path:"demo",name:"Permit application scan.pdf",size:234000,uploaded_by:"Annemarie",created_at:d(1)}];
   window._urls = { demo: "#" };
   window._deals = [
-    {id:"dm1",name:"Chrome – Piet stockpile → Dolly / SKATRADE",kind:"mineral",area:"Chrome",status:"Active",summary:"Demo mineral deal.",stage:"Paperwork — waiting on Piet's NCNDA",key_facts:"Dolly wants 20,000–50,000 t/month",contacts:"Piet — seller\nDolly — buyer",next_milestone:"NCNDA → ICPO → stockpile test",params:{commodity:"Chrome",form:"ROM",volume:"20,000–50,000 t per month",instrument:"To discuss",target:"R45 per DMT"},sort:20,updated_at:d(0),updated_by:"claude"},
-    {id:"dm2",name:"Maize haulage – Giants Canning",kind:"transport",area:"Transport",status:"Active",summary:"Demo transport deal.",stage:"Qualifying",key_facts:"Client rate R350/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",params:{cargo:"Maize",client_rate:"R350/t",vat:"Not agreed"},sort:10,updated_at:d(0),updated_by:"claude"}
+    {id:"dm1",name:"Chrome – Pat stockpile → Dana / Example Trading",kind:"mineral",area:"Chrome",status:"Active",summary:"Demo mineral deal.",stage:"Paperwork — waiting on Pat's NCNDA",key_facts:"Dana wants 20,000–50,000 t/month",contacts:"Pat — seller\nDana — buyer",next_milestone:"NCNDA → ICPO → stockpile test",params:{commodity:"Chrome",form:"ROM",volume:"20,000–50,000 t per month",instrument:"To discuss",target:"R45 per DMT"},sort:20,updated_at:d(0),updated_by:"claude"},
+    {id:"dm2",name:"Maize haulage – Sunny Farms",kind:"transport",area:"Transport",status:"Active",summary:"Demo transport deal.",stage:"Qualifying",key_facts:"Client rate R350/t",contacts:"Sam & Lee",next_milestone:"Written agreement",params:{cargo:"Maize",client_rate:"R350/t",vat:"Not agreed"},sort:10,updated_at:d(0),updated_by:"claude"}
   ];
   const tpl = { dm1: [["A. Sourcing",["Material sourced (stockpile or production confirmed)","Seller identified (company and contact person)","Buyer identified (company and end user)","Mandate chain written down, both sides"]],["B. Paperwork",["NCNDA signed by all parties","IMFPA / commission agreement signed"]],["C. Buyer intent",["LOI or ICPO issued by the buyer","FCO / offer received from the seller","Price, spec, volume and delivery basis agreed"]],["D. Seller checks",["Proof of ownership of the material","Mining right or permit seen"]]],
                 dm2: [["A. Qualify",["Client and receiver identified (who pays, who receives)","Cargo, route and volumes confirmed in writing","Transporter lined up"]],["B. Paperwork",["NCNDA / non-circumvention signed","Split per ton agreed in writing (who gets what)"]]] };
   window._steps = [];
   for (const [deal, stages] of Object.entries(tpl)) stages.forEach(([stage, titles], si) => titles.forEach((title, ti) => window._steps.push({ id: `${deal}-${si}-${ti}`, deal_id: deal, stage, sort: (si+1)*100 + ti + 1, title, status: deal === "dm1" && si === 0 && ti < 3 ? "done" : "open", done_by: deal === "dm1" && si === 0 && ti < 3 ? "Chris" : null, done_at: deal === "dm1" && si === 0 && ti < 3 ? d(1) : null, evidence: deal === "dm1" && si === 0 && ti === 0 ? "Photos in Files" : null })));
   if (window.kitDemoSteps) { window._steps = window._steps.filter(s => s.deal_id !== "dm1"); const ks = kitDemoSteps("dm1", "mineral", "local"); ks.slice(0, 3).forEach(s => Object.assign(s, { status: "done", done_by: "Chris", done_at: d(1) })); ks[0].evidence = "Requirement sheet in Files"; window._steps.push(...ks); Object.assign(window._deals[0], { kit: "sa1", kit_route: "local" }); }
-  window._posts = [{id:"p1",author:"Annemarie",kind:"post",body:"Jan phoned – they want the truck list before the permit goes in. Can you send it tonight?",deal_id:"dm2",pinned:true,done:false,created_at:d(0.3)},{id:"p2",author:"Chris",kind:"post",body:"Will do. Adrian is sending the list at 6.",deal_id:null,pinned:false,done:false,created_at:d(0.2)},{id:"p3",author:"Claude",kind:"claude",body:"Checked: chrome export permit (ITAC) – still only a draft on 25 Sep 2026; no permit or export tax in force yet.",deal_id:"dm1",pinned:false,done:false,created_at:d(0.1)}];
-  window._done = [{id:"x1",project:"Transport",waiting_on:"Adrian",waiting_for:"Rate for Middelburg run",owner:"Chris",state:"Done",updated_at:d(12),created_at:d(20)},{id:"x2",project:"Chrome",waiting_on:"Benro",waiting_for:"Stockpile photos",owner:"Annemarie",state:"Done",updated_at:d(30),created_at:d(40)}];
+  window._posts = [{id:"p1",author:"Annemarie",kind:"post",body:"Sam phoned – they want the truck list before the permit goes in. Can you send it tonight?",deal_id:"dm2",pinned:true,done:false,created_at:d(0.3)},{id:"p2",author:"Chris",kind:"post",body:"Will do. Alex is sending the list at 6.",deal_id:null,pinned:false,done:false,created_at:d(0.2)},{id:"p3",author:"Claude",kind:"claude",body:"Checked: chrome export permit (ITAC) – still only a draft on 25 Sep 2026; no permit or export tax in force yet.",deal_id:"dm1",pinned:false,done:false,created_at:d(0.1)}];
+  window._done = [{id:"x1",project:"Transport",waiting_on:"Alex",waiting_for:"Rate for Middelburg run",owner:"Chris",state:"Done",updated_at:d(12),created_at:d(20)},{id:"x2",project:"Chrome",waiting_on:"Hill Minerals",waiting_for:"Stockpile photos",owner:"Annemarie",state:"Done",updated_at:d(30),created_at:d(40)}];
   window._hist = [{id:9,deal_id:"dm1",item_id:null,field:"step",old_value:"",new_value:"Material sourced (stockpile or production confirmed) — done (Photos in Files)",changed_by:"Chris",changed_at:d(1)},{id:8,deal_id:"dm1",item_id:null,field:"term:instrument",old_value:null,new_value:"To discuss",changed_by:"Annemarie",changed_at:d(2)}];
 }
 
@@ -311,7 +311,7 @@ async function load(){
   checkVersion();
   let items;
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
-  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAdrian R200/t",contacts:"Jan & Lazarus",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
@@ -416,7 +416,7 @@ function miniHtml(it){
 
 function contactFormHtml(c){
   const f = (k, lbl, type) => `<label class="fld"><span>${lbl}</span><input class="c-${k}" type="${type || "text"}" value="${esc(c[k] || "")}" autocomplete="off"></label>`;
-  return `<div class="cform" data-cform="${c.id || "new"}">${f("name", "Name")}${f("phone", "Phone (e.g. 078 219 5810)", "tel")}${f("whatsapp", "WhatsApp number only if different (27…)", "tel")}${f("email", "Email", "email")}
+  return `<div class="cform" data-cform="${c.id || "new"}">${f("name", "Name")}${f("phone", "Phone (e.g. 078 555 0100)", "tel")}${f("whatsapp", "WhatsApp number only if different (27…)", "tel")}${f("email", "Email", "email")}
     <div class="two">${f("company", "Company")}${f("role", "Role")}</div>
     <label class="fld"><span>Project</span><select class="c-project"><option value="">—</option>${PROJECTS.map(p => `<option${c.project === p ? " selected" : ""}>${p}</option>`).join("")}</select></label>
     <label class="fld"><span>Notes</span><textarea class="c-notes">${esc(c.notes || "")}</textarea></label>
@@ -570,7 +570,7 @@ function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
   let h = `<div class="h2row"><div class="chips" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
-  if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Benro" maxlength="120"></label>
+  if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
       <label class="fld"><span>Type</span><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
       ${window.KIT ? `<label class="fld" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
       <label class="fld"><span>Area</span><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select></label>

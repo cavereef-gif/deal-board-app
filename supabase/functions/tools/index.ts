@@ -444,7 +444,7 @@ Deno.serve(async (req: Request) => {
     if (action === "weather") return json({ ok: true, ...(await weather(admin, body.points || [])) });
     if (action === "push_key") return json({ ok: true, public_key: (await vapid(admin)).public });
     if (action === "push_test") return json({ ok: true, ...(await sendPush(admin, actor, { title: "Deal Board", body: "Reminders work on this phone. You'll get one short note at 07:00 on weekdays.", url: APP_URL, tag: "test" })) });
-    if (action === "push_daily") return json({ ok: true, sent: await pushDaily(admin) });
+    if (action === "push_daily") { if (actor !== "timer") return json({ error: "Only the 07:00 timer sends the daily note" }, 403); return json({ ok: true, sent: await pushDaily(admin) }); }
     if (action === "status") return json({ ok: true, actor, keys: { geoapify: !!keys.geoapify, tomtom: !!keys.tomtom } });
     return json({ error: "Unknown action" }, 400);
   } catch (e) {

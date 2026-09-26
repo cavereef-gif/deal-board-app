@@ -355,7 +355,7 @@ async def main():
             hp=await ev("({ help: !!document.querySelector('.bothelp'), ex: document.querySelectorAll('.bh-ex button').length })")
             await pg.locator(".bh-ex button").first.click(); await W()
             qv=await ev("document.getElementById('q').value")
-            check("Ask page: 'What you can ask' notes; tapping one puts it in the box", hp['help'] and hp['ex']>=20 and qv=="Open the deal with Piet on chrome", f"{hp} box: {qv}")
+            check("Ask page: 'What you can ask' notes; tapping one puts it in the box", hp['help'] and hp['ex']>=20 and qv=="Open the deal with Pat on chrome", f"{hp} box: {qv}")
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

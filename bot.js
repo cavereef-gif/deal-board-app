@@ -1,9 +1,9 @@
 // Deal Board v17 — the bot that does things (26 Sep 2026, asked by Chris: "the bot must be able to do anything on this app you
-// ask. If I tell him I want the deal with Piet on chrome he must bring it up").
+// ask. If I tell him I want the deal with [a supplier] on chrome he must bring it up").
 // Chris's rule (26 Sep): opening, finding and showing happen at once; every change is prepared as a card and waits for one tap
 // ("Do it"). The bot never ticks, confirms, completes or deletes on its own, never sends messages, never shares the private numbers.
 //
-// 1) Quick commands, worked out in the app itself (free, instant, no Claude call): "open the deal with Piet on chrome",
+// 1) Quick commands, worked out in the app itself (free, instant, no Claude call): "open the deal with Pat on chrome",
 //    "show only transport", "what's overdue", "open the maize numbers", "find Sunny Farms", "open the guide on escrow".
 // 2) Everything else goes to the bot (Claude Haiku, the `ask` function). With app:2 it may answer with app actions:
 //    open / show / calculator happen at once; change arrives as a "Do it" card.
@@ -225,10 +225,10 @@ window.botQuick = function (question) {
 
 // ---------- the info notes on the Ask page: what you can ask (tap one to put it in the box) ----------
 const BOT_HELP = [
-  ["Find and open – straight away", ["Open the deal with Piet on chrome", "Show only transport", "What's overdue?", "Open the maize numbers", "Find Sunny Farms", "Open the guide on escrow"]],
-  ["Add – you tap Save", ["Remind me to call Adrian on Tuesday", "Waiting on Jan for the VAT answer", "New chrome deal: Piet's second stockpile", "Note on the maize deal: R350 is excluding VAT", "Post on the board: trucks booked for Monday"]],
-  ["Change – you tap Do it", ["No reply from Kim, follow up Tuesday", "Move the permit check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", "Tick the NCNDA step on the Piet deal", "The client rate is now R520 a ton"]],
-  ["Write and work out", ["WhatsApp to Lazarus about the VAT answer", "Chase prep for Jan", "What's left on the Piet deal before the ICPO?", "What do we make on 30 loads Bethal to Durban at R26 a km?", "Anything risky about this seller?", "Explain FOT and FCA in plain words"]],
+  ["Find and open – straight away", ["Open the deal with Pat on chrome", "Show only transport", "What's overdue?", "Open the maize numbers", "Find Sunny Farms", "Open the guide on escrow"]],
+  ["Add – you tap Save", ["Remind me to call Sam on Tuesday", "Waiting on Lee for the VAT answer", "New chrome deal: Pat's second stockpile", "Note on the maize deal: R350 is excluding VAT", "Post on the board: trucks booked for Monday"]],
+  ["Change – you tap Do it", ["No reply from Kim, follow up Tuesday", "Move the permit check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", "Tick the NCNDA step on the Pat deal", "The client rate is now R520 a ton"]],
+  ["Write and work out", ["WhatsApp to Sam about the VAT answer", "Chase prep for Lee", "What's left on the Pat deal before the ICPO?", "What do we make on 30 loads Bethal to Durban at R26 a km?", "Anything risky about this seller?", "Explain FOT and FCA in plain words"]],
 ];
 window.botHelpHtml = function (dflt) {
   const k = "bot:help", o = isOpen(k, !!dflt);   // open while the chat is empty, folded once you have asked something

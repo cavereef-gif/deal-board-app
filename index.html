@@ -1200,7 +1200,7 @@ $("list").addEventListener("click", e => {
   }
   if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
   const q = ($("q") && $("q").value.trim()) || ""; if (!q) return;
-  if (window.botQuick && botQuick(q)) return;   // "open the deal with Piet on chrome": the app opens it itself, no bot call
+  if (window.botQuick && botQuick(q)) return;   // "open the deal with Pat on chrome": the app opens it itself, no bot call
   askBot(q, "ask");
 });
 
@@ -1238,6 +1238,7 @@ async function show(){
     const { data } = await sb.auth.getSession(); signedIn = !!data.session;
     if (signedIn) {
       const em = data.session.user.email || "";
+      window._myEmail = em;
       me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
     }
