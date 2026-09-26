@@ -1,0 +1,96 @@
+/* PROPOSAL ONLY (26 Sep 2026) – "Soft Graphite" night look: soft raised surfaces (neumorphism) for things you tap,
+   frosted glass for things that float above (Next up, header, bottom bar, sheets), one blue for main buttons,
+   and colour only in small dots. Letters stay neutral off-white / grey. Not part of the app until Chris approves it. */
+
+/* ---- tokens: one mid-graphite room, so both the soft light edge and the shadow can show ---- */
+html[data-palette="titanium"][data-theme="dark"]{
+  --bg:#1B1E23; --bg-a:rgba(27,30,35,.62); --card:#1F2227; --card2:#1D2025; --row:#1F2227; --raise:#252930; --raise-2:#2A2F36; --field:#16181C;
+  --line:#2A2E35; --line2:#3A3F47; --text:#E3E6EA; --muted:#A9AFB8; --ivory:#ECEEF1;
+  --primary:#34588F; --primary-2:#3D639C; --on-primary:#EEF1F5;
+  --accent:#AEB5BF; --accent2:#C9CED6;
+  --bad:#D9736C; --warn:#D6A55A; --ok:#6DB395; --prop:#8C939D;
+  --s-chrome:#8EA9D1; --s-manganese:#AE97C6; --s-transport:#7DB3AA;
+  --g-bad:#D9736C; --g-over:#D6A55A;
+  /* the three finishes */
+  --soft-up:-6px -6px 14px rgba(255,255,255,.045), 7px 8px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+  --soft-up-sm:-3px -3px 8px rgba(255,255,255,.04), 4px 5px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  --soft-in:inset 4px 4px 9px rgba(0,0,0,.50), inset -3px -3px 8px rgba(255,255,255,.028);
+  --glass:linear-gradient(145deg,rgba(255,255,255,.085) 0%,rgba(255,255,255,.035) 100%);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.07), 0 20px 40px -18px rgba(0,0,0,.75);
+  --surface:#1F2227; --shadow:var(--soft-up);
+  --btn:#23272D; --btn-shadow:var(--soft-up-sm);
+  --btn-primary:linear-gradient(180deg,#3A5F98 0%,#2F5189 100%);
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px -6px rgba(0,0,0,.7);
+  --seg-on:#2A2E35; --seg-on-shadow:var(--soft-up-sm);
+  --track-shadow:var(--soft-in);
+  --grad:linear-gradient(160deg,#4468A3 0%,#2E4F86 100%);
+}
+/* the room: graphite with two very soft steel glows, so the glass has something to frost */
+html[data-palette="titanium"][data-theme="dark"] body:before{background:
+  radial-gradient(62% 30% at 92% 44%,rgba(128,152,190,.26) 0%,rgba(122,146,184,0) 70%),
+  radial-gradient(55% 28% at 2% 70%,rgba(150,144,172,.14) 0%,rgba(150,140,170,0) 70%),
+  radial-gradient(120% 50% at 50% -10%,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 60%)}
+html[data-palette="titanium"][data-theme="dark"] body{background:transparent}
+html[data-palette="titanium"][data-theme="dark"]{background:#1B1E23}
+
+/* ---- frosted glass: header, bottom bar, Next up, sheets ---- */
+html[data-palette="titanium"][data-theme="dark"] header.appbar{background:rgba(27,30,35,.84);-webkit-backdrop-filter:blur(22px) saturate(1.3);backdrop-filter:blur(22px) saturate(1.3);box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
+html[data-palette="titanium"][data-theme="dark"] .tabs{background:rgba(36,40,47,.86);background-image:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:var(--glass-edge)}
+html[data-palette="titanium"][data-theme="dark"] .tabs button.on{background:rgba(0,0,0,.22);box-shadow:var(--soft-in);color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] .tabs button.on:after{background:var(--accent)}
+html[data-palette="titanium"][data-theme="dark"] .tabs .plus,html[data-palette="titanium"][data-theme="dark"] .tabs .plus.on{background:var(--grad);background-color:var(--primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 10px 22px -6px rgba(0,0,0,.8), 0 0 0 5px rgba(27,30,35,.9)}
+html[data-palette="titanium"][data-theme="dark"] .hero2{background:rgba(255,255,255,.05);background-image:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);box-shadow:var(--glass-edge);border-radius:26px}
+html[data-palette="titanium"][data-theme="dark"] .hero2:before{display:none}
+html[data-palette="titanium"][data-theme="dark"] .sheet{background:rgba(10,12,15,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+html[data-palette="titanium"][data-theme="dark"] .sheet-b{background:rgba(34,38,44,.78);background-image:var(--glass);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);box-shadow:var(--glass-edge)}
+
+/* ---- soft raised: cards, tiles, rows, buttons ---- */
+html[data-palette="titanium"][data-theme="dark"] :is(.card,.deal,.ccard,.pinfo,.tsec,.hero,form.panel,.qteaser,.cnote,.brief,.lead,.bub.a,.ask,.post,.sbar,.dpage,.bl-main,.fcard:not(.hot),.dtile,.hcard,.bothelp,.composer){background:var(--surface);box-shadow:var(--soft-up);border:0}
+html[data-palette="titanium"][data-theme="dark"] .hlist .hcard{background:transparent;box-shadow:none}
+html[data-palette="titanium"][data-theme="dark"] .hlist .hcard .hc-b,html[data-palette="titanium"][data-theme="dark"] .scard{background:var(--surface);box-shadow:var(--soft-up);border-radius:22px}
+html[data-palette="titanium"][data-theme="dark"] .scont{background:var(--surface);background-color:var(--surface)}
+html[data-palette="titanium"][data-theme="dark"] :is(.ib,.backb,#menuBtn.avatar,.sheet-h button,.h2row>button,.acts>button:not(.primary),.acts0>button:not(.primary),.row2 button:not(.primary),.wide:not(.primary),.seg:not(.on),.chips:not(.segbar) button:not(.on),.hscroll button:not(.on),.choose button,.askadd button,.secpick>button,.linkb.btn){background:var(--btn);background-color:var(--btn);box-shadow:var(--soft-up-sm);border:0;color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] :is(button.primary,.nowtag,.nexttag){background:var(--btn-primary);background-color:var(--primary);box-shadow:var(--btn-primary-shadow);color:var(--on-primary)}
+html[data-palette="titanium"][data-theme="dark"] .h2-acts button:not(.sw-done):not(.sw-confirm):not(.sw-ftdone),html[data-palette="titanium"][data-theme="dark"] .sc-acts .sw-drop{background:rgba(255,255,255,.06)!important;background-color:rgba(255,255,255,.06)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.06)}
+html[data-palette="titanium"][data-theme="dark"] .sc-acts .sw-drop{background:var(--btn)!important;background-color:var(--btn)!important;box-shadow:var(--soft-up-sm)}
+html[data-palette="titanium"][data-theme="dark"] .logo{background:linear-gradient(150deg,#D9DDE3 0%,#A9AFB8 100%);color:#16181B}
+
+/* ---- pressed in: tracks, inputs, and what is chosen inside them ---- */
+html[data-palette="titanium"][data-theme="dark"] :is(.secbar,.seg2,.segbar,.dtabs4,.wkstrip){background:var(--field);box-shadow:var(--soft-in);border:0}
+html[data-palette="titanium"][data-theme="dark"] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on,.secbar>button.on,.wkstrip>button.on){background:var(--seg-on);background-color:var(--seg-on);box-shadow:var(--soft-up-sm);color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] :is(input,select,textarea){background:var(--field);border-color:transparent;box-shadow:var(--soft-in)}
+
+/* ---- colour only in small dots ---- */
+/* section switch: a small dot before each name instead of coloured underlines and rings */
+html[data-palette="titanium"][data-theme="dark"] .secbar>button{display:inline-flex;align-items:center;gap:7px;padding:6px 8px}
+html[data-palette="titanium"][data-theme="dark"] .secbar>button:after{position:static;flex:none;order:-1;width:8px;height:8px;border-radius:50%;opacity:1}
+html[data-palette="titanium"][data-theme="dark"] .secbar>button[data-sec="All"]:after{background:var(--muted)}
+html[data-palette="titanium"][data-theme="dark"] .secbar>button.on{box-shadow:var(--soft-up-sm)!important}
+/* tiles: no coloured wash, no rail, neutral icon; the colour is one dot beside the word */
+html[data-palette="titanium"][data-theme="dark"] .htile{background:var(--surface);box-shadow:var(--soft-up);border:0}
+html[data-palette="titanium"][data-theme="dark"] .htiles3 .htile{padding:12px 12px 12px 14px}
+html[data-palette="titanium"][data-theme="dark"] .htile .ht-i svg.i{color:var(--muted)}
+html[data-palette="titanium"][data-theme="dark"] .htile.on{background:var(--field);box-shadow:var(--soft-in)}
+html[data-palette="titanium"][data-theme="dark"] .htile .ht-i{display:flex;align-items:center;gap:6px;width:auto}
+html[data-palette="titanium"][data-theme="dark"] .htile .ht-i:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--tc)}
+html[data-palette="titanium"][data-theme="dark"] .htile:before{display:none}
+/* name badges: neutral, with the section as a small dot on the edge */
+html[data-palette="titanium"][data-theme="dark"] .av2{position:relative;background:#262A31;box-shadow:var(--soft-up-sm);color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] .av2:after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 2px var(--surface)}
+html[data-palette="titanium"][data-theme="dark"] .hero2 .av2{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
+/* status pills: neutral pill, coloured dot only */
+html[data-palette="titanium"][data-theme="dark"] :is(.chip2.c-bad,.chip2.c-warn,.chip2){background:rgba(255,255,255,.06)}
+/* deals: no coloured side rail */
+html[data-palette="titanium"][data-theme="dark"] .deal.srail:before,html[data-palette="titanium"][data-theme="dark"] .hrow:before{display:none}
+/* swipe actions: blue for Done (the main action), graphite for the rest – icons tell them apart */
+html[data-palette="titanium"][data-theme="dark"] .sw-done,html[data-palette="titanium"][data-theme="dark"] .sw-confirm,html[data-palette="titanium"][data-theme="dark"] .sw-ftdone{background:#34588F!important}
+html[data-palette="titanium"][data-theme="dark"] :is(.sw-chased,.sw-tomorrow,.sw-fu3){background:#3A4049!important}
+html[data-palette="titanium"][data-theme="dark"] :is(.sw-urgent,.sw-normal,.sw-drop){background:#30353D!important}
+html[data-palette="titanium"][data-theme="dark"] .h2-acts :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop){background:rgba(255,255,255,.06)!important}
+/* Ask add tiles: recessed icon wells instead of silver plates */
+html[data-palette="titanium"][data-theme="dark"] .askadd .qi{background:var(--field);box-shadow:var(--soft-in);color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] .askadd .qi svg.i{color:var(--text)}
+html[data-palette="titanium"][data-theme="dark"] .ring .rv{stroke:#8EA3C2}
+/* quiet icons: brief, help heading, progress ring track */
+html[data-palette="titanium"][data-theme="dark"] .bl-l svg.i,html[data-palette="titanium"][data-theme="dark"] .bh-h svg.i{color:var(--muted)}
+html[data-palette="titanium"][data-theme="dark"] .ring .rt{stroke:rgba(255,255,255,.09)}
