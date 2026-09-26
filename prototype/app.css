@@ -20,6 +20,7 @@
   --font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --display:var(--font);
   --tab-on:var(--raise-2);
+  --ring1:url(#velvetGrad); --ring1-bg:linear-gradient(135deg,#964EC2,#FF7BBF); --ring2:#FF7BBF; --ring3:#5FD9C9; --route:#964EC2; --route-a:#50409A; --route-b:#FF7BBF;
 }
 :root[data-theme="light"]{
   color-scheme:light;

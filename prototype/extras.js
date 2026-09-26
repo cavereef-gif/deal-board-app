@@ -407,9 +407,10 @@ async function drawTrip() {
   el.classList.remove("hidden"); el.innerHTML = "";
   const m = L.map(el, { zoomControl: true, attributionControl: true });
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(m);
-  const line = L.geoJSON(TR.geo.line, { style: { color: "#964EC2", weight: 5 } }).addTo(m);
-  L.circleMarker([TR.geo.a.lat, TR.geo.a.lon], { radius: 7, color: "#50409A", fillOpacity: 1 }).addTo(m);
-  L.circleMarker([TR.geo.b.lat, TR.geo.b.lon], { radius: 7, color: "#FF7BBF", fillOpacity: 1 }).addTo(m);
+  const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();   // map colours follow the palette
+  const line = L.geoJSON(TR.geo.line, { style: { color: cv("--route") || "#3A3F46", weight: 5 } }).addTo(m);
+  L.circleMarker([TR.geo.a.lat, TR.geo.a.lon], { radius: 7, color: cv("--route-a") || "#1B1D20", fillOpacity: 1 }).addTo(m);
+  L.circleMarker([TR.geo.b.lat, TR.geo.b.lon], { radius: 7, color: cv("--route-b") || "#8E959E", fillOpacity: 1 }).addTo(m);
   m.fitBounds(line.getBounds(), { padding: [20, 20] });
 }
 (window._after ||= []).push(() => { if (view === "calc" && calcTab === "transport" && TR.geo) drawTrip(); });

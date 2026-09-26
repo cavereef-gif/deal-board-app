@@ -38,8 +38,8 @@ const SA = () => new Date(Date.now() + 2 * 3600e3);
 const saKey = d => new Date(new Date(d).getTime() + 2 * 3600e3).toISOString().slice(0, 10);
 function dueOf(it) { return dueDate(it); }
 function ringsSvg(vals) {
-  const R = [52, 41, 30], cols = ["url(#velvetGrad)", "#FF7BBF", "#5FD9C9"];
-  return `<svg class="rings" viewBox="0 0 128 128" aria-hidden="true">${R.map((r, i) => { const c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, vals[i] || 0)); return `<circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" stroke="${cols[i]}" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"${p === 0 ? ' stroke-opacity="0"' : ""}/>`; }).join("")}</svg>`;
+  const R = [52, 41, 30];   // ring colours come from the palette (--ring1..3 in the stylesheets)
+  return `<svg class="rings" viewBox="0 0 128 128" aria-hidden="true">${R.map((r, i) => { const c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, vals[i] || 0)); return `<circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" style="stroke:var(--ring${i + 1})" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"${p === 0 ? ' stroke-opacity="0"' : ""}/>`; }).join("")}</svg>`;
 }
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 function dtile(d) {
@@ -120,9 +120,9 @@ function todayHtml(items) {
   h += `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
   if (oOpen) {
     h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, mine.length ? (mine.length - g.overdue.length) / mine.length : 0])}
-      <div class="legend"><div class="lg"><i style="background:linear-gradient(135deg,#964EC2,#FF7BBF)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
-      <div class="lg"><i style="background:#FF7BBF"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
-      <div class="lg"><i style="background:#5FD9C9"></i><div><b>Tasks: ${g.overdue.length} overdue of ${mine.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
+      <div class="legend"><div class="lg"><i style="background:var(--ring1-bg)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
+      <div class="lg"><i style="background:var(--ring2)"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
+      <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${mine.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
     if (ld.length) h += `<div class="sech"><h3>Deals</h3><button class="linkb" data-v2="deals">All deals</button></div><div class="dgrid">${ld.map(dtile).join("")}</div>`;
     const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
     const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
