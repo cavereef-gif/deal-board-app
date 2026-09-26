@@ -1210,3 +1210,4 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .portsc{padding:4px 14px;margin-bottom:14px}.portsc .sec-h{padding:10px 0}.portsc .st{flex:none;display:flex;align-items:center;gap:8px;white-space:nowrap}.portsc .cnt{flex:1;min-width:0;text-align:right;font-size:14px;line-height:1.3;color:var(--muted)}.portsc .st svg.i{color:var(--muted)}
 .portsc .pc-b{padding:0 0 12px}.portsc .lbl{margin-top:14px}.pc-t{margin:6px 0;font-size:16px;line-height:1.5;color:var(--text)}
 .portsc .btnlink{display:flex;align-items:center;gap:8px;margin-top:8px;text-align:left}
+.pcard .pc-acts [data-book]{grid-column:1/-1}

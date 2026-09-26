@@ -51,7 +51,7 @@ function calcHtml(key, d, kind) {
   const f = ([k, label, opt]) => `<label class="fld${k === "vat" || k === "vatin" ? " full" : ""}"><span>${label}</span>${Array.isArray(opt) ? `<select data-calc="${key}" data-k="${k}">${opt.map(o => `<option${String(st[k]) === o ? " selected" : ""}>${o}</option>`).join("")}</select>` : `<input data-calc="${key}" data-k="${k}" inputmode="decimal" value="${esc(st[k] === "" || st[k] == null ? "" : String(st[k]))}" placeholder="${esc(opt)}">`}</label>`;
   return `<div class="calc">${F.map(f).join("")}</div>${st._src.length ? `<div class="csrc">Filled in from the deal terms – check and adjust: ${esc(st._src.join(" · "))}</div>` : ""}
     <div class="cres" id="cres-${key}">${calcResHtml(st)}</div>
-    <div class="acts0">${d ? `<button class="primary" data-calcsave="${key}" data-deal="${d.id}">${ic("note")}Save to deal notes</button>` : `<button class="primary" data-calcsave="${key}">${ic("board")}Post to the board</button>`}${ib("copy", "file", `data-calccopy="${key}"`, "Copy the result")}</div>`;
+    <div class="acts0">${d ? `<button class="primary" data-calcsave="${key}" data-deal="${d.id}">${ic("note")}Save to deal notes</button>` : `<button class="primary" data-calcsave="${key}">${ic("board")}Post to the board</button>`}${ib("copy", "file", `data-calccopy="${key}"`, "Copy the result")}${kind !== "transport" && window.openDocSheet ? ib("file", "file", `data-commpdf="${key}"`, "Commission statement PDF") : ""}</div>`;
 }
 const calcResHtml = st => calcCompute(st).map(([k, v, big]) => `<div class="kv${big ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
 const calcText = (key, d) => { const st = window._calc[key]; const F = st._kind === "transport" ? TR_F : MIN_F;

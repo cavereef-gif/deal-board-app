@@ -9,8 +9,8 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
-<link rel="stylesheet" href="app.css?v=17.202609262020">
-<link rel="stylesheet" href="titanium.css?v=17.202609262020">
+<link rel="stylesheet" href="app.css?v=17.202609262033">
+<link rel="stylesheet" href="titanium.css?v=17.202609262033">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -138,6 +138,12 @@
     <div id="ckBody"></div>
   </div>
 </div>
+<div id="docSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="docTitle">
+  <div class="sheet-b">
+    <div class="sheet-h"><span id="docTitle">Document</span><button id="docClose" type="button">Close</button></div>
+    <div id="docBody"></div>
+  </div>
+</div>
 <div id="ndSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="ndsTitle">
   <div class="sheet-b">
     <div class="sheet-h"><span id="ndsTitle">New deal</span><button id="ndsClose" type="button">Close</button></div>
@@ -218,7 +224,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609262020"></script>
+<script src="ui.js?v=17.202609262033"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -505,6 +511,7 @@ function rowHtml(it, n){
       ${ib("note", "note", `data-panel="item:${it.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}
       ${canWa ? ib("chat", "wa", `data-wa="${esc(it.waiting_on)}"`, "WhatsApp " + esc(firstName(it.waiting_on))) : ""}
       ${ib("bot", "bot", `data-botitem="${it.id}"`, "Ask the bot")}
+      ${!prop && window.calBtn ? calBtn(it) : ""}
       ${!prop ? ib("drop", "bad", `data-a="drop"`, "Drop – not needed") : ""}
     </div>
     <label class="fld"><span>Deal</span><select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Not linked – choose a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
@@ -555,7 +562,7 @@ function waitingPeopleHtml(q){
     const anyStale = arr.some(i => i._stale);
     const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
     html += `<div class="card pcard"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · first ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></div></div>
-      <div class="pc-acts">${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp all")}${cs.length && cs[0].phone ? ib("phone", "call", `data-call="${esc(cs[0].phone)}"`, "Call") : ""}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask")}${cs.length ? "" : `<button data-cnew="${esc(firstName(name))}">${ic("userplus")}Save number</button>`}</div>
+      <div class="pc-acts">${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp all")}${cs.length && cs[0].phone ? ib("phone", "call", `data-call="${esc(cs[0].phone)}"`, "Call") : ""}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask")}${window.bookingBtn ? bookingBtn(name) : ""}${cs.length ? "" : `<button data-cnew="${esc(firstName(name))}">${ic("userplus")}Save number</button>`}</div>
       <div class="hg-b">${arr.map(it => window.homeRow ? homeRow(it, true, true) : miniHtml(it)).join("")}</div></div>`;
   }
   return html || `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
@@ -579,7 +586,7 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${mapKeysHtml()}`;
+    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}`;
 }
 // Free map services (26 Sep 2026): keys typed once here, stored encrypted like the bot key. Geoapify is the one that matters;
 // TomTom is an optional second check on distances; HERE is for later.
@@ -845,7 +852,7 @@ function navSnap(){ return { view, dealPage, y: window.scrollY, keys: [...openKe
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
 // Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
 let sheetHist = false, ignorePop = false;
-const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet")].filter(x => x && !x.classList.contains("hidden"));
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("docSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet")].filter(x => x && !x.classList.contains("hidden"));
 function syncSheetHist(){
   const any = openSheets().length > 0 || !!window._sheetItem;
   if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
@@ -1245,20 +1252,21 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609262020"></script>
-<script src="directory2.js?v=17.202609262020"></script>
-<script src="today.js?v=17.202609262020"></script>
-<script src="task.js?v=17.202609262020"></script>
-<script src="kitdata.js?v=17.202609262020"></script>
-<script src="dealkit.js?v=17.202609262020"></script>
-<script src="board.js?v=17.202609262020"></script>
-<script src="calc.js?v=17.202609262020"></script>
-<script src="archive.js?v=17.202609262020"></script>
-<script src="extras.js?v=17.202609262020"></script>
-<script src="reader.js?v=17.202609262020"></script>
-<script src="sections.js?v=17.202609262020"></script>
-<script src="bot.js?v=17.202609262020"></script>
-<script src="motion.js?v=17.202609262020"></script>
+<script src="directory.js?v=17.202609262033"></script>
+<script src="directory2.js?v=17.202609262033"></script>
+<script src="today.js?v=17.202609262033"></script>
+<script src="task.js?v=17.202609262033"></script>
+<script src="kitdata.js?v=17.202609262033"></script>
+<script src="dealkit.js?v=17.202609262033"></script>
+<script src="board.js?v=17.202609262033"></script>
+<script src="calc.js?v=17.202609262033"></script>
+<script src="archive.js?v=17.202609262033"></script>
+<script src="extras.js?v=17.202609262033"></script>
+<script src="easy.js?v=17.202609262033"></script>
+<script src="reader.js?v=17.202609262033"></script>
+<script src="sections.js?v=17.202609262033"></script>
+<script src="bot.js?v=17.202609262033"></script>
+<script src="motion.js?v=17.202609262033"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
