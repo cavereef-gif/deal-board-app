@@ -13,6 +13,7 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 - Priority on every task row (the rail on the left): urgent red · overdue amber · normal blue · suggested grey · low slate. Urgent now always shows red, even when the task is also overdue or suggested (before, overdue or suggested hid it). Low priority got its own slate rail.
 - Metal fills now carry a solid base colour under the gradient, so the contrast checker measures the real background.
 - Checks: 168 screens with the real font – all readability rules pass, lowest contrast 5.03 (was 4.67). flows.py 32 jobs PASS. Screenshots looked at, night and day, both sizes.
+- Commits: prototype branch b320c30; prototype link updated by ca79318 on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
 
 ## 26 Sep 2026 – v17 prototype: "Titanium" colours (not live)
 - Asked by Chris: a silver / titanium / charcoal black / off-white / white palette, creative off-white and white tiles with darker shading, "something spectacular", geometry right.
