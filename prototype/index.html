@@ -9,8 +9,8 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
-<link rel="stylesheet" href="app.css?v=17">
-<link rel="stylesheet" href="titanium.css?v=17">
+<link rel="stylesheet" href="app.css?v=17.202609260343">
+<link rel="stylesheet" href="titanium.css?v=17.202609260343">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -141,8 +141,7 @@
   <div class="sheet-b">
     <div class="sheet-h"><span id="ndsTitle">New deal</span><button id="ndsClose" type="button">Close</button></div>
     <label class="fld"><span>Deal name</span><input id="ndsName" maxlength="120" autocomplete="off" placeholder="e.g. Chrome – Example stockpile → Example buyer"></label>
-    <label class="fld"><span>Type</span><select id="ndsKind"></select></label>
-    <label class="fld"><span>Area</span><select id="ndsArea"></select></label>
+    <div id="ndsSecBox"></div>
     <button class="wide primary" id="ndsAdd" type="button" data-ico="check">Create deal</button>
     <div class="quiet">It gets the deal kit checklist (local sale by truck for minerals). Change the route on the deal's page.</div>
     <div class="msg" id="ndsMsg"></div>
@@ -218,7 +217,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17"></script>
+<script src="ui.js?v=17.202609260343"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -302,7 +301,7 @@ function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" 
 
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
   const ti = document.documentElement.dataset.palette === "titanium";
-  document.querySelector('meta[name="theme-color"]').content = ti ? (t === "light" ? "#E7EDF4" : "#0A0F17") : (t === "light" ? "#F4F0E6" : "#12152B");
+  document.querySelector('meta[name="theme-color"]').content = ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -542,7 +541,7 @@ function contactHtml(c){
 function waitingPeopleHtml(q){
   q = (q || "").trim().toLowerCase();
   const items = window._items || [], groups = {};
-  for (const it of items) if (!it._me) (groups[it.waiting_on || "Unknown"] ||= []).push(it);
+  for (const it of items) if (!it._me && (!window.inSecItem || inSecItem(it))) (groups[it.waiting_on || "Unknown"] ||= []).push(it);
   let order = Object.entries(groups).sort((a,b) => Math.min(...a[1].map(i=>i.priority||2)) - Math.min(...b[1].map(i=>i.priority||2)) || Math.max(...b[1].map(i=>i._days)) - Math.max(...a[1].map(i=>i._days)));
   if (q) order = order.filter(([name, arr]) => (name + " " + arr.map(i => i.waiting_for).join(" ")).toLowerCase().includes(q));
   let html = "";
@@ -569,7 +568,7 @@ function savedContactsHtml(q){
 window.waitingPeopleHtml = waitingPeopleHtml; window.savedContactsHtml = savedContactsHtml;
 function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
-  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["titanium", "Titanium"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${(document.documentElement.dataset.palette || "titanium") === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
+  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${(document.documentElement.dataset.palette || "titanium") === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
     <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
     <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(me) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
@@ -626,7 +625,7 @@ function termsHtml(d, defs){
 function infoHtml(d){
   if (editInfo === d.id) {
     const f = (k, big) => `<label class="fld"><span>${INFO_LABELS[k]}</span>` + (big ? `<textarea class="i-${k}"${k === "key_facts" ? ' style="min-height:140px"' : ""}>${esc(d[k] || "")}</textarea>` : `<input class="i-${k}" value="${esc(d[k] || "")}">`) + `</label>`;
-    return f("name") + `<label class="fld"><span>Area</span><select class="i-area">${[...AREAS, ...(AREAS.includes(d.area) ? [] : [d.area])].map(a => `<option${d.area === a ? " selected" : ""}>${esc(a)}</option>`).join("")}</select></label>` +
+    return f("name") + `<label class="fld"><span>Area</span><select class="i-area">${[...new Set([...AREAS, ...(window.sectionsList ? sectionsList() : []), d.area])].map(a => `<option${d.area === a ? " selected" : ""}>${esc(a)}</option>`).join("")}</select></label>` +
       f("stage") + f("summary", true) + f("key_facts", true) + f("contacts", true) + f("next_milestone") +
       `<div class="acts0"><button class="primary" data-saveinfo="${d.id}">${ic("check")}Save</button><button data-editinfo="">Cancel</button></div>`;
   }
@@ -655,7 +654,7 @@ function dealCardHtml(d){
   const stale = waits.filter(i => i._stale && !i._me).length;
   const closed = d.status === "Won" || d.status === "Lost";
   const dot = closed ? "d-low" : d.status === "On hold" ? "d-prop" : stale ? "d-stale" : "d-ok";
-  return `<div class="deal" data-deal="${d.id}"><button class="deal-h dcard" data-tgo="deal:${d.id}"><i class="dot ${dot}"></i>
+  return `<div class="deal srail" data-deal="${d.id}" style="--rc:${window.secColor ? secColor(d.area) : "var(--line2)"}"><button class="deal-h dcard" data-tgo="deal:${d.id}"><i class="dot ${dot}"></i>
     <span class="dh"><span class="dn">${esc(d.name)}</span>
       <span class="ds">${esc(d.area)} · ${esc(d.status)}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</span>
       ${pg.total ? `<span class="dx">${pg.next ? `Next step: ${esc(pg.next.title)}` : "Checklist complete"}</span>` : (d.next_milestone ? `<span class="dx">Next: ${esc(d.next_milestone)}</span>` : "")}
@@ -714,15 +713,14 @@ function areaHtml(name, arr){
 }
 function dealsViewHtml(){
   const all = window._deals || [];
-  const shown = all.filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  const shown = all.filter(d => (!window.inSecDeal || inSecDeal(d))).filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
+  let h = (window.secBarHtml ? secBarHtml() : "") + `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
   if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
-      <label class="fld"><span>Type</span><select id="ndKind">${Object.entries(DEAL_KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
-      ${window.KIT ? `<label class="fld" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
-      <label class="fld"><span>Area</span><select id="ndArea">${AREAS.map(a => `<option>${a}</option>`).join("")}</select></label>
+      ${secPickHtml("nd")}
+      ${window.KIT ? `<label class="fld${(SEC_KIND[section] || "mineral") === "mineral" || section === "All" ? "" : " hidden"}" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
       <div class="acts0"><button class="primary" data-createdeal="1">${ic("check")}Create deal</button><button data-newdeal="1">Cancel</button></div><div class="msg" id="ndMsg"></div></div></div>`;
   h += shown.map(dealCardHtml).join("") || `<div class="empty">No ${dealFilter === "All" ? "" : dealFilter.toLowerCase() + " "}deals. Tap Deal to add one.</div>`;
-  const unlinked = (window._items || []).filter(i => !i.deal_id || !dealById(i.deal_id));
+  const unlinked = (window._items || []).filter(i => (!i.deal_id || !dealById(i.deal_id)) && (!window.inSecItem || inSecItem(i)));
   const groups = {};
   for (const it of unlinked) (groups[it.project || "Other"] ||= []).push(it);
   const order = (window._projects || []).map(p => p.name);
@@ -897,6 +895,7 @@ $("list").addEventListener("click", async e => {
   const cd = e.target.closest("button[data-createdeal]");
   if (cd) {
     const name = ($("ndName").value || "").trim(); if (!name) { $("ndMsg").textContent = "Give the deal a name."; return; }
+    if (window.secPickReady && !secPickReady("nd")) { $("ndMsg").textContent = "Give the new section a name."; return; }
     if (DEMO) { $("ndMsg").textContent = "Demo mode — nothing saved"; return; }
     cd.disabled = true; cd.textContent = "…";
     const { data, error } = await sb.rpc("save_deal", { p_id: null, p_name: name, p_kind: $("ndKind").value, p_area: $("ndArea").value, p_route: $("ndKind").value === "mineral" && $("ndRoute") ? $("ndRoute").value : null });
@@ -1214,17 +1213,18 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17"></script>
-<script src="directory2.js?v=17"></script>
-<script src="today.js?v=17"></script>
-<script src="task.js?v=17"></script>
-<script src="kitdata.js?v=17"></script>
-<script src="dealkit.js?v=17"></script>
-<script src="board.js?v=17"></script>
-<script src="calc.js?v=17"></script>
-<script src="archive.js?v=17"></script>
-<script src="extras.js?v=17"></script>
-<script src="reader.js?v=17"></script>
+<script src="directory.js?v=17.202609260343"></script>
+<script src="directory2.js?v=17.202609260343"></script>
+<script src="today.js?v=17.202609260343"></script>
+<script src="task.js?v=17.202609260343"></script>
+<script src="kitdata.js?v=17.202609260343"></script>
+<script src="dealkit.js?v=17.202609260343"></script>
+<script src="board.js?v=17.202609260343"></script>
+<script src="calc.js?v=17.202609260343"></script>
+<script src="archive.js?v=17.202609260343"></script>
+<script src="extras.js?v=17.202609260343"></script>
+<script src="reader.js?v=17.202609260343"></script>
+<script src="sections.js?v=17.202609260343"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>

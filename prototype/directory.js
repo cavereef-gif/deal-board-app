@@ -83,7 +83,7 @@ function leadSummary(l) {
 
 // ---------- queue + gates ----------
 function queueHtml() {
-  const all = (window._ltasks || []).slice().sort((a, b) => b.score - a.score || a.rank - b.rank);
+  const all = (window._ltasks || []).filter(t => !window.inSecLTask || inSecLTask(t)).sort((a, b) => b.score - a.score || a.rank - b.rank);
   const td = todaySA();
   const open = all.filter(t => t.status === "open" && !taskBlocked(t) && (!t.not_before || t.not_before <= td));
   const later = all.filter(t => t.status === "open" && !taskBlocked(t) && t.not_before && t.not_before > td);
@@ -151,7 +151,7 @@ function taskFormHtml(leadId) {
 // ---------- list ----------
 function filtered() {
   const q = dQ.trim().toLowerCase();
-  let arr = (window._leads || []).filter(l => inSeg(l, dSeg));
+  let arr = (window._leads || []).filter(l => inSeg(l, dSeg)).filter(l => !window.inSecLead || inSecLead(l));
   if (dCountry) arr = arr.filter(l => l.country === dCountry);
   if (q) {
     const pp = new Set((window._lpeople || []).filter(p => (p.name + " " + p.email + " " + p.phone).toLowerCase().includes(q)).map(p => p.lead_id));
@@ -168,7 +168,7 @@ function dirHtml() {
   const waitN = new Set((window._items || []).filter(i => !i._me).map(i => i.waiting_on)).size;
   const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).length : (window._leads || []).filter(l => inSeg(l, s)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
-  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
+  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>${window.secBarHtml ? secBarHtml() : ""}
     <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>`;
   if (dSeg === "waiting" || dSeg === "saved") {
     h += `</div>` + (dSeg === "waiting" ? waitingPeopleHtml(dQ) : savedContactsHtml(dQ));
