@@ -7,6 +7,13 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: Titanium gets its blues, priority colours stronger (not live)
+- Asked by Chris: "too black and white – bring in different shades of blue and still have the colour-coded priority".
+- Night: navy-black room with a blue glow from the top, deep steel-blue cards and buttons, royal-blue main buttons and chosen segments (off-white letters), ice-blue silver icon plates, a blue metal + button, light-blue rails and dots. Day: ice-white room, white cards, royal-blue main buttons, steel-blue shadows. Icons come back in blues (sky, periwinkle, steel, teal) plus WhatsApp green; letters stay neutral.
+- Priority on every task row (the rail on the left): urgent red · overdue amber · normal blue · suggested grey · low slate. Urgent now always shows red, even when the task is also overdue or suggested (before, overdue or suggested hid it). Low priority got its own slate rail.
+- Metal fills now carry a solid base colour under the gradient, so the contrast checker measures the real background.
+- Checks: 168 screens with the real font – all readability rules pass, lowest contrast 5.03 (was 4.67). flows.py 32 jobs PASS. Screenshots looked at, night and day, both sizes.
+
 ## 26 Sep 2026 – v17 prototype: "Titanium" colours (not live)
 - Asked by Chris: a silver / titanium / charcoal black / off-white / white palette, creative off-white and white tiles with darker shading, "something spectacular", geometry right.
 - New file titanium.css (loaded after app.css), on by default. Night: charcoal black room with a soft light from the top, graphite cards, machined buttons with a lit top edge and a deeper shadow, brushed-silver main buttons and chosen segments with charcoal letters, silver icon plates on the + tiles, a silver + button. Day: stone off-white room, white cards and tiles with darker soft shadows, charcoal main buttons with off-white letters.
