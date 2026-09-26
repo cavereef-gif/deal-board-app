@@ -906,3 +906,79 @@ h2,.h2{font:600 18px/1.3 var(--font);color:var(--text);margin:24px 0 10px;letter
 .addgrid button{justify-content:flex-start;padding-top:12px}
 .h2row{align-items:stretch}
 .h2row h2{align-self:center}
+
+/* ======================================================================================
+   Home v2 (26 Sep 2026, asked by Chris: "better grouped and colour coded … tiles … more tidy")
+   - Four tiles on top in a 2 x 2 grid: Urgent · Overdue · Today · This week. Tap = show only those; tap again = everything.
+   - Each group is one card: coloured dot + title + count, rows inside with thin lines between.
+   - Colour lives in the dots, the tile rails and the row rails only; every word stays neutral.
+   ====================================================================================== */
+:root{--g-bad:var(--bad);--g-over:var(--warn);--g-today:var(--accent);--g-tmrw:var(--teal);--g-week:var(--accent2);--g-later:var(--low);--g-prop:var(--prop);--g-deal:var(--primary-2);--g-buyer:var(--ok)}
+.htiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 4px}
+.htile{--tc:var(--line2);position:relative;display:flex;align-items:center;justify-content:flex-start;gap:12px;min-width:0;min-height:56px;height:56px;padding:0 14px 0 20px;border:0;border-radius:16px;
+  background:var(--card);background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 20%,var(--card)) 0%,var(--card) 72%);box-shadow:var(--shadow);color:var(--text);text-align:left;overflow:hidden}
+.htile:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--tc)}
+.htile.t-bad{--tc:var(--g-bad)} .htile.t-over{--tc:var(--g-over)} .htile.t-today{--tc:var(--g-today)} .htile.t-week{--tc:var(--g-week)}
+.ht-n{flex:none;min-width:28px;font:500 24px/1 var(--font);font-variant-numeric:tabular-nums;color:var(--text)}
+.ht-l{min-width:0;font:500 16px/1.2 var(--font);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htile.on{background:var(--card);background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 34%,var(--card)) 0%,color-mix(in srgb,var(--tc) 10%,var(--card)) 100%);box-shadow:inset 0 0 0 2px var(--tc),var(--shadow)}
+.hlist{margin-top:0}
+.hcard{margin-top:12px;border-radius:20px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.hc-h{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;height:auto;padding:6px 8px 6px var(--pad);border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--text);text-align:left;justify-content:flex-start;font-weight:400}
+.hc-dot{flex:none;width:12px;height:12px;border-radius:50%}
+.hc-t{flex:1;min-width:0;font:600 16px/1.3 var(--font);color:var(--text)}
+.hc-n{flex:none;min-width:28px;height:24px;padding:0 8px;border-radius:12px;background:var(--raise);display:grid;place-items:center;font:500 14px/1 var(--font);color:var(--text)}
+button.hc-h .hc-n{margin-right:0}
+.hc-h .chev{width:30px;height:30px}
+.hc-h .hc-btn{flex:none;height:var(--ctl);min-height:var(--ctl);padding:0 12px;border-radius:var(--r-ctl);font-size:14px;gap:6px}
+.hc-h:not(button){padding-right:var(--pad)}
+.hc-h:has(.hc-btn){padding-right:8px}
+.hc-b{border-top:1px solid var(--line)}
+.hcard .hc-b .hrow{border-radius:0;box-shadow:none;background:transparent}
+.hcard .hc-b .hrow+.hrow{border-top:1px solid var(--line)}
+.hcard .hc-b .hrow:before{top:12px;bottom:12px;border-radius:0 4px 4px 0}
+.hc-more{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;color:var(--text);font:500 14px/1.2 var(--font)}
+.hlist .bline{margin:12px 0 0}
+.hf-all{margin-top:12px;width:100%}
+/* buyer-search steps: a follow-up note under the step, and the Done form in two equal columns */
+.tnote{margin:6px 0 0;font-size:14px;line-height:1.35;color:var(--muted)}
+.tdone .tacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.tdone .tacts>button{width:100%;min-width:0;min-height:var(--ctl);height:auto;padding:8px 12px;border-radius:var(--r-ctl);font-size:16px;justify-content:center}
+.tdone .tcancel{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--ctl);margin-top:8px;border:0;border-radius:var(--r-ctl);background:transparent;box-shadow:none;color:var(--text);font:500 14px/1.2 var(--font)}
+[data-theme="light"] .tdone .tacts>button:not(.primary){background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* Transport calculator v2 (26 Sep): the answer on top, then numbered steps 1 Route · 2 Truck · 3 Client, no drop-down lists */
+.trc{padding:var(--pad)}
+.trtop{display:flex;flex-direction:column;gap:8px}
+.trr{position:relative;display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 14px 8px 20px;border-radius:14px;background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+.trr:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--line2)}
+.trr.t-cost:before{background:var(--g-today)} .trr.t-ok:before{background:var(--ok)} .trr.t-bad:before{background:var(--bad)}
+.trr .k{flex:1;min-width:0;font:500 16px/1.3 var(--font);color:var(--text)}
+.trr .v{flex:none;font:500 18px/1.2 var(--font);font-variant-numeric:tabular-nums;color:var(--text);text-align:right}
+.trwarn{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text)}
+.trhint{margin:0}
+.trs{display:flex;align-items:center;gap:10px;margin:24px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
+.trs-n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:var(--on-primary);font:500 14px/1 var(--font)}
+.trs-t{font:600 18px/1.3 var(--font);color:var(--text)}
+.trs-plain{margin-top:24px}
+.trc .fld{margin:12px 0 0}
+.trc .calc{margin-top:12px;gap:8px}
+.trc .calc .fld{margin:0}
+.trc div.fld{margin-bottom:0}
+.trc div.fld+.segbar,.trc div.fld+.tools{margin-top:6px}
+.trc .segbar{margin-top:6px}
+.trc .wide{width:100%;margin-top:12px;justify-content:center}
+.trc .trmaps{display:flex;align-items:center;gap:8px}
+.trfold{display:flex;align-items:center;gap:10px;width:100%;min-height:var(--ctl);margin-top:12px;padding:0 4px 0 14px;border:0;border-radius:var(--r-ctl);background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--text);font:500 16px/1.2 var(--font);text-align:left;justify-content:flex-start}
+.trfold span:first-child{flex:1}
+.trfold .chev{width:30px;height:30px}
+.trc .cres{margin-top:8px}
+.trsave{margin-top:12px}
+.trsave .ib{justify-content:center}
+.trdeals{margin-top:6px}
+/* :is(.on,#_) lifts this above the shared button rules that include #botBtn inside :is() */
+.trdeals .ib:is(.on,#_){background:var(--primary);color:var(--on-primary);outline:0;box-shadow:none}
+.trdeals .ib.on svg.i{color:var(--on-primary)}
+/* lead links on a step: full 40px tap height like every other control */
+.task .tm .lk{min-height:var(--ctl);padding:0 12px 0 10px;border-radius:var(--r-ctl)}
+.trdeals .ib:is(.on,#_) .ibw{color:var(--on-primary)}

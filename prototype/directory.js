@@ -111,14 +111,33 @@ function gateHtml(g, all) {
   const n = all.filter(t => t.status === "open" && (t.gates || []).includes(g.key)).length;
   return `<div class="gate"><i class="dot" style="background:${g.status === "open" ? "var(--warn)" : "var(--ok)"}"></i><div class="gt"><div class="gn">${esc(g.title)}</div><div class="gs">${g.status === "open" ? "Open" : "Cleared"}${g.note ? " · " + esc(g.note) : ""}${n && g.status === "open" ? ` · holds ${n} step${n > 1 ? "s" : ""}` : ""}</div><div class="gs">Unblocks: ${esc(g.unblocks)}</div></div>${g.status === "open" ? ib("check", "ok", `data-dgate="${g.key}"`, "Mark cleared") : ib("undo", "mute", `data-dgate="${g.key}"`, "Reopen")}</div>`;
 }
+// A follow-up = a step still open, parked until a date, with a note of what happened (e.g. "No reply yet").
+// It is NOT done: it comes back on the date and shows on Today under that day.
+function isFollowUp(t) { return !!t && t.status === "open" && !!t.not_before && !!t.outcome; }
+// Default follow-up date: a date written in the step ("if nothing by 29 Sep") when it is still ahead, else 3 days from today.
+function fuDefault(t) {
+  const td = todaySA(), yr = +td.slice(0, 4), out = [];
+  String(t.task || "").replace(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b/gi, (m, d, mo) => {
+    const mi = MON.findIndex(x => x.toLowerCase() === mo.slice(0, 3).toLowerCase());
+    const k = `${yr}-${String(mi + 1).padStart(2, "0")}-${String(+d).padStart(2, "0")}`;
+    if (k > td && Date.parse(k) - Date.parse(td) <= 60 * 864e5) out.push(k); return m;
+  });
+  return out[0] || saDayPlus(3);
+}
+function fuWords(t) { const d = new Date(t.not_before + "T08:00:00+02:00"), n = dayDiff(d); return n < 0 ? "Follow-up overdue (" + dayName(d) + ")" : "Follow up " + dayWords(d); }
 function taskHtml(t, n) {
   const ls = (t.lead_ids || []).map(leadById).filter(Boolean);
   const gated = t.status === "open" && taskBlocked(t);
-  const done = t.status === "done";
+  const done = t.status === "done", fu = isFollowUp(t);
   const act = dTaskDone === t.id ? "" : (done || t.status !== "open") ? ib("undo", "mute", `data-dtaskact="${t.id}" data-v="reopen"`, "Reopen") : ib("check", "ok", `data-dtaskdone="${t.id}"`, "Done or update");
   let h = `<div class="task${done ? " done" : ""}"><div class="tl">${n ? `<span class="tn">${n}</span>` : ""}<span class="score" title="Value × ease">${t.score}</span><div class="tt">${esc(t.task)}</div>${act}</div>
-    <div class="tm">${t.kind ? `<span class="pill">${esc(kindName(t.kind))}</span>` : ""}${gated ? `<span class="tw"><i class="dot" style="background:var(--warn)"></i>Waits: ${(t.gates || []).filter(gateOpen).map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(", ")}</span>` : ""}${t.not_before && !done ? `<span class="pill">From ${fmtDay(t.not_before)}</span>` : ""}${ls.slice(0, 4).map(l => `<button class="lk" data-dgo="${l.id}">${ic("user")}${esc(l.name.length > 24 ? l.name.slice(0, 22) + "…" : l.name)}</button>`).join("")}${ls.length > 4 ? `<span class="pill">+${ls.length - 4} more</span>` : ""}${t.status === "blocked" ? `<span class="pill"><i class="dot d-high"></i>Blocked${t.blocked_note ? ": " + esc(t.blocked_note) : ""}</span>` : ""}${done ? `<span class="pill"><i class="dot d-ok"></i>${esc(t.done_by || "")} ${t.done_at ? fmtDay(t.done_at) : ""}${t.outcome ? " — " + esc(t.outcome) : ""}</span>` : ""}</div>`;
-  if (dTaskDone === t.id) h += `<div class="step-p"><label class="fld" style="margin-top:0"><span>What happened? (one line)</span><input id="tOut" maxlength="300"></label><div class="acts0"><button class="primary" data-dtaskact="${t.id}" data-v="done">${ic("check")}Done</button><button data-dtaskact="${t.id}" data-v="block">${ic("pause")}Blocked</button><button data-dtaskact="${t.id}" data-v="drop">${ic("drop")}Drop</button><button data-dtaskdone="">Cancel</button></div></div>`;
+    <div class="tm">${t.kind ? `<span class="pill">${esc(kindName(t.kind))}</span>` : ""}${gated ? `<span class="tw"><i class="dot" style="background:var(--warn)"></i>Waits: ${(t.gates || []).filter(gateOpen).map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(", ")}</span>` : ""}${fu ? `<span class="pill"><i class="dot" style="background:var(--warn)"></i>${esc(fuWords(t))}</span>` : t.not_before && !done ? `<span class="pill">From ${fmtDay(t.not_before)}</span>` : ""}${ls.slice(0, 4).map(l => `<button class="lk" data-dgo="${l.id}">${ic("user")}${esc(l.name.length > 24 ? l.name.slice(0, 22) + "…" : l.name)}</button>`).join("")}${ls.length > 4 ? `<span class="pill">+${ls.length - 4} more</span>` : ""}${t.status === "blocked" ? `<span class="pill"><i class="dot d-high"></i>Blocked${t.blocked_note ? ": " + esc(t.blocked_note) : ""}</span>` : ""}${done ? `<span class="pill"><i class="dot d-ok"></i>${esc(t.done_by || "")} ${t.done_at ? fmtDay(t.done_at) : ""}${t.outcome ? " — " + esc(t.outcome) : ""}</span>` : ""}</div>`;
+  if (fu && dTaskDone !== t.id) h += `<div class="tnote">Last: ${esc(t.outcome)}</div>`;
+  // Done form: Done · Follow up (no reply yet – stays open, comes back on the date) · Blocked · Drop, in two equal columns
+  if (dTaskDone === t.id) h += `<div class="step-p tdone"><label class="fld" style="margin-top:0"><span>What happened? (one line)</span><input id="tOut" maxlength="300" placeholder="e.g. No reply yet · Sent the price list"></label>
+    <label class="fld"><span>No reply yet? Follow up on</span><input type="date" id="tFu" value="${fuDefault(t)}" min="${saDayPlus(1)}"></label>
+    <div class="tacts"><button class="primary" data-dtaskact="${t.id}" data-v="done">${ic("check")}Done</button><button data-dtaskact="${t.id}" data-v="followup">${ic("clock")}Follow up</button><button data-dtaskact="${t.id}" data-v="block">${ic("pause")}Blocked</button><button data-dtaskact="${t.id}" data-v="drop">${ic("drop")}Drop</button></div>
+    <button class="tcancel" data-dtaskdone="">Cancel</button></div>`;
   return h + `</div>`;
 }
 function taskFormHtml(leadId) {

@@ -261,42 +261,68 @@ function num(v) { const n = parseFloat(String(v || "").replace(/\s/g, "").replac
 // Numbers the same on every phone: space between thousands, a point for decimals (R 39 720 · 12.5)
 function nfmt(n, dp) { const neg = n < 0, s = Math.abs(n).toFixed(dp || 0).replace(/\.?0+$/, m => dp ? "" : m); const [a, b] = s.split("."); return (neg ? "−" : "") + a.replace(/\B(?=(\d{3})+$)/g, "\u00a0") + (b ? "." + b : ""); }
 const fRand = n => (n < 0 ? "−" : "") + "R\u00a0" + nfmt(Math.round(Math.abs(n)));
+// Transport calculator (26 Sep, Chris: "gets confusing with all the ticks and sections"): the answer first (three lines with a
+// colour rail), then three numbered steps – 1 Route · 2 Truck · 3 Client – with no drop-down lists; diesel folded away as optional.
+function tripCalc() {
+  const kmTrip = TR.km ? TR.km * (TR.ret === "Yes" ? 2 : 1) : 0, tpl = num(TR.tpl) || 34;
+  const byKm = TR.km && num(TR.rkm) ? kmTrip * num(TR.rkm) + num(TR.toll) : null;
+  const perTon = byKm != null ? byKm / tpl : null;
+  const left = perTon != null && num(TR.client) ? num(TR.client) - perTon : null;
+  const month = left != null && num(TR.loads) ? left * tpl * num(TR.loads) : null;
+  const fuel = TR.km && num(TR.lp100) && num(TR.diesel) ? kmTrip * num(TR.lp100) / 100 * num(TR.diesel) : null;
+  return { kmTrip, tpl, byKm, perTon, left, month, fuel };
+}
+function tripTop() {
+  const c = tripCalc(), tone = v => v == null ? "" : v < 0 ? " t-bad" : " t-ok";
+  const r = (tn, k, v, unit) => `<div class="trr${tn}"><span class="k">${k}</span><span class="v">${v == null ? "–" : fRand(v) + unit}</span></div>`;
+  return r(" t-cost", "Transport cost", c.perTon, " a ton") + r(tone(c.left), "Left for you", c.left, " a ton") + r(tone(c.month), "Left a month", c.month, "")
+    + (c.left != null && c.left < 0 ? `<div class="trwarn"><i class="dot" style="background:var(--bad)"></i>Transport costs more than the client pays.</div>` : "")
+    + (c.perTon == null ? `<div class="quiet trhint">Fill in steps 1 to 3 below.</div>` : "");
+}
 function tripResults() {
   if (!TR.km) return `<div class="quiet">Type where from and where to, then tap Find the road distance. Or type the kilometres yourself.</div>`;
-  const kmTrip = TR.km * (TR.ret === "Yes" ? 2 : 1), tpl = num(TR.tpl) || 34;
-  const rows = [];
+  const c = tripCalc(), rows = [];
   rows.push(["Road distance", `${nfmt(Math.round(TR.km))} km one way${TR.mins ? ` · about ${Math.floor(TR.mins / 60)} h ${Math.round(TR.mins % 60)} min by car (trucks are slower)` : ""}`]);
-  rows.push(["Kilometres per trip", `${nfmt(Math.round(kmTrip))} km${TR.ret === "Yes" ? " (there and back)" : ""}`]);
-  const byKm = num(TR.rkm) ? kmTrip * num(TR.rkm) + num(TR.toll) : null;
-  const fuel = num(TR.lp100) && num(TR.diesel) ? kmTrip * num(TR.lp100) / 100 * num(TR.diesel) : null;
-  if (fuel != null) rows.push(["Diesel for the trip", `${fRand(fuel)} (${Math.round(kmTrip * num(TR.lp100) / 100)} litres)`]);
-  if (byKm != null) {
-    rows.push(["Trip cost at R" + num(TR.rkm) + " a km" + (num(TR.toll) ? " + tolls" : ""), fRand(byKm), 1]);
-    rows.push(["Cost per ton (" + tpl + " t load)", fRand(byKm / tpl) + " a ton", 1]);
-  } else rows.push(["Trip cost", "Type the rate per km (what the transporter charges or your own cost)"]);
-  if (num(TR.client) && byKm != null) {
-    const m = num(TR.client) - byKm / tpl;
-    rows.push(["Client pays", fRand(num(TR.client)) + " a ton"], ["Left per ton after transport", fRand(m) + " a ton", 1], ["Left per load", fRand(m * tpl)]);
-    if (num(TR.loads)) rows.push([`Left per month (${num(TR.loads)} loads)`, fRand(m * tpl * num(TR.loads)), 1]);
-    if (m < 0) rows.push(["Warning", "Transport costs more than the client pays"]);
+  rows.push(["Kilometres per trip", `${nfmt(Math.round(c.kmTrip))} km${TR.ret === "Yes" ? " (there and back)" : " (one way)"}`]);
+  if (c.fuel != null) rows.push(["Diesel for the trip", `${fRand(c.fuel)} (${Math.round(c.kmTrip * num(TR.lp100) / 100)} litres)`]);
+  if (c.byKm != null) {
+    rows.push(["Trip cost at R" + num(TR.rkm) + " a km" + (num(TR.toll) ? " + tolls" : ""), fRand(c.byKm), 1]);
+    rows.push(["Cost per ton (" + c.tpl + " t load)", fRand(c.perTon) + " a ton", 1]);
+  } else rows.push(["Trip cost", "Type the rate per km in step 2"]);
+  if (c.left != null) {
+    rows.push(["Client pays", fRand(num(TR.client)) + " a ton"], ["Left per ton after transport", fRand(c.left) + " a ton", 1], ["Left per load", fRand(c.left * c.tpl)]);
+    if (c.month != null) rows.push([`Left per month (${num(TR.loads)} loads)`, fRand(c.month), 1]);
+    if (c.left < 0) rows.push(["Warning", "Transport costs more than the client pays"]);
   }
   return rows.map(([k, v, big]) => `<div class="kv${big ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
 }
 function transportCalcHtml() {
   const f = (k, label, ph, type) => `<label class="fld"><span>${label}</span><input data-tr="${k}" ${type === "text" ? "" : 'inputmode="decimal"'} value="${esc(TR[k] == null ? "" : String(TR[k]))}" placeholder="${esc(ph)}" autocomplete="off"></label>`;
+  const step = (n, t) => `<div class="trs"><span class="trs-n">${n}</span><span class="trs-t">${t}</span></div>`;
   const tdeals = liveDeals().filter(d => d.kind === "transport" && d.params && d.params.route);
-  return `<div class="card calcc">
-    ${tdeals.length ? `<label class="fld" style="margin-top:0"><span>Fill in from a deal</span><select id="trDeal"><option value="">Choose a transport deal…</option>${tdeals.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</select></label>` : ""}
+  const dOn = TR.deal && dealById(TR.deal), dieselOpen = isOpen("calc:diesel", !!(TR.lp100 || TR.diesel));
+  return `<div class="card calcc trc">
+    <div class="trtop" id="trTop">${tripTop()}</div>
+    ${step(1, "Route")}
+    ${tdeals.length ? `<div class="fld"><span>Fill in from a deal</span></div><div class="tools trdeals">${tdeals.map(d => `<button type="button" class="ib${TR.deal === d.id ? " on" : ""}" data-trdeal="${d.id}" aria-pressed="${TR.deal === d.id}">${ic("truck")}<span class="ibw">${esc(d.name)}</span></button>`).join("")}</div>` : ""}
     ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}
-    <div class="acts0"><button class="primary" data-trgo="1">${ic("globe")}Find the road distance</button>${TR.km ? `<a class="btnlink" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(TR.from)}&destination=${encodeURIComponent(TR.to)}">${ic("open")}Open in Google Maps</a>` : ""}</div>
+    <button class="primary wide trfind" data-trgo="1">${ic("globe")}Find the road distance</button>
     <div id="trMap" class="trmap${TR.geo ? "" : " hidden"}"></div>
-    <div class="calc">${f("km", "Km one way", "or type it")}<label class="fld"><span>Empty trip back?</span><select data-tr="ret"><option${TR.ret === "Yes" ? " selected" : ""}>Yes</option><option${TR.ret === "No" ? " selected" : ""}>No</option></select></label>
-      ${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}${f("tpl", "Tons per load", "34")}${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads per month", "e.g. 20")}
-      ${f("lp100", "Diesel l/100 km", "e.g. 45")}${f("diesel", "Diesel R/litre", "e.g. 22.50")}</div>
+    ${TR.km && TR.from && TR.to ? `<a class="btnlink wide trmaps" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(TR.from)}&destination=${encodeURIComponent(TR.to)}">${ic("open")}Open the route in Google Maps</a>` : ""}
+    ${f("km", "Km one way", "found above, or type it")}
+    <div class="fld"><span>The truck is paid for</span></div>
+    <div class="segbar" role="group" aria-label="The truck is paid for"><button type="button" data-trret="Yes" class="${TR.ret === "Yes" ? "on" : ""}" aria-pressed="${TR.ret === "Yes"}">There and back</button><button type="button" data-trret="No" class="${TR.ret === "No" ? "on" : ""}" aria-pressed="${TR.ret === "No"}">One way only</button></div>
+    ${step(2, "Truck")}
+    <div class="calc">${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}</div>
+    ${f("tpl", "Tons per load", "34")}
+    <button type="button" class="trfold" data-tog="calc:diesel" data-dflt="${dieselOpen ? 1 : 0}" aria-expanded="${dieselOpen}"><span>Diesel check (optional)</span><span class="chev"></span></button>
+    ${dieselOpen ? `<div class="calc">${f("lp100", "Litres per 100 km", "e.g. 45")}${f("diesel", "Diesel price (R/litre)", "e.g. 22.50")}</div>` : ""}
+    ${step(3, "Client")}
+    <div class="calc">${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads a month", "e.g. 20")}</div>
+    <div class="trs trs-plain"><span class="trs-t">How it adds up</span></div>
     <div class="cres" id="trRes">${tripResults()}</div>
-    <label class="fld"><span>Save on</span><select id="trSaveOn"><option value="">The notice board</option>${liveDeals().map(d => `<option value="${d.id}"${TR.deal === d.id ? " selected" : ""}>Deal: ${esc(d.name)}</option>`).join("")}</select></label>
-    <div class="acts0"><button data-trsave="1">${ic("note")}Save</button><button data-trcopy="1">${ic("copy")}Copy</button></div>
-    <div class="quiet">Distance from OpenStreetMap (free); it is the car route, so check the truck route and toll gates. Rates stay yours to type.</div></div>`;
+    <div class="tools trsave"><button type="button" class="ib" data-trsave="1">${ic("note")}<span class="ibw">Save</span></button><button type="button" class="ib" data-trcopy="1">${ic("copy")}<span class="ibw">Copy</span></button></div>
+    <div class="quiet">${dOn ? `Save puts it in the notes of ${esc(dOn.name)}.` : "Save puts it on the notice board."} Distance is the car route from OpenStreetMap (free) – check the truck route and toll gates.</div></div>`;
 }
 const EK_NAME = { "C": "Clear", "⌫": "Delete last", "%": "Percent", "÷": "Divide", "×": "Times", "−": "Minus", "+": "Plus", "=": "Equals", ".": "Point", "+VAT": "Add 15% VAT" };
 function everydayCalcHtml() {
@@ -347,10 +373,20 @@ document.addEventListener("click", async e => {
     return;
   }
   if (e.target.closest("button[data-trgo]")) { tripFind(); return; }
+  const rt = e.target.closest("button[data-trret]");
+  if (rt) { TR.ret = rt.dataset.trret; document.querySelectorAll("button[data-trret]").forEach(b => { const on = b === rt; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); tripRefresh(); return; }
+  const td = e.target.closest("button[data-trdeal]");
+  if (td) {
+    if (TR.deal === td.dataset.trdeal) { TR.deal = ""; render(); return; }   // tap again = not linked to a deal
+    const d = dealById(td.dataset.trdeal); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
+    if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
+    const p = (d && d.params) || {}; const cr = String(p.client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TR.client = cr[0];
+    TR.deal = td.dataset.trdeal; TR.km = null; TR.geo = null; render(); return;
+  }
   if (e.target.closest("button[data-trcopy]")) { try { await navigator.clipboard.writeText(tripText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }
   if (e.target.closest("button[data-trsave]")) {
     // saves where the user chose: the deal picked under "Save on", or the notice board
-    const sel = $("trSaveOn"), did = sel ? sel.value : "", pick = did ? dealById(did) : null;
+    const pick = TR.deal ? dealById(TR.deal) : null;
     if (DEMO) { toast("Saved (demo – not saved)."); return; }
     const r = pick ? await sb.from("events").insert({ field: "note", deal_id: pick.id, new_value: tripText(), source: "app" })
                    : await sb.rpc("add_post", { p_body: tripText(), p_deal: null, p_kind: "check" });
@@ -360,18 +396,9 @@ document.addEventListener("click", async e => {
 document.addEventListener("input", e => {
   const el = e.target.closest && e.target.closest("[data-tr]"); if (!el) return;
   TR[el.dataset.tr] = el.value; if (el.dataset.tr === "km") { TR.km = num(el.value) || null; TR.mins = null; }
-  const r = $("trRes"); if (r) r.innerHTML = tripResults();
+  tripRefresh();
 });
-document.addEventListener("change", e => {
-  if (e.target.matches && e.target.matches("select[data-tr]")) { TR[e.target.dataset.tr] = e.target.value; const r = $("trRes"); if (r) r.innerHTML = tripResults(); }
-  if (e.target.id === "trDeal" && e.target.value) {
-    const d = dealById(e.target.value); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
-    if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
-    const p = (d && d.params) || {}; const cr = String(p.client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TR.client = cr[0];
-    TR.deal = e.target.value; TR.km = null; TR.geo = null; render();
-  }
-  if (e.target.id === "trSaveOn") TR.deal = e.target.value;
-});
+function tripRefresh() { const r = $("trRes"), t = $("trTop"); if (r) r.innerHTML = tripResults(); if (t) t.innerHTML = tripTop(); }
 function tripText() {
   const lines = [`Transport costing – ${TR.from || "?"} to ${TR.to || "?"} (${fmtWhen(new Date())})`];
   document.querySelectorAll("#trRes .kv").forEach(r => lines.push(r.querySelector(".k").textContent + ": " + r.querySelector(".v").textContent));
