@@ -223,7 +223,7 @@ window.botQuick = function (question) {
 const BOT_HELP = [
   ["Find and open – straight away", ["Open the deal with Piet on chrome", "Show only transport", "What's overdue?", "Open the maize numbers", "Find Sunny Farms", "Open the guide on escrow"]],
   ["Add – you tap Save", ["Remind me to call Adrian on Tuesday", "Waiting on Jan for the VAT answer", "New chrome deal: Piet's second stockpile", "Note on the maize deal: R350 is excluding VAT", "Post on the board: trucks booked for Monday"]],
-  ["Change – you tap Do it", ["No reply from Kobus, follow up Tuesday", "Move the Sigma check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", "Tick the NCNDA step on the Piet deal", "The client rate is now R520 a ton"]],
+  ["Change – you tap Do it", ["No reply from Kim, follow up Tuesday", "Move the permit check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", "Tick the NCNDA step on the Piet deal", "The client rate is now R520 a ton"]],
   ["Write and work out", ["WhatsApp to Lazarus about the VAT answer", "Chase prep for Jan", "What's left on the Piet deal before the ICPO?", "What do we make on 30 loads Bethal to Durban at R26 a km?", "Anything risky about this seller?", "Explain FOT and FCA in plain words"]],
 ];
 window.botHelpHtml = function (dflt) {
