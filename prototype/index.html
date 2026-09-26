@@ -9,8 +9,8 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
-<link rel="stylesheet" href="app.css?v=17.202609262103">
-<link rel="stylesheet" href="titanium.css?v=17.202609262103">
+<link rel="stylesheet" href="app.css?v=17.202609262121">
+<link rel="stylesheet" href="titanium.css?v=17.202609262121">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -224,7 +224,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609262103"></script>
+<script src="ui.js?v=17.202609262121"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -1200,7 +1200,7 @@ $("list").addEventListener("click", e => {
   }
   if (b.dataset.bot === "brief") { askBot("", "brief"); return; }
   const q = ($("q") && $("q").value.trim()) || ""; if (!q) return;
-  if (window.botQuick && botQuick(q)) return;   // "open the deal with Piet on chrome": the app opens it itself, no bot call
+  if (window.botQuick && botQuick(q)) return;   // "open the deal with Pat on chrome": the app opens it itself, no bot call
   askBot(q, "ask");
 });
 
@@ -1238,6 +1238,7 @@ async function show(){
     const { data } = await sb.auth.getSession(); signedIn = !!data.session;
     if (signedIn) {
       const em = data.session.user.email || "";
+      window._myEmail = em;
       me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
     }
@@ -1252,23 +1253,23 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609262103"></script>
-<script src="directory2.js?v=17.202609262103"></script>
-<script src="today.js?v=17.202609262103"></script>
-<script src="task.js?v=17.202609262103"></script>
-<script src="kitdata.js?v=17.202609262103"></script>
-<script src="dealkit.js?v=17.202609262103"></script>
-<script src="board.js?v=17.202609262103"></script>
-<script src="calc.js?v=17.202609262103"></script>
-<script src="archive.js?v=17.202609262103"></script>
-<script src="extras.js?v=17.202609262103"></script>
-<script src="easy.js?v=17.202609262103"></script>
-<script src="google.js?v=17.202609262103"></script>
-<script src="push.js?v=17.202609262103"></script>
-<script src="reader.js?v=17.202609262103"></script>
-<script src="sections.js?v=17.202609262103"></script>
-<script src="bot.js?v=17.202609262103"></script>
-<script src="motion.js?v=17.202609262103"></script>
+<script src="directory.js?v=17.202609262121"></script>
+<script src="directory2.js?v=17.202609262121"></script>
+<script src="today.js?v=17.202609262121"></script>
+<script src="task.js?v=17.202609262121"></script>
+<script src="kitdata.js?v=17.202609262121"></script>
+<script src="dealkit.js?v=17.202609262121"></script>
+<script src="board.js?v=17.202609262121"></script>
+<script src="calc.js?v=17.202609262121"></script>
+<script src="archive.js?v=17.202609262121"></script>
+<script src="extras.js?v=17.202609262121"></script>
+<script src="easy.js?v=17.202609262121"></script>
+<script src="google.js?v=17.202609262121"></script>
+<script src="push.js?v=17.202609262121"></script>
+<script src="reader.js?v=17.202609262121"></script>
+<script src="sections.js?v=17.202609262121"></script>
+<script src="bot.js?v=17.202609262121"></script>
+<script src="motion.js?v=17.202609262121"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>

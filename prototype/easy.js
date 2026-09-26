@@ -182,7 +182,7 @@ document.addEventListener("click", async e => {
 // ---------- Add to calendar (.ics) ----------
 function icsFor(title, dayKey, details) {
   const d = dayKey.replace(/-/g, ""), stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
-  const esc2 = s => String(s || "").replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const esc2 = s => String(s || "").replace(/[\\;,]/g, m => "\\" + m).replace(/\r?\n|\r/g, "\\n");
   return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Deal Board//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
     `UID:${Date.now()}-${Math.random().toString(36).slice(2)}@deal-board`, `DTSTAMP:${stamp}`,
     `DTSTART:${d}T063000Z`, `DTEND:${d}T064500Z`,   // 08:30–08:45 South African time (UTC+2 all year)
