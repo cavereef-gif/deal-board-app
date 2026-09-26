@@ -139,7 +139,7 @@ async function runAct(a) {
     case "drop_item": return itemAct("drop", null);
     case "confirm_item": return itemAct("confirm", null);
     case "follow_up": {
-      const [date, ...note] = v.split("|"); const fd = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : saDayPlus(3);
+      const [date, ...note] = v.split("|"); const fd = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : workDayPlus(3);
       if (item) return itemAct("due", fd);
       const lid = a.target_type === "lead" ? id : null;
       const t = (window._ltasks || []).find(x => x.id === id) || (window._ltasks || []).filter(x => lid && (x.lead_ids || []).includes(lid) && x.status !== "dropped").sort((x, y) => (x.status === "open" ? 0 : 1) - (y.status === "open" ? 0 : 1))[0];

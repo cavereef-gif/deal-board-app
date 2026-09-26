@@ -118,7 +118,7 @@ $("list").addEventListener("click", async e => {
     if (ds.v === "block" && !out) { toast("Write why it is blocked first."); $("tOut").focus(); return; }
     if (ds.v === "followup") {
       // no reply yet: the step stays open and comes back on the follow-up date (never marked done)
-      const fd = ($("tFu") && $("tFu").value) || saDayPlus(3), when = dayName(new Date(fd + "T08:00:00+02:00"));
+      const fd = ($("tFu") && $("tFu").value) || workDayPlus(3), when = dayName(new Date(fd + "T08:00:00+02:00"));
       if (fd < saDayPlus(1)) { toast("Pick a follow-up date from tomorrow on."); $("tFu").focus(); return; }
       const note = out || "No reply yet";
       if (DEMO) { const tk = (window._ltasks || []).find(x => x.id === ds.dtaskact); if (tk) Object.assign(tk, { status: "open", not_before: fd, outcome: note, done_by: null, done_at: null, blocked_note: "" }); dTaskDone = null; toast(`Follow-up set for ${when} – the step stays open (demo – not saved).`); render(); return; }

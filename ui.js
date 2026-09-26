@@ -90,6 +90,39 @@ const agoWords = (d, verb) => { const n = -dayDiff(d); return `${verb} ${n <= 0 
 const dueDate = it => it.due_on ? new Date(it.due_on + "T08:00:00+02:00") : new Date(new Date(it.last_chased || it.created_at).getTime() + (it.nudge_after_days || 3) * 864e5);
 // "YYYY-MM-DD" for today + n days (South African time)
 const saDayPlus = n => saDayKey(Date.now() + n * 864e5);
+// South African public holidays: worked out in the phone (fixed dates, Easter, a Sunday holiday moves to Monday), plus any
+// one-off days the server's holiday list adds (e.g. an election day). { "2026-12-16": "Day of Reconciliation", ... }
+function saHolidays() {
+  if (window._holMap && window._holMapDay === saDayPlus(0)) return window._holMap;
+  const m = {}, y0 = +saDayPlus(0).slice(0, 4), key = d => d.toISOString().slice(0, 10);
+  for (const y of [y0, y0 + 1]) {
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3),
+      h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, mm = Math.floor((a + 11 * h + 22 * l) / 451),
+      mon = Math.floor((h + l - 7 * mm + 114) / 31), day = ((h + l - 7 * mm + 114) % 31) + 1, easter = Date.UTC(y, mon - 1, day);
+    const list = [["01-01", "New Year's Day"], ["03-21", "Human Rights Day"], ["04-27", "Freedom Day"], ["05-01", "Workers' Day"], ["06-16", "Youth Day"],
+      ["08-09", "National Women's Day"], ["09-24", "Heritage Day"], ["12-16", "Day of Reconciliation"], ["12-25", "Christmas Day"], ["12-26", "Day of Goodwill"]];
+    for (const [md, name] of list) {
+      const dt = new Date(`${y}-${md}T00:00:00Z`); m[key(dt)] = name;
+      if (dt.getUTCDay() === 0) m[key(new Date(dt.getTime() + 864e5))] = name + " (moved)";
+    }
+    m[key(new Date(easter - 2 * 864e5))] = "Good Friday"; m[key(new Date(easter + 864e5))] = "Family Day";
+  }
+  for (const x of (window._holExtra || [])) if (x && x.date && !m[x.date]) m[x.date] = x.name;
+  window._holMap = m; window._holMapDay = saDayPlus(0); return m;
+}
+const holidayOn = k => saHolidays()[k] || "";
+// n working days from today (skips Saturdays, Sundays and public holidays): Friday + 1 = Monday
+function workDayPlus(n) {
+  let k = saDayPlus(0), left = n, guard = 0;
+  while (left > 0 && guard++ < 40) {
+    k = new Date(Date.parse(k + "T12:00:00Z") + 864e5).toISOString().slice(0, 10);
+    const wd = new Date(k + "T12:00:00Z").getUTCDay();
+    if (wd !== 0 && wd !== 6 && !holidayOn(k)) left--;
+  }
+  return k;
+}
+// the word on a "next working day" button: "Tomorrow" when it is tomorrow, otherwise the day ("Mon")
+const nextWorkWord = () => { const k = workDayPlus(1); return k === saDayPlus(1) ? "Tomorrow" : WDAY[new Date(k + "T12:00:00Z").getUTCDay()]; };
 // "Overdue" · "Due today" · "Due tomorrow" · "Due Sat 26 Sep"
 const dueWords = it => { const n = dayDiff(dueDate(it)); return n < 0 ? "Overdue" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + dayName(dueDate(it)); };
 // What kind of task, in words: "Suggested" · "Our job" · "Waiting on them"

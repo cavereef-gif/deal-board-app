@@ -7,6 +7,13 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: holidays, working days, ports and borders (not live)
+- Public holidays are worked out in the phone (fixed days, Easter, a Sunday holiday moves to Monday) plus one-off days from the server's list (e.g. Election Day 4 Nov 2026). A holiday shows as a small mark in Today's day strip and one plain line under it.
+- "Tomorrow" on a task and "+3 work days" on a follow-up now skip Saturdays, Sundays and public holidays; the button shows the day when it isn't literally tomorrow (e.g. "Mon" on a Saturday). Same for the default follow-up date in the buyer steps and the bot. (My choice, recorded: a chase due on a Sunday is never useful.)
+- Board: a "Ports and borders" card (Transport and All): the weekly border queues, rain and wind for Durban, Richards Bay and Maputo, and links to the Transnet berthing lists and Maputo's in-port list. Today gets one line only when a port has heavy rain (10 mm+) or strong wind (50 km/h+).
+- Checks: flows.py 46 PASS (new: holidays and working days; the ports card). screens.py 204 screens, no coloured letters, lowest contrast 5.19. Screenshots looked at, S22 and iPhone 8, night and day.
+- Prototype link for the transport calculator batch: main fee73c2 (prototype/ only).
+
 ## 26 Sep 2026 – v17 prototype: Transport calculator fills itself (not live)
 - Type From and To (suggestions appear while typing: places already used first), tap Work it out. The server gives the truck distance and driving time, the toll gates on the way and the weather at both ends; the map shows the route and the gates.
 - Toll gates are listed with ticks and prices; Class 3 (3–4 axles) or Class 4 (5+ axles, the default). The tolls box fills itself (both ways when the truck is paid there and back); typing your own number takes over, and a button puts the ticked gates back. Side ramps are listed unticked.

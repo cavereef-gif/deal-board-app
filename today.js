@@ -134,14 +134,14 @@ function taskParts(it, showOwner) {
     const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null, secs = window.secsOfLTask ? secsOfLTask(t) : [];
     const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() : l.name) : "Buyer search";
     return { id: t.id, go: "task:" + t.id, who, title: l ? `Follow up ${l.name}` : t.task, meta: [t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · "), secs,
-      left: [["ftdone", "check", "Done"]], right: [["fu3", "clock", "+3 days"]] };
+      left: [["ftdone", "check", "Done"]], right: [["fu3", "clock", "+3 work days"]] };
   }
   const sugg = it.state === "Proposed", secs = window.secsOfItem ? secsOfItem(it) : [];
   const who = it._me ? (it.owner || "Chris") : it.waiting_on;
   const meta = [it._me ? "Our job" : "Waiting on " + it.waiting_on, typeof section !== "undefined" && section === "All" && secs.length === 1 ? secs[0] : "", sinceWords(it), showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
   return { id: it.id, go: "item:" + it.id, who, me: it._me, title: it.waiting_for, meta, secs,
     left: sugg ? [["confirm", "check", "Accept"]] : [["done", "check", "Done"]],
-    right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", "Tomorrow"], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chased", "refresh", "Chased"], ["tomorrow", "clock", "Tomorrow"]] };
+    right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", nextWorkWord()], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chased", "refresh", "Chased"], ["tomorrow", "clock", nextWorkWord()]] };
 }
 const swBtn = (id, [act, icn, t]) => `<button type="button" class="sw-${act}" data-sw="${act}" data-id="${esc(id)}">${ic(icn)}<span>${t}</span></button>`;
 // one row: swipe right for the left action, swipe left for the right ones; tap the row to open it
@@ -168,7 +168,12 @@ function weekStripHtml(list) {
   const cnt = {}, late = list.filter(it => dayDiff(dueDate(it)) < 0).length;
   for (const it of list) { const n = dayDiff(dueDate(it)); const k = n < 0 ? td : saKey(dueDate(it)); cnt[k] = (cnt[k] || 0) + 1; }
   return `<div class="wkstrip" role="group" aria-label="Pick a day">${days.map((k, i) => { const d = new Date(k + "T08:00:00+02:00"), n = cnt[k] || 0, on = homeDay === k;
-    return `<button type="button" data-hday="${k}" class="${on ? "on" : ""}${i === 0 ? " today" : ""}" aria-pressed="${on}" aria-label="${i === 0 ? "Today" : dayName(d)}: ${n} task${n === 1 ? "" : "s"}"><span class="wd2">${i === 0 ? "Today" : WDAY[d.getUTCDay()]}</span><span class="dn2">${d.getUTCDate()}</span><span class="dots">${[...Array(Math.min(3, n))].map((_, j) => `<i${i === 0 && j < late ? ' class="late"' : ""}></i>`).join("")}</span></button>`; }).join("")}</div>`;
+    return `<button type="button" data-hday="${k}" class="${on ? "on" : ""}${i === 0 ? " today" : ""}" aria-pressed="${on}" aria-label="${i === 0 ? "Today" : dayName(d)}: ${n} task${n === 1 ? "" : "s"}${holidayOn(k) ? ", " + esc(holidayOn(k)) : ""}"${holidayOn(k) ? ` data-hol="1"` : ""}><span class="wd2">${i === 0 ? "Today" : WDAY[d.getUTCDay()]}</span><span class="dn2">${d.getUTCDate()}</span><span class="dots">${[...Array(Math.min(3, n))].map((_, j) => `<i${i === 0 && j < late ? ' class="late"' : ""}></i>`).join("")}</span></button>`; }).join("")}</div>${holidayNote(days)}${window.portWeatherNote ? portWeatherNote() : ""}`;
+}
+// a public holiday in the next seven days: one plain line under the strip
+function holidayNote(days) {
+  const hs = days.filter(k => holidayOn(k)); if (!hs.length) return "";
+  return `<div class="holnote"><i class="dot"></i>${hs.map(k => `${k === days[0] ? "Today" : dayName(new Date(k + "T08:00:00+02:00"))} is ${esc(holidayOn(k))}`).join(" · ")} – offices and many depots closed.</div>`;
 }
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
@@ -223,10 +228,10 @@ function todayHtml(items) {
 async function swAct(act, id) {
   const it = (window._items || []).find(i => i.id === id), tk = (window._ltasks || []).find(t => t.id === id);
   const name = it ? it.waiting_for : tk ? tk.task : "";
-  const map = { done: ["done", null, "Done"], chased: ["chased", null, "Marked chased today"], tomorrow: ["due", saDayPlus(1), "Moved to tomorrow"], urgent: ["priority", "1", "Marked urgent"], normal: ["priority", "2", "Back to normal"], confirm: ["confirm", null, "Accepted"], drop: ["drop", null, "Dropped"] };
+  const map = { done: ["done", null, "Done"], chased: ["chased", null, "Marked chased today"], tomorrow: ["due", workDayPlus(1), workDayPlus(1) === saDayPlus(1) ? "Moved to tomorrow" : "Moved to " + dayName(new Date(workDayPlus(1) + "T08:00:00+02:00"))], urgent: ["priority", "1", "Marked urgent"], normal: ["priority", "2", "Back to normal"], confirm: ["confirm", null, "Accepted"], drop: ["drop", null, "Dropped"] };
   if (tk && (act === "ftdone" || act === "fu3")) {
-    const val = act === "fu3" ? saDayPlus(3) + "|" + (tk.outcome || "No reply yet") : null;
-    if (DEMO) { if (act === "ftdone") Object.assign(tk, { status: "done", done_by: me, done_at: new Date().toISOString() }); else tk.not_before = saDayPlus(3); }
+    const val = act === "fu3" ? workDayPlus(3) + "|" + (tk.outcome || "No reply yet") : null;
+    if (DEMO) { if (act === "ftdone") Object.assign(tk, { status: "done", done_by: me, done_at: new Date().toISOString() }); else tk.not_before = workDayPlus(3); }
     else { const { error } = await sb.rpc("task_action", { p_id: tk.id, p_action: act === "ftdone" ? "done" : "followup", p_value: val }); if (error) { toast("Could not save: " + error.message, 6000); return; } }
     toast(act === "ftdone" ? "Done: " + name : "Follow-up moved 3 days on"); if (window.buzz) buzz(); if (DEMO) render(); else load(); return;
   }
@@ -355,3 +360,16 @@ $("list").addEventListener("click", async e => {
   const c = e.target.closest("button[data-copydraft]");
   if (c) { const d = (window._drafts || []).find(x => String(x.id) === c.dataset.copydraft); try { await navigator.clipboard.writeText(d ? d.new_value : ""); toast("Copied."); } catch (er) { toast("Copy not allowed here – long-press the text."); } return; }
 });
+
+// one-off public holidays (e.g. an election day) from the server's list, checked once a week; the fixed ones are worked out in the phone
+async function loadHolidayExtras() {
+  try { const c = JSON.parse(localStorage.getItem("holExtra") || "null"); if (c && Date.now() - c.at < 7 * 864e5) { if (!window._holExtra) { window._holExtra = c.list; window._holMap = null; } return; } } catch (e) {}
+  if (typeof DEMO !== "undefined" && DEMO) { window._holExtra = [{ date: "2026-11-04", name: "Election Day" }]; window._holMap = null; return; }
+  if (window._holBusy) return; window._holBusy = true;
+  try {
+    const { data } = await sb.functions.invoke("tools", { body: { action: "holidays" } });
+    const list = ((data && data.holidays) || []).map(h => ({ date: h.date, name: h.name }));
+    if (list.length) { window._holExtra = list; window._holMap = null; try { localStorage.setItem("holExtra", JSON.stringify({ at: Date.now(), list })); } catch (e) {} if (view === "worklist") render(); }
+  } catch (e) {}
+}
+(window._after ||= []).push(() => { if (!window._holExtra) loadHolidayExtras(); });

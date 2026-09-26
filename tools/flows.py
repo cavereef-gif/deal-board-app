@@ -144,6 +144,13 @@ async def main():
             nsel=await ev("document.querySelectorAll('.trc select').length")
             check("Transport: answer on top, One way only halves the km, no drop-down lists", "R 292 a ton" in top and "R 39 720" in top and "169 km (one way)" in r2 and "R 152 a ton" in top2 and nsel==0, f"{top.replace(chr(10),' | ')} || {top2.replace(chr(10),' | ')} || selects {nsel}")
             await tap("button[data-trret=Yes]")
+            # 13c holidays and ports (26 Sep 2026): holidays worked out in the phone; Tomorrow / +3 skip weekends and holidays; Board has Ports and borders
+            hv=await ev("(()=>{const h=saHolidays();const w1=workDayPlus(1),w3=workDayPlus(3);const wd=k=>new Date(k+'T12:00:00Z').getUTCDay();return {gf:h['2027-03-26'],hd:h['2026-09-24'],w1ok:wd(w1)>0&&wd(w1)<6&&!h[w1],w3ok:wd(w3)>0&&wd(w3)<6&&!h[w3]&&w3>w1}})()")
+            await ev("goView('board')"); await W()
+            if not await ev("!!document.querySelector('.portsc .pc-b')"): await tap("[data-tog='board:ports']")
+            pc=await ev("({ links: document.querySelectorAll('.portsc .btnlink').length, note: /Beitbridge/.test(document.querySelector('.portsc').innerText), wx: document.querySelectorAll('.portsc .trwx').length })")
+            check("Holidays and ports: Good Friday 2027 and Heritage Day known; next work day and +3 work days skip weekends and holidays; Board's Ports and borders shows the border note, 3 port weathers and berth links", hv['gf']=="Good Friday" and hv['hd']=="Heritage Day" and hv['w1ok'] and hv['w3ok'] and pc['note'] and pc['wx']==3 and pc['links']>=4, f"{hv} {pc}")
+            await ev("goView('calc')"); await W()
             # 13b free services (26 Sep 2026): Work it out fills km, toll gates (class 4 both ways), weather; unticking a gate and class 3 change the tolls; diesel "Use it" fills the price
             await ev("TR.tollAuto=true; TR.toll=''"); await pg.fill("input[data-tr=from]", "City Deep, Johannesburg"); await pg.fill("input[data-tr=to]", "Durban Harbour")
             await tap("button[data-trgo]"); await pg.wait_for_timeout(1500)
@@ -248,7 +255,7 @@ async def main():
             hid=await ev("(document.querySelector('.hero2 [data-sw=tomorrow]') || {}).dataset?.id || ''")
             if hid: await tap(".hero2 [data-sw=tomorrow]"); await W()
             tm=await ev(f"(window._items.find(i=>i.id==='{hid}') || {{}}).due_on || ''") if hid else ""
-            check("Modern Today: 7-day strip filters to that day; a row's Done and Next up's Tomorrow save straight away", ws['days']==7 and ws['hero'] and dayOnly and rid and gone and (not hid or tm==await ev("saDayPlus(1)")), f"{ws} day {dk} only {dayOnly} done {rid} gone {gone} hero {hid} -> {tm}")
+            check("Modern Today: 7-day strip filters to that day; a row's Done and Next up's Tomorrow save straight away", ws['days']==7 and ws['hero'] and dayOnly and rid and gone and (not hid or tm==await ev("workDayPlus(1)")), f"{ws} day {dk} only {dayOnly} done {rid} gone {gone} hero {hid} -> {tm}")
             # buyer-search step: No reply yet -> Follow up keeps it open, dated, and it shows on Today (not as done)
             await ev("goTo('task:t2')"); await W(500)
             fd=await ev("document.getElementById('tFu') ? document.getElementById('tFu').value : ''")

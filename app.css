@@ -1130,6 +1130,8 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .wkstrip .dots i{width:5px;height:5px;border-radius:50%;background:var(--muted)}
 .wkstrip .dots i.late{background:var(--warn)}
 .wkstrip>button.today .wd2{color:var(--text)}
+.wkstrip>button[data-hol]:before{content:"";position:absolute;top:5px;left:50%;width:14px;height:3px;margin-left:-7px;border-radius:2px;background:var(--muted)}
+.holnote{display:flex;align-items:flex-start;gap:8px;margin:-6px 2px 14px;font-size:14px;line-height:1.4;color:var(--muted)}.holnote .dot{margin-top:5px;width:8px;height:8px;background:var(--muted)}
 .wkstrip>button.on{background:var(--raise-2);box-shadow:inset 0 0 0 2px var(--accent)}
 /* Next up: the one thing to do now, tinted with its section colour */
 .hero2{position:relative;margin:0 0 12px;padding:14px var(--pad) 12px;border-radius:24px;overflow:hidden;background:var(--card);background:linear-gradient(150deg,color-mix(in srgb,var(--ac) 24%,var(--card)) 0%,var(--card) 62%);box-shadow:var(--shadow)}
@@ -1203,3 +1205,8 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .swrow{padding:0;margin:0;min-height:0;display:block;border-radius:0;background:transparent}
 .scard{margin:0!important;padding:14px!important}
 .htiles3 .ht-l{font-size:14px}
+
+/* Board: Ports and borders */
+.portsc{padding:4px 14px;margin-bottom:14px}.portsc .sec-h{padding:10px 0}.portsc .st{flex:none;display:flex;align-items:center;gap:8px;white-space:nowrap}.portsc .cnt{flex:1;min-width:0;text-align:right;font-size:14px;line-height:1.3;color:var(--muted)}.portsc .st svg.i{color:var(--muted)}
+.portsc .pc-b{padding:0 0 12px}.portsc .lbl{margin-top:14px}.pc-t{margin:6px 0;font-size:16px;line-height:1.5;color:var(--text)}
+.portsc .btnlink{display:flex;align-items:center;gap:8px;margin-top:8px;text-align:left}
