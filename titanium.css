@@ -190,3 +190,10 @@ html[data-palette="titanium"] .choose button{background:var(--btn);background-co
 /* your own chat lines: raised graphite, not blue (blue is for main buttons only) */
 html[data-palette="titanium"] .bub.u{background:var(--raise-2);color:var(--text);box-shadow:var(--seg-on-shadow)}
 html[data-palette="titanium"][data-theme="light"] .bub.u{background:#E3E6EA;color:var(--text);box-shadow:inset 0 0 0 1px #D2D6DC}
+/* Ask page Add tiles: machined tiles with silver icon plates, like the old + sheet */
+html[data-palette="titanium"] .askadd button{background:var(--btn);background-color:var(--raise);box-shadow:var(--btn-shadow);color:var(--text)}
+html[data-palette="titanium"] .askadd .qi{background:var(--plate);color:var(--plate-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 1px 3px rgba(0,0,0,.45)}
+html[data-palette="titanium"] .askadd .qi svg.i{color:var(--plate-ink)}
+html[data-palette="titanium"] .tabs .plus .pl{color:var(--on-primary)}
+html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background:var(--grad);color:var(--on-primary);outline:2px solid var(--accent);outline-offset:3px}
+html[data-palette="titanium"] .tabs .plus,html[data-palette="titanium"] .tabs .plus.on,html[data-palette="titanium"][data-theme="light"] .tabs .plus.on{background-color:var(--primary)}

@@ -61,7 +61,7 @@ async def run(p, dev, theme, results, errors):
     # Screens (update this list when screens change)
     await go("worklist"); await snap("home"); await snap("home-full", True)
     await js("document.querySelector('[data-tgo^=\"item:\"]') && document.querySelector('[data-tgo^=\"item:\"]').click()"); await snap("task-sheet"); await pg.go_back(); await pg.wait_for_timeout(200)
-    await js("document.getElementById('plusBtn').click()"); await snap("add-menu"); await pg.go_back(); await pg.wait_for_timeout(200)
+    await js("chat.length = 0; goView('bot')"); await snap("ask-add"); await go("worklist")   # the Add row on Ask replaced the + menu (26 Sep)
     await js("window.openTaskSheet && openTaskSheet()"); await snap("new-task"); await js("document.getElementById('tsClose') && document.getElementById('tsClose').click()")
     for v in ["leads", "deals", "board", "archive", "calc", "bot", "guides", "settings"]:
         await go(v); await snap(v); await snap(v + "-full", True)

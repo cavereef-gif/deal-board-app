@@ -7,6 +7,15 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: redesign with the UI/UX skill – step 1: new page frame + Today (not live)
+- Asked by Chris: "I want the whole app redesigned with the skill" (the ui-ux-guidelines skill he saved on 26 Sep). His choices: keep Graphite + section colours · keep 40px buttons (the skill's minimum is 44px – his decision, recorded) · rethink the pages too · screen by screen, Today first. Page map approved by Chris on 26 Sep 2026 ("Approved – start with Today").
+- New frame: bottom bar Today · Deals · Ask (raised centre button with its word) · People (was Contacts) · Board. The 12-tile + menu is replaced by an Add row at the top of Ask: Task · Deal · Contact · Voice note · Photo or PDF · WhatsApp quote (a new task opens over Today). The section bar is pinned in the header on Today, Deals, People and Board instead of inside each page. More holds Archive · Calculators · Import a WhatsApp chat · Guides · Settings (the chat import moved here from the + menu).
+- Today: greeting and date on one line · whose list · the four tiles · the brief in one line · Suggested · tasks by day · risks. Next steps on deals, the buyer-search queue and the overview left Today; the overview (rings and this week) now sits at the bottom of Deals.
+- From the skill, everywhere: a small arrow on every task row (it opens), pressed feedback on everything tappable, a visible focus ring for keyboards, and no motion when the phone asks for less.
+- Checks: 204 screens – all readability rules pass, lowest contrast 5.03 (the Ask button got a solid blue under its gradient so it is measured right). flows.py 43 jobs PASS (new: the frame – bar order, section bar pinned on four pages only, Today without the moved parts, overview on Deals; routes to add things now go through Ask). Screenshots looked at, night and day, both sizes.
+- Next (screen by screen, each after Chris's OK): Deals · People · Board · Ask · deal page · calculators and the rest.
+- Commits: prototype branch (this commit); prototype link updated on main (prototype/ folder only). Live app (v14) and preview (v16) untouched.
+
 ## 26 Sep 2026 – v17 prototype: the bot opens things and prepares changes; "What you can ask" notes (not live)
 - Asked by Chris: "The bot must be able to do anything on this app you ask. If I tell him I want the deal with Piet on chrome he must bring it up. Give me a list of things he can do so that we can put some info notes." His rule (26 Sep): opening and finding happen at once; changes wait for one tap.
 - Quick commands, worked out in the app itself (free, instant, no Claude call): "open the deal with Piet on chrome", "show only transport", "what's overdue", "open the maize numbers" (Transport calculator filled in from the deal), "find Giants Canning", "open the guide on escrow", or any page by name. When two things fit equally, the app asks "Which one?" with buttons instead of guessing. New file bot.js.
