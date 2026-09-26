@@ -7,6 +7,16 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 26 Sep 2026 – v17 prototype: less typing + the other screens in the new look (not live)
+- Quote PDF (Transport calculator › Quote PDF): filled in from the calculator, checked in a short sheet (client, your name – remembered on the phone, rate, VAT in or out, loads, days valid, notes), then shared straight to WhatsApp or email (saved to downloads where sharing isn't offered). Only the client's price goes on it – never our costs, margin or the private walk-away numbers.
+- Commission statement PDF (Chrome & ore calculator): dry tons and our rate per DMT come from the calculator; VAT choice; payment due date (7 working days by default); payment notes typed each time (bank numbers are never stored).
+- The PDFs are made in the phone by a small built-in maker (new file easy.js) – no outside library, works offline and on Safari 16. Checked: both files pass a PDF checker (qpdf) and look right when opened.
+- Calendar button on a task: makes a calendar entry for the due day at 08:30 with a reminder (opens in Google Calendar on Android, Calendar on iPhone).
+- Send booking link on People: sends your own booking page (Google Calendar booking page or Calendly, set in More › Settings › Booking link, kept on the phone) on WhatsApp in one tap.
+- Other screens: the last coloured side stripes are gone (deal page, People rows, buyer cards, warnings, drafts) – the dot, pill or words carry the meaning, as on Today; the deal's "Next step" card is frosted glass like Next up.
+- Checks: flows.py 47 PASS (new: quote PDF is a real PDF with the client's rate and VAT and no margin; calendar entry at 08:30 SA time with a reminder; the booking button on People). screens.py 204 screens, no coloured letters, nothing under 4.5 contrast. Screenshots looked at.
+- Prototype link for the holidays batch: main 3a97bb5 (prototype/ only).
+
 ## 26 Sep 2026 – v17 prototype: holidays, working days, ports and borders (not live)
 - Public holidays are worked out in the phone (fixed days, Easter, a Sunday holiday moves to Monday) plus one-off days from the server's list (e.g. Election Day 4 Nov 2026). A holiday shows as a small mark in Today's day strip and one plain line under it.
 - "Tomorrow" on a task and "+3 work days" on a follow-up now skip Saturdays, Sundays and public holidays; the button shows the day when it isn't literally tomorrow (e.g. "Mon" on a Saturday). Same for the default follow-up date in the buyer steps and the bot. (My choice, recorded: a chase due on a Sunday is never useful.)

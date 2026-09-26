@@ -359,7 +359,7 @@ function transportCalcHtml() {
     <div class="calc">${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads a month", "e.g. 20")}</div>
     <div class="trs trs-plain"><span class="trs-t">How it adds up</span></div>
     <div class="cres" id="trRes">${tripResults()}</div>
-    <div class="tools trsave"><button type="button" class="ib" data-trsave="1">${ic("note")}<span class="ibw">Save</span></button><button type="button" class="ib" data-trcopy="1">${ic("copy")}<span class="ibw">Copy</span></button></div>
+    <div class="tools trsave"><button type="button" class="ib" data-trsave="1">${ic("note")}<span class="ibw">Save</span></button><button type="button" class="ib" data-trcopy="1">${ic("copy")}<span class="ibw">Copy</span></button><button type="button" class="ib" data-trquote="1">${ic("file")}<span class="ibw">Quote PDF</span></button></div>
     <div class="quiet">${dOn ? `Save puts it in the notes of ${esc(dOn.name)}.` : "Save puts it on the notice board."} ${credit}</div></div>`;
 }
 const EK_NAME = { "C": "Clear", "⌫": "Delete last", "%": "Percent", "÷": "Divide", "×": "Times", "−": "Minus", "+": "Plus", "=": "Equals", ".": "Point", "+VAT": "Add 15% VAT" };

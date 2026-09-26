@@ -151,6 +151,16 @@ async def main():
             pc=await ev("({ links: document.querySelectorAll('.portsc .btnlink').length, note: /Beitbridge/.test(document.querySelector('.portsc').innerText), wx: document.querySelectorAll('.portsc .trwx').length })")
             check("Holidays and ports: Good Friday 2027 and Heritage Day known; next work day and +3 work days skip weekends and holidays; Board's Ports and borders shows the border note, 3 port weathers and berth links", hv['gf']=="Good Friday" and hv['hd']=="Heritage Day" and hv['w1ok'] and hv['w3ok'] and pc['note'] and pc['wx']==3 and pc['links']>=4, f"{hv} {pc}")
             await ev("goView('calc')"); await W()
+            # 13d less typing (26 Sep 2026): quote PDF from the transport calculator, a calendar entry from a task, booking link needs a link first
+            await ev("TR.client='420'; TR.km=564.8; TR.from='City Deep'; TR.to='Durban Harbour'; render()")
+            await tap("button[data-trquote]"); await pg.fill("[data-docf=to]", "Example Grain Traders")
+            pdfq=await ev("(async()=>{ const b=docPdf({title:'Transport quote',number:'Q-1',from:'Test',to:DOC.f.to,meta:[['Date','x']],rows:docRows().rows,notes:''}); const t=await b.text(); return { head:t.slice(0,8), quote:/Transport quote/.test(t), rate:/R 420\.00/.test(t), incl:/R 483\.00/.test(t), cost:/margin|per km|transporter/i.test(t) } })()")
+            await ev("document.getElementById('docSheet').classList.add('hidden')")
+            ics=await ev("icsFor('Chase Sam: VAT', '2026-09-28', 'x')")
+            await ev("easySet('bookLink','')"); await ev("dSeg='waiting'; goView('leads')"); await W()
+            nb=await ev("document.querySelectorAll('[data-book]').length")
+            check("Less typing: quote PDF (a real PDF with the client's rate and VAT, no margin), calendar entry at 08:30 SA time with a reminder, 'Send booking link' on People", pdfq['head'].startswith('%PDF-1.4') and pdfq['quote'] and pdfq['rate'] and pdfq['incl'] and not pdfq['cost'] and 'DTSTART:20260928T063000Z' in ics and 'VALARM' in ics and nb>0, f"{pdfq} ics {'063000Z' in ics} book {nb}")
+            await ev("goView('calc')"); await W()
             # 13b free services (26 Sep 2026): Work it out fills km, toll gates (class 4 both ways), weather; unticking a gate and class 3 change the tolls; diesel "Use it" fills the price
             await ev("TR.tollAuto=true; TR.toll=''"); await pg.fill("input[data-tr=from]", "City Deep, Johannesburg"); await pg.fill("input[data-tr=to]", "Durban Harbour")
             await tap("button[data-trgo]"); await pg.wait_for_timeout(1500)
