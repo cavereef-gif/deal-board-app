@@ -586,7 +586,7 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}`;
+    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
 // Free map services (26 Sep 2026): keys typed once here, stored encrypted like the bot key. Geoapify is the one that matters;
 // TomTom is an optional second check on distances; HERE is for later.
@@ -712,7 +712,7 @@ function dealPageHtml(d){
     h += `<div class="lbl">Background</div>` + infoHtml(d);
   } else if (t === "notes") {
     h += (dds.length ? draftHtml("deal", d.id, "") : "") + `<div class="lbl" style="margin-top:0">Notes</div>` + notesBlock(ns, "deal", d.id);
-    h += `<div class="lbl">Files · ${fN}</div>` + filesHtml("deal", d.id);
+    h += `<div class="lbl">Files · ${fN}</div>` + (window.driveLinkHtml ? driveLinkHtml(d) : "") + filesHtml("deal", d.id);
     h += `<div class="lbl">History</div>` + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
   } else if (t === "guide") h += kitGuideHtml(d);
   h += `</div><div class="dfoot">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}<label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div></div>`;
@@ -1263,6 +1263,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="archive.js?v=17"></script>
 <script src="extras.js?v=17"></script>
 <script src="easy.js?v=17"></script>
+<script src="google.js?v=17"></script>
 <script src="reader.js?v=17"></script>
 <script src="sections.js?v=17"></script>
 <script src="bot.js?v=17"></script>

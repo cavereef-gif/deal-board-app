@@ -183,6 +183,7 @@ function todayHtml(items) {
   let h = `<section class="hello3"><span class="hd">${new Date(Date.now()).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" })}</span><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span></section>`;
   h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   h += weekStripHtml(list);
+  if (window.meetingsHtml) h += meetingsHtml(target);
   const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, sugg: sugg.length };
   const R = arr => arr.map(i => swRow(i, all));
   const cards = [["overdue", "over", "Overdue", g.overdue], ["today", "today", "Today", g.today], ["tomorrow", "tmrw", "Tomorrow", g.tomorrow], ["week", "week", "Next 7 days", g.week], ["later", "later", "Later than a week", g.later]];

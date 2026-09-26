@@ -222,3 +222,4 @@ html[data-palette="titanium"] .trtoll input{background:none;box-shadow:none}
 html[data-palette="titanium"] :is(.trow,.mini,.row,.hrow,.lead,.nextup,.warn,.seen,.sbar,.post.check,.draft,.hero,.trr,.hero2):before{display:none}
 html[data-palette="titanium"] .trr{padding-left:14px}
 html[data-palette="titanium"] .nextup{background:var(--glass-bg,rgba(255,255,255,.05));background-image:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);box-shadow:var(--glass-edge);border-radius:22px}
+html[data-palette="titanium"] .meets{background:var(--field);box-shadow:var(--soft-in)}

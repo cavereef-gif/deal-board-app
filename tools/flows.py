@@ -161,6 +161,15 @@ async def main():
             nb=await ev("document.querySelectorAll('[data-book]').length")
             check("Less typing: quote PDF (a real PDF with the client's rate and VAT, no margin), calendar entry at 08:30 SA time with a reminder, 'Send booking link' on People", pdfq['head'].startswith('%PDF-1.4') and pdfq['quote'] and pdfq['rate'] and pdfq['incl'] and not pdfq['cost'] and 'DTSTART:20260928T063000Z' in ics and 'VALARM' in ics and nb>0, f"{pdfq} ics {'063000Z' in ics} book {nb}")
             await ev("goView('calc')"); await W()
+            # 13e Google link (26 Sep 2026): the code makes a ready script; Today shows meetings; a deal shows its Drive folder
+            await ev("goView('settings')"); await W(); await tap("button[data-gnew]"); await W(500)
+            gs=await ev("({ code: /LINK_CODE = 'demo-code/.test(window._gScript||''), fns: ['setup','hourly','morning','emailIn','syncFolders','syncContacts','pushMeetings'].every(f => (window._gScript||'').includes('function '+f+'(')), steps: !!document.querySelector('.gsteps'), share: !!document.querySelector('[data-gshare]') })")
+            await ev("goView('worklist')"); await W(400)
+            gm=await ev("document.querySelectorAll('.meets .mt-r').length")
+            await ev("openDealPage('dm1'); goView('deal'); dealTab['dm1']='notes'; render()"); await W()
+            gd=await ev("!!document.querySelector('a[href*=\"drive.google.com\"]')")
+            check("Google link: the code makes a ready script (setup, hourly, morning email, email-in, folders, contacts, meetings) with steps and Share; Today shows meetings; a deal shows its Drive folder", gs['code'] and gs['fns'] and gs['steps'] and gs['share'] and gm==2 and gd, f"{gs} meetings {gm} drive {gd}")
+            await ev("dealTab['dm1']='steps'; goView('calc')"); await W()
             # 13b free services (26 Sep 2026): Work it out fills km, toll gates (class 4 both ways), weather; unticking a gate and class 3 change the tolls; diesel "Use it" fills the price
             await ev("TR.tollAuto=true; TR.toll=''"); await pg.fill("input[data-tr=from]", "City Deep, Johannesburg"); await pg.fill("input[data-tr=to]", "Durban Harbour")
             await tap("button[data-trgo]"); await pg.wait_for_timeout(1500)

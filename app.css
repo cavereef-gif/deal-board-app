@@ -1211,3 +1211,11 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .portsc .pc-b{padding:0 0 12px}.portsc .lbl{margin-top:14px}.pc-t{margin:6px 0;font-size:16px;line-height:1.5;color:var(--text)}
 .portsc .btnlink{display:flex;align-items:center;gap:8px;margin-top:8px;text-align:left}
 .pcard .pc-acts [data-book]{grid-column:1/-1}
+
+/* Today: meetings from the Google link */
+.meets{margin:0 0 14px;padding:10px 14px;border-radius:18px;background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+.meets .mt-h{display:flex;align-items:center;gap:8px;font:500 14px/1.3 var(--font);color:var(--muted);margin-bottom:4px}.meets .mt-h svg.i{width:18px;height:18px}
+.meets .mt-r{display:flex;gap:12px;padding:5px 0;font-size:16px;line-height:1.35;color:var(--text)}
+.meets .mt-t{flex:none;width:48px;font-variant-numeric:tabular-nums;color:var(--muted)}.meets .mt-n{flex:1;min-width:0}.meets small{font-size:14px;color:var(--muted)}
+/* Settings: Google link steps */
+.gsteps ol{margin:6px 0 10px;padding-left:22px;font-size:16px;line-height:1.5;color:var(--text)}.gsteps li{margin:6px 0}.gsteps a{color:var(--text);text-decoration:underline}
