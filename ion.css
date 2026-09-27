@@ -385,3 +385,26 @@ html[data-ion][data-palette] .twk{position:relative;z-index:2;margin:0 13px 0 17
 html[data-ion][data-palette] .twr.on .twk{width:14px;height:14px;margin:0 10px 0 14px;background:var(--groove);box-shadow:0 0 0 3px var(--ion)}
 html[data-ion][data-palette] .twc{margin-left:6px;background:var(--ion);color:var(--ctext);box-shadow:0 8px 18px -10px rgba(0,0,0,.7)}
 html[data-ion][data-palette] .twc .tws{color:#2A2B31}
+
+/* ---------- calculators: the result as a waterfall rail ---------- */
+html[data-ion][data-palette] .cres{position:relative;display:flex;flex-direction:column;gap:6px;padding:8px 8px 8px 44px;border-radius:14px;background-color:var(--g2);background-image:radial-gradient(rgba(255,255,255,.045) 1px,transparent 1.2px);background-size:8px 8px;border:1px solid rgba(255,255,255,.06);box-shadow:none;--text:#D4D5DD;--muted:#B4B5C0;color:#D4D5DD}
+html[data-ion][data-palette] .cres:before{content:"";position:absolute;left:10px;top:10px;bottom:10px;width:22px;border-radius:11px;
+  background:repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.14) 22px 23px,transparent 23px 24px) left 2px top 0/4px 100% no-repeat,var(--groove);box-shadow:0 0 0 5px var(--bay)}
+html[data-ion][data-palette] .cres .kv{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;margin:0;padding:8px 12px;border:0;border-radius:12px;background:var(--ccard);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);color:var(--ctext)}
+html[data-ion][data-palette] .cres .kv:before{content:"";position:absolute;left:-29px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#6B7079;box-shadow:0 0 0 2px var(--groove);z-index:2}
+html[data-ion][data-palette] .cres .kv:after{content:"";position:absolute;left:-19px;top:50%;width:19px;height:1px;background:#6B7079}
+html[data-ion][data-palette] .cres .kv .k{flex:1;min-width:0;font-size:14px;line-height:1.3;color:var(--cmuted)}
+html[data-ion][data-palette] .cres .kv .v{flex:0 1 auto;text-align:right;font:400 15px/1.3 var(--mono);color:var(--ctext)}
+html[data-ion][data-palette] .cres .kv.big{background:var(--ion);box-shadow:0 8px 18px -10px rgba(0,0,0,.7)}
+html[data-ion][data-palette] .cres .kv.big .k{color:#2A2B31}
+html[data-ion][data-palette] .cres .kv.big .v{font-size:17px}
+html[data-ion][data-palette] .cres .kv.big:before{left:-32px;width:14px;height:14px;margin-top:-7px;background:var(--ion);box-shadow:0 0 0 3px var(--groove),0 0 0 5px rgba(79,195,247,.3)}
+html[data-ion][data-palette] .trr{background:var(--ccard);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);border-radius:12px}
+html[data-ion][data-palette] .trr .v{font-family:var(--mono)}
+html[data-ion][data-palette] .trs-n{background:var(--ion);color:var(--ctext);font-family:var(--mono);font-weight:400}
+html[data-ion][data-palette] .calc input,html[data-ion][data-palette] .calc select{font-family:var(--mono)}
+html[data-ion][data-palette] .cres .kv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);align-items:center}
+html[data-ion][data-palette] .cres .kv .v{max-width:100%;white-space:normal;overflow-wrap:anywhere;margin:0;position:static}
+html[data-ion][data-palette] .cres .kv.big:not(:last-child){background:var(--ccard);box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+html[data-ion][data-palette] .cres .kv.big:not(:last-child) .k{color:var(--cmuted)}
+html[data-ion][data-palette] .cres .kv.big:not(:last-child):before{left:-29px;width:8px;height:8px;margin-top:-4px;background:var(--ion);box-shadow:0 0 0 2px var(--groove)}

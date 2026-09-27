@@ -426,7 +426,7 @@ async function load(){
   checkVersion();
   let items;
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
-  if (DEMO) { items = demoItems(); demoExtras(); window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
@@ -449,6 +449,8 @@ async function load(){
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
     sb.rpc("service_key_status").then(r => { window._mapKeyStatus = r.data || {}; if (view === "settings") render(); });
+    // our company details for quotes (database change 009); the app keeps working without it
+    sb.from("company_profile").select("*").eq("id", 1).maybeSingle().then(r => { window._company = r.error ? null : (r.data || {}); if (view === "settings") render(); });
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
       return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
       const b = r && r.data && r.data[0];
@@ -603,8 +605,32 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
+    ${companyHtml()}${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
+// Our company details (27 Sep 2026): printed at the top of every quote and statement. Stored in the database (change 009).
+const CO_F = [["legal_name", "Registered name", "e.g. Verve South Africa (Pty) Ltd"], ["trading_as", "Trading as", "optional"], ["reg_no", "Company registration number (CIPC)", "e.g. 2020/123456/07"],
+  ["vat_no", "VAT number", "10 digits, starts with 4"], ["address", "Physical address", "Street, town, code"], ["phone", "Phone on documents", "e.g. 031 000 0000"], ["email", "Email on documents", "e.g. quotes@…"],
+  ["website", "Website", "optional"], ["payment_terms", "Usual payment terms", "e.g. 30 days from statement"], ["standing_rate", "Standing time charge", "e.g. R650 an hour after 4 free hours"]];
+function companyHtml(){
+  const c = window._company;
+  if (c === null) return `<div class="card setc"><div class="lbl" style="margin-top:0">Company details for quotes</div><div class="quiet">Database change 009 is not applied yet, so quotes print without our company details.</div></div>`;
+  const co = c || {}, miss = ["reg_no", "address", "phone", "email"].filter(k => !co[k]);
+  return `<details class="card setc codet"${miss.length ? " open" : ""}><summary>Company details for quotes${miss.length ? ` – ${miss.length} missing` : " – complete"}</summary>
+    ${CO_F.map(([k, l, ph]) => `<label class="fld"><span>${esc(l)}</span>${k === "address" ? `<textarea data-co="${k}" rows="2" placeholder="${esc(ph)}">${esc(co[k] || "")}</textarea>` : `<input data-co="${k}" value="${esc(co[k] || "")}" placeholder="${esc(ph)}" autocomplete="off">`}</label>`).join("")}
+    <label class="tick"><input type="checkbox" data-co="show_on_docs"${co.show_on_docs === false ? "" : " checked"}><span>Print these details on quotes and statements</span></label>
+    <div class="quiet" style="margin-top:6px">Bank account numbers are never stored in the app – documents say "banking details on our tax invoice".</div>
+    <div class="acts0"><button class="primary" data-cosave="1">${ic("check")}Save company details</button></div><div class="msg" id="coMsg"></div></details>`;
+}
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-cosave]"); if (!b) return;
+  const row = { id: 1, updated_by: me || "", updated_at: new Date().toISOString() };
+  document.querySelectorAll("[data-co]").forEach(el => { row[el.dataset.co] = el.type === "checkbox" ? el.checked : el.value.trim(); });
+  if (row.vat_no && !/^4\d{9}$/.test(row.vat_no.replace(/\s/g, ""))) { $("coMsg").textContent = "A South African VAT number is 10 digits starting with 4 – please check it."; return; }
+  if (DEMO) { Object.assign(window._company, row); $("coMsg").textContent = "Demo mode — nothing saved"; return; }
+  b.disabled = true; const { error } = await sb.from("company_profile").upsert(row); b.disabled = false;
+  if (error) { $("coMsg").textContent = "Could not save: " + error.message; return; }
+  window._company = Object.assign(window._company || {}, row); toast("Company details saved."); render();
+});
 // Free map services (26 Sep 2026): keys typed once here, stored encrypted like the bot key. Geoapify is the one that matters;
 // TomTom is an optional second check on distances; HERE is for later.
 const MAP_KEYS = [["geoapify", "Geoapify map key", "Needed – distances, truck times and place names. Free at myprojects.geoapify.com"], ["tomtom", "TomTom key (optional)", "A free second check on distances. my.tomtom.com"], ["here", "HERE key (optional)", "Stronger truck routes, for later. platform.here.com"]];
@@ -756,6 +782,7 @@ function dealPageHtml(d){
   } else if (t === "numbers") {
     if (defs.length) h += `<div class="lbl" style="margin-top:0">Terms</div>` + termsHtml(d, defs);
     if (window.calcHtml && d.kind !== "general") h += `<div class="lbl">Calculator</div>` + calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
+    if (d.kind === "transport" && window.openDocSheet) h += `<div class="acts0"><button class="primary" data-dquote="${d.id}">${ic("file")}Quote PDF for the client</button></div>`;
     h += `<div class="lbl">Background</div>` + infoHtml(d);
   } else if (t === "notes") {
     h += (dds.length ? draftHtml("deal", d.id, "") : "") + `<div class="lbl" style="margin-top:0">Notes</div>` + notesBlock(ns, "deal", d.id);

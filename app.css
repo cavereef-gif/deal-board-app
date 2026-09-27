@@ -1290,3 +1290,7 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .twc{flex:1;min-width:0;display:flex;flex-direction:column;padding:8px 12px;border-radius:12px;background:var(--primary);color:var(--on-primary)}
 .twt{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tws{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coline{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;margin-bottom:8px;border-radius:12px;background:var(--raise);font-size:14px;line-height:1.4}
+.coline svg.i{flex:none;margin-top:2px}
+.docinc{flex-wrap:wrap}
+.codet summary{min-height:44px;display:flex;align-items:center;font-weight:500;cursor:pointer}
