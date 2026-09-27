@@ -346,7 +346,7 @@ $("list").addEventListener("click", e => {
 // Deal page › Numbers: "Read terms from a document"
 (window._after ||= []).push(() => {
   if (view !== "deal") return;
-  const box = document.querySelector('.dpage .dpanel'), t = document.querySelector('.dtabs4 .dtab.on');
+  const box = document.querySelector('#list .dpanel'), t = document.querySelector('#list .dtabs4 .dtab.on');
   if (!box || !t || !/numbers$/.test(t.dataset.dtab) || box.querySelector("[data-readdeal]")) return;
   box.insertAdjacentHTML("afterbegin", `<div class="acts0" style="margin:0 0 6px"><button data-readdeal="${esc(dealPage)}">${ic("terms")}Read terms from a document</button></div>`);
 });

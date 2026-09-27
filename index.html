@@ -688,7 +688,7 @@ function stepHtml(s, isNext, o){
 // left of the first card; a stage that is done or still waiting is one compact 32 px line (tap it to open).
 function checklistHtml(d, pg){
   const stages = pg.stages, ci = pg.cur ? stages.indexOf(pg.cur) + 1 : stages.length;
-  let h = rplain(`rail · procedure${d.kit ? " · sa deal kit" : ""}`, `stage ${ci} of ${stages.length}`) + railOpen(96);
+  let h = rplain(`procedure${d.kit ? " · sa kit" : ""}`, `stage ${ci} of ${stages.length}`) + railOpen(96);
   stages.forEach((g, i) => {
     const done = g.steps.filter(s => s.status !== "open").length, allDone = done === g.steps.length, isCur = !!(pg.cur && pg.cur.name === g.name);
     const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
@@ -804,7 +804,7 @@ function dealPageHtml(d){
   const t = tabs.some(x => x[0] === dealTab[d.id]) ? dealTab[d.id] : "steps";
   const ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length, kindWord = (d.area || d.kind || "").toLowerCase();
   // status row + plate: name, what it is, the ring (mock: "‹ Deals ● live · deal 02 · stage 2/5")
-  let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, `${esc(kindWord)} · ${esc(d.status.toLowerCase())}${pg.stages.length ? ` · stage ${ci}/${pg.stages.length}` : ""}`);
+  let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, `${esc(kindWord)}${pg.stages.length ? ` · stage ${ci}/${pg.stages.length}` : ` · ${esc(d.status.toLowerCase())}`}`);
   const sub = [d.kind === "mineral" && typeof KIT_SHORT !== "undefined" && d.kit_route ? KIT_SHORT[d.kit_route] : "", d.kind === "transport" ? p.route : p.buyer || p.seller || "", waits.length ? `${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""].filter(Boolean).join(" · ");
   h += plateHtml(esc(d.name), esc(sub || d.stage || ""), pg.total ? ring(pg.done, pg.total) : "");
   const has = k => p[k] && !/^not agreed$/i.test(p[k]);
