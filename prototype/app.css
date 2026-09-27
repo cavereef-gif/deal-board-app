@@ -1266,31 +1266,57 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .tmeter .tm{flex:1;display:flex;gap:4px}
 .tmeter .tm i{flex:1;height:5px;border-radius:3px;background:var(--line2)}
 .tmeter .tm i.d{background:var(--primary)} .tmeter .tm i.c{background:transparent;box-shadow:inset 0 0 0 1px var(--primary)}
-.stg-h .pn{display:none}
-.stg-h .ss{display:none}
 .od .dash{font-size:20px;color:var(--muted);margin:0 2px}
 .od em.pre{margin:0 4px 0 0}
-/* People: days-of-silence rail parts (plain in other palettes) and the phone-book line (27 Sep 2026) */
-.silrail .sd,.silrail .sn{display:none}
-.sb:not(.has){display:none}
 .pbline{width:100%;margin-top:10px;min-height:40px;justify-content:flex-start;text-align:left;font-size:14px;background:transparent;box-shadow:none;border:1px dashed var(--line2);color:var(--muted)}
 .pbnote{margin-top:10px;font-size:14px;color:var(--muted)}
-.pc-min{display:none}
 /* New task: quick words and the week rail (27 Sep 2026) */
 .tstoks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .tstoks:empty{display:none}
 .tok{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:8px;font-size:14px;background:var(--raise);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
 .tshint{font-size:14px;margin-top:6px}
-.twrail{display:flex;flex-direction:column;gap:4px}
-.twr{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 8px;justify-content:flex-start;text-align:left;background:transparent;box-shadow:none;border:0;color:var(--text);font-weight:400}
-.twd{display:flex;flex-direction:column;width:76px;flex:none;font-size:14px;line-height:1.25}
-.twn{color:var(--muted);font-size:14px}
-.twk{width:10px;height:10px;border-radius:50%;background:var(--line2);flex:none}
-.twr.on .twk{background:var(--primary)}
-.twc{flex:1;min-width:0;display:flex;flex-direction:column;padding:8px 12px;border-radius:12px;background:var(--primary);color:var(--on-primary)}
-.twt{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tws{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .coline{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;margin-bottom:8px;border-radius:12px;background:var(--raise);font-size:14px;line-height:1.4}
 .coline svg.i{flex:none;margin-top:2px}
 .docinc{flex-wrap:wrap}
 .codet summary{min-height:44px;display:flex;align-items:center;font-weight:500;cursor:pointer}
+
+/* ---------- Ion Rail markup, kept plain in Graphite and Velvet (27 Sep 2026; the Ion look is in ion.css) ---------- */
+.st{display:none}
+.plate{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:var(--r);background:var(--card);box-shadow:var(--shadow)}
+.plate .pl-l{flex:1;min-width:0}.plate .pl-t{margin:0;font:400 22px/1.2 var(--font)}.plate .pl-s{font-size:14px;color:var(--muted);margin-top:2px}
+.plate .meter{display:none}
+.rsheet{position:relative;margin:0 0 12px}
+.rstrip,.rplain{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--muted);margin:14px 0 6px}.rstrip{margin-top:0}
+.rfoot{font-size:14px;color:var(--muted);margin:8px 0}
+.hud{display:none}
+.irail{display:flex;flex-direction:column;gap:10px}
+.iblk{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:var(--r);background:var(--card);box-shadow:var(--shadow)}
+.ilab{display:flex;align-items:center;gap:6px;width:100%;font-size:14px;color:var(--muted);background:transparent;border:0;padding:0;min-height:0;height:auto;justify-content:flex-start;box-shadow:none;text-align:left}
+.ilab .ilab-x{margin-left:auto}
+.ibody{display:flex;flex-direction:column;gap:8px}
+.irow{position:relative}
+.irow>.in,.iday>.in,.inow{display:none}
+.istn{display:block;font-size:14px;color:var(--muted);margin:0 0 4px;background:transparent;border:0;padding:0;box-shadow:none;min-height:0;text-align:left}.istn b{font-weight:500;color:var(--text)}
+.itick{display:block;font-size:14px;color:var(--muted);margin:0 0 4px}
+.icard{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;border-radius:var(--r2);background:var(--card2);box-shadow:inset 0 0 0 1px var(--line);text-align:left;font-weight:400;justify-content:flex-start;color:var(--text)}
+.icard .t{flex:1;min-width:0}.icard .t small,.icard .t .s{display:block;font-size:14px;color:var(--muted)}
+.icard .ck{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line2);flex:none}.icard .ck.on{background:var(--primary);border-color:var(--primary)}
+.icard .av{width:24px;height:24px;border-radius:50%;background:var(--raise);display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.icard .m{font-size:14px;color:var(--muted)}.icard .v{font-variant-numeric:tabular-nums;text-align:right}
+.icard input.v,.icard select.v{width:auto;min-width:80px;text-align:right}
+.icard.ion{background:var(--primary);color:var(--on-primary)}.icard.ion .t small,.icard.ion .m,.icard.ion .v{color:var(--on-primary)}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--raise);font-size:14px;white-space:nowrap;border:0;min-height:0}
+.tag.c{background:var(--warn);color:#15171A}.tag.i{background:var(--primary);color:var(--on-primary)}
+.hr-main>.chip2,.scont>.acc{display:none}
+.irow.stage>button.blank,.irow.day>button.blank{display:none}
+.stepp{padding:10px 12px;border-radius:var(--r2);background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}
+.trow{padding:10px 12px;border-radius:var(--r2);background:var(--card2);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:8px}.trow .k{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:6px}.trow .k b{font-weight:500;color:var(--text);font-size:16px}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}.tchips button{min-height:32px;height:32px;padding:0 10px;border-radius:999px;font-size:14px}.tchips button.on{background:var(--primary);color:var(--on-primary)}
+.tin{width:100%}
+.ichips{display:flex;flex-wrap:wrap;gap:6px}.ichips button{min-height:32px;height:32px;padding:0 10px 0 6px;border-radius:999px;font-size:14px;display:inline-flex;align-items:center;gap:6px}.ichips .av{width:20px;height:20px;border-radius:50%;background:var(--raise);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.pcard:not(.open)>:not(.icard){display:none}
+.iday{position:relative}
+.calcseg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:12px;background:var(--field);margin-bottom:10px}.calcseg>button{min-height:36px;border-radius:8px;background:transparent;box-shadow:none}.calcseg>button.on{background:var(--raise-2)}
+.calcacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.mi .mt{flex:1;min-width:0;text-align:left}.mi .mt small{display:block;font-size:14px;color:var(--muted)}
+.mfoot{margin-top:8px;text-align:center;font-size:14px;color:var(--muted)}

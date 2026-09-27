@@ -175,7 +175,10 @@ function dirHtml() {
   const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).filter(c => pbAll() || contactReachable(c)).length : (window._leads || []).filter(l => inSeg(l, s) && (pbAll() || leadReachable(l))).length;
   const hidden = pbAll() ? 0 : (window._leads || []).filter(l => !leadReachable(l)).length + (window._contacts || []).filter(c => !contactReachable(c)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
-  let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
+  const nWait = (window._items || []).filter(i => !i._me).length, nPeople = (window._contacts || []).filter(c => pbAll() || contactReachable(c)).length;
+  let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, pbAll() ? `everyone · ${(window._contacts || []).length} saved` : `${nPeople} people · ${waitN} waiting`);
+  h += plateHtml(pbAll() ? "Phone book" : "People", pbAll() ? "Everyone, even with no number or email yet" : dSeg === "waiting" ? "The lower, the longer they've kept you waiting" : dSeg === "saved" ? "Saved contacts – numbers, emails, companies" : `Buyers, suppliers, brokers · directory ${(window._leads || []).length}`);
+  h += `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
     <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>
     ${pbAll() ? `<div class="pbnote">Phone book: everyone, including people with no number, email or company. People shows only those you can reach.</div>` : hidden ? `<button class="pbline" data-mview2="phonebook">${hidden} without a number, email or company are kept in the Phone book</button>` : ""}`;
   if (dSeg === "waiting" || dSeg === "saved") {

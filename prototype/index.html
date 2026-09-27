@@ -9,9 +9,9 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"){d.dataset.palette="titanium";d.dataset.ion="1"}else d.dataset.palette=p})()</script>
-<link rel="stylesheet" href="app.css?v=17.202609271525">
-<link rel="stylesheet" href="titanium.css?v=17.202609271525">
-<link rel="stylesheet" href="ion.css?v=17.202609271525">
+<link rel="stylesheet" href="app.css?v=17.202609271738">
+<link rel="stylesheet" href="titanium.css?v=17.202609271738">
+<link rel="stylesheet" href="ion.css?v=17.202609271738">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -81,13 +81,13 @@
 <input type="file" id="cFileInput" class="hidden">
 <div id="addSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Add">
   <div class="sheet-b">
-    <div class="sheet-h"><span>Add</span><button id="addClose" type="button">Close</button></div>
+    <div class="sheet-h"><span>add · most used first</span><button id="addClose" type="button">Close</button></div>
     <div class="addgrid">
-      <button type="button" data-add="task" class="t-me"><span class="qi" data-ico="checkbox"></span>New task</button>
-      <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
-      <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
+      <button type="button" data-add="task" class="t-me hi"><span class="qi" data-ico="checkbox"></span>New task</button>
       <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
       <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
+      <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
+      <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
       <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
       <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Read photo or PDF</button>
@@ -96,6 +96,7 @@
       <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search archive</button>
       <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
     </div>
+    <div class="mfoot">tap outside to close</div>
   </div>
 </div>
 <div id="taskSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="tsTitle">
@@ -104,7 +105,7 @@
     <div class="seg2" role="group" aria-label="What kind of task"><button type="button" data-tk="own">Our job</button><button type="button" data-tk="wait">Waiting on someone</button></div>
     <label class="fld"><span id="tsWhatL">What needs doing?</span><input id="tsWhat" maxlength="300" autocomplete="off"></label>
     <div class="tstoks" id="tsToks" aria-live="polite"></div>
-    <div class="quiet tshint">Quick words: fri · tmrw · @annemarie · @chris · @name (waiting on them) · #deal · ! for urgent</div>
+    <div class="quiet tshint">fri · tmrw · @annemarie · @name · #deal · ! urgent</div>
     <label class="fld hidden" id="tsFromBox"><span>Waiting on whom?</span><input id="tsFrom" list="people" autocomplete="off" placeholder="e.g. Sam &amp; Lee"></label>
     <div class="lbl">Who does it</div>
     <div class="seg2" role="group" aria-label="Who does it"><button type="button" data-towner="Chris">Chris</button><button type="button" data-towner="Annemarie">Annemarie</button></div>
@@ -199,14 +200,14 @@
 <div id="toast" class="toast hidden"></div>
 <div id="menuSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Menu">
   <div class="sheet-b">
-    <div class="sheet-h"><span>More</span><button id="menuClose" type="button">Close</button></div>
+    <div class="sheet-h"><span>more</span><button id="menuClose" type="button">Close</button></div>
     <div class="menu">
-      <button class="mi" type="button" data-mview="archive" data-ico="archive">Archive – have we used them before?</button>
-      <button class="mi" type="button" data-mview="phonebook" data-ico="phone">Phone book – everyone, even with no number yet</button>
-      <button class="mi" type="button" data-mview="calc" data-ico="calc">Calculators – transport, chrome, everyday</button>
-      <button class="mi" type="button" data-mview="chat" data-ico="chatin">Import a WhatsApp chat – pick whose chat it is</button>
-      <button class="mi" type="button" data-mview="guides" data-ico="book">Guides – how we work, deal kit, scripts</button>
-      <button class="mi" type="button" data-mview="settings" data-ico="info">Settings – light or dark, bot key, sign out</button>
+      <button class="mi" type="button" data-mview="archive" data-ico="archive"><span class="mt">Archive<small>Have we used them before?</small></span></button>
+      <button class="mi" type="button" data-mview="phonebook" data-ico="phone"><span class="mt">Phone book<small>Everyone, even with no number yet</small></span></button>
+      <button class="mi" type="button" data-mview="calc" data-ico="calc"><span class="mt">Calculators<small>Transport, chrome, everyday</small></span></button>
+      <button class="mi" type="button" data-mview="chat" data-ico="chatin"><span class="mt">Import a WhatsApp chat<small>Pick whose chat it is</small></span></button>
+      <button class="mi" type="button" data-mview="guides" data-ico="book"><span class="mt">Guides<small>How we work, deal kit, scripts</small></span></button>
+      <button class="mi" type="button" data-mview="settings" data-ico="info"><span class="mt">Settings<small>Light or dark, bot key, sign out</small></span></button>
       <div class="hidden"><button id="themeBtn" type="button">Light mode</button><button id="refreshBtn" type="button">Refresh</button><button id="outBtn" type="button">Sign out</button></div>
     </div>
     <div class="ks" id="menuFoot" style="margin-top:12px"></div>
@@ -229,7 +230,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609271525"></script>
+<script src="ui.js?v=17.202609271738"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -324,7 +325,7 @@ fillIcons();
 const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings", phonebook: "Phone book" };
 function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
 window.goView = goView;
-function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
+function openMenu(){ $("menuFoot").textContent = (me ? "signed in as " + me.toLowerCase() + " · " : "") + "app v" + APP_VERSION + " · tap outside to close"; $("menuSheet").classList.remove("hidden"); }
 function closeMenu(){ $("menuSheet").classList.add("hidden"); }
 $("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu;
 $("menuSheet").addEventListener("click", e => {
@@ -565,25 +566,30 @@ function waitingPeopleHtml(q){
   for (const it of items) if (!it._me && (!window.inSecItem || inSecItem(it))) (groups[it.waiting_on || "Unknown"] ||= []).push(it);
   let order = Object.entries(groups).sort((a,b) => Math.min(...a[1].map(i=>i.priority||2)) - Math.min(...b[1].map(i=>i.priority||2)) || Math.max(...b[1].map(i=>i._days)) - Math.max(...a[1].map(i=>i._days)));
   if (q) order = order.filter(([name, arr]) => (name + " " + arr.map(i => i.waiting_for).join(" ")).toLowerCase().includes(q));
-  // Ion Rail (27 Sep 2026): a rail of days of silence – 0 at the top, 7+ at the bottom; it turns coral from day 3 (chase after 3)
+  // Ion Rail (27 Sep 2026): a rail of days of silence – 0d at the top, 7d+ at the bottom, coral from day 3 ("chase at 3d").
+  // People who owe nothing sit at 0d as chips; everyone we wait on is a card at the day of their longest silence.
   const bucket = {};
-  let html = "";
   for (const [name, arr] of order) {
     arr.sort(byPrioThenAge);
     const oldest = arr.reduce((a, i) => i._days > a._days ? i : a, arr[0]);
-    const anyStale = arr.some(i => i._stale);
     const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
     const quiet = Math.min(7, oldest._days || 0), ok = "sil:" + name, pOpen = isOpen(ok, false);
-    const pmin = `<button type="button" class="pc-min" data-tog="${esc(ok)}" data-dflt="0" aria-expanded="${pOpen}">${window.av2 ? av2(name, []) : ""}<span class="pm-tx"><span class="pm-n">${esc(name)}</span><span class="pm-s">${esc(arr[0].waiting_for)}${arr.length > 1 ? ` +${arr.length - 1} more` : ""} · ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></span><span class="pm-d${oldest._days >= 3 ? " late" : ""}">${oldest._days || 0}d</span></button>`;
-    const one = `<div class="card pcard${pOpen ? " open" : ""}">${pmin}<div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · first ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></div></div>
+    const line = `<button type="button" class="icard" data-tog="${esc(ok)}" data-dflt="0" aria-expanded="${pOpen}"><span class="av">${esc(initials(name))}</span><span class="t">${esc(name)}<small>${esc(arr[0].waiting_for)}${arr.length > 1 ? ` +${arr.length - 1} more` : ""} · ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</small></span><span class="tag ${oldest._days >= 3 ? "c" : "l"}">${oldest._days || 0}d</span></button>`;
+    const one = `<div class="pcard${pOpen ? " open" : ""}">${line}<div class="card-h"><i class="dot"></i><div class="name">${esc(name)}</div></div>
       <div class="pc-acts">${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp all")}${cs.length && cs[0].phone ? ib("phone", "call", `data-call="${esc(cs[0].phone)}"`, "Call") : ""}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask")}${window.bookingBtn ? bookingBtn(name) : ""}${cs.length ? "" : `<button data-cnew="${esc(firstName(name))}">${ic("userplus")}Save number</button>`}</div>
       <div class="hg-b">${arr.map(it => window.homeRow ? homeRow(it, true, true) : miniHtml(it)).join("")}</div></div>`;
     (bucket[quiet] ||= []).push(one);
   }
-  if (!order.length) return `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
-  html = `<div class="rread"><span>rail · days of silence</span><span>chase at 3d</span></div><div class="silrail">`;
-  for (let d = 0; d <= 7; d++) html += `<div class="sb${bucket[d] ? " has" : ""}${d >= 3 ? " late" : ""}"><span class="sd">${d}${d === 7 ? "+" : ""}d</span><i class="sn" aria-hidden="true"></i>${bucket[d] ? `<div class="sbc">${bucket[d].join("")}</div>` : ""}</div>`;
-  return html + `</div>`;
+  const waitingNames = new Set(order.map(([n]) => n));
+  const rest = (window._contacts || []).filter(c => (!window.contactReachable || contactReachable(c)) && !waitingNames.has(c.name) && (!window.inSecContact || inSecContact(c)) && (!q || (c.name + " " + (c.company || "")).toLowerCase().includes(q)));
+  if (!order.length && !rest.length) return `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
+  let html = sheetOpen("rail · days of silence", "chase at 3d", "silrail") + railOpen(30) + `<section class="iblk">`;
+  for (let d = 0; d <= 7; d++) {
+    const rows = bucket[d] || [], chips = d === 0 && rest.length ? `<div class="ichips">${rest.slice(0, 12).map(c => `<button type="button" data-tgo="contact:${c.id}"><span class="av">${esc(initials(c.name))}</span><span>${esc(c.name.split(/[,(]/)[0].trim())}</span></button>`).join("")}${rest.length > 12 ? `<button type="button" data-mview2="phonebook"><span>+${rest.length - 12} more</span></button>` : ""}</div>` : "";
+    html += `<div class="iday${d >= 3 ? " late" : ""}${rows.length ? " has" : ""}">${rows.length ? "" : `<i class="in" aria-hidden="true"></i>`}<span class="itick">${d}${d === 7 ? "+" : ""}d</span>${chips}${rows.map(r => `<div class="irow"><i class="in sm" aria-hidden="true"></i>${r}</div>`).join("")}</div>`;
+  }
+  html += `</section>` + railClose() + rfoot(`rail turns coral at day 3${rest.length ? " · " + rest.slice(0, 3).map(c => esc(c.name.split(/[,(]/)[0].trim().toLowerCase())).join(", ") + (rest.length > 3 ? " and others" : "") + " owe nothing, so they sit at day 0" : ""}`) + sheetClose();
+  return html;
 }
 function savedContactsHtml(q){
   q = (q || "").trim().toLowerCase();
@@ -667,39 +673,64 @@ function secHtml(d, key, title, count, dflt, content){
   const k = `sec:${d.id}:${key}`, open = isOpen(k, dflt);
   return `<div class="sec"><div class="sec-h" role="button" tabindex="0" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${open}"><span class="st">${title}</span><span class="cnt">${count}</span><span class="chev"></span></div>${open ? `<div class="sec-b">${content()}</div>` : ""}</div>`;
 }
-function stepHtml(s, isNext){
-  const o = openStep === s.id;
-  return `<div class="step ${s.status}${isNext ? " next" : ""}">${isNext ? `<div class="nexttag">Next step</div>` : ""}<div class="step-r" role="button" tabindex="0" data-step="${s.id}" aria-expanded="${o}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><span class="cbox" aria-hidden="true">${s.status === "done" ? "✓" : s.status === "na" ? "–" : ""}</span><span class="stt">${esc(s.title)}${s.status === "na" ? " (not needed)" : ""}${s.status === "open" && s.closes_with && !o ? `<span class="step-c">Done when: ${esc(s.closes_with)}</span>` : ""}</span><span class="chev"></span></div>
-    ${s.status !== "open" ? `<div class="step-m">${esc(s.done_by || "")}${s.done_at ? " · " + fmtDay(s.done_at) : ""}${s.evidence ? " — " + esc(s.evidence) : ""}</div>` : ""}
-    ${o ? `<div class="step-p">${s.detail ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<label class="fld" style="margin-top:0"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>` : ""}</div>`;
-}
-function checklistHtml(d, pg){
-  let h = pg.stages.map(g => {
-    const done = g.steps.filter(s => s.status !== "open").length;
-    const isCur = !!(pg.cur && pg.cur.name === g.name);
-    const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
-    const allDone = done === g.steps.length;
-    return `<div class="stg${isCur ? " cur" : ""}${open ? " open" : ""}${allDone ? " done" : ""}"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="st">${esc(g.name.replace(/\s*\([^)]*\)\s*$/, "") || g.name)}${isCur ? `<span class="nowtag">Now</span>` : ""}</span>${(m => m ? `<span class="ss">${esc(m[1])}</span>` : "")(g.name.match(/\(([^)]*)\)\s*$/))}<span class="cnt">${done} of ${g.steps.length} done</span><span class="chev"></span><i class="pn" aria-hidden="true"></i></div>${open ? `<div class="stg-b">${g.steps.map(x => stepHtml(x, pg.next && pg.next.id === x.id)).join("")}</div>` : ""}</div>`;
-  }).join("");
-  const ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length;
-  h = `<div class="rread rin"><span>rail · procedure${d.kit ? " · sa deal kit" : ""}</span><span>stage ${ci} of ${pg.stages.length}</span></div><div class="prail">${h}</div>`;
-  if (addStepFor === d.id) h += `<div class="step-p"><label class="fld" style="margin-top:0"><span>New step</span><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"></label><label class="fld"><span>Stage</span><select id="nsStage">${pg.stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${pg.stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select></label><div class="acts0"><button class="primary" data-savestep="${d.id}">${ic("plus")}Add step</button><button data-addstep="">Cancel</button></div></div>`;
-  else h += `<div class="acts0"><button data-addstep="${d.id}">${ic("plus")}Add a step</button></div>`;
+// A step on the procedure rail: an off-white card (check circle · title · who or when); tap it for the panel with
+// the proof note and Done / Not needed / Reopen (Ion Rail, docs/ION-GEOMETRY.md)
+function stepHtml(s, isNext, o){
+  o = o || {};
+  const open = openStep === s.id;
+  const right = isNext ? `<span class="tag i">Next</span>` : s.status === "done" ? "" : s.status === "na" ? `<span class="m">skipped</span>` : `<span class="m">open</span>`;
+  const sub = s.status !== "open" ? [s.done_by, s.done_at ? fmtDay(s.done_at) : "", s.evidence].filter(Boolean).join(" · ") : s.closes_with ? "Done when: " + s.closes_with : (s.who || "");
+  let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${right}</button></div>`;
+  if (open) h += `<div class="stepp step-p">${s.detail ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}<label class="fld" style="margin-top:0"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
   return h;
 }
-function termsHtml(d, defs){
-  const p = d.params || {};
-  if (editTerms === d.id) {
-    return defs.map(([k, label, opt]) => `<label class="fld"><span>${esc(label)}</span>` + (Array.isArray(opt)
-      ? `<select class="t-${k}"><option value="">Not set</option>${[...opt, ...(p[k] && !opt.includes(p[k]) ? [p[k]] : [])].map(o => `<option${p[k] === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`
-      : `<input class="t-${k}" value="${esc(p[k] || "")}" placeholder="${esc(opt)}" autocomplete="off">`) + `</label>`).join("") +
-      `<div class="acts0"><button class="primary" data-saveterms="${d.id}">${ic("check")}Save terms</button><button data-editterms="">Cancel</button></div>`;
-  }
-  const filled = defs.filter(([k]) => p[k]), empty = defs.filter(([k]) => !p[k]);
-  return (filled.length ? filled.map(([k, label]) => `<div class="kv"><span class="k">${esc(label)}</span><span class="v">${esc(p[k])}</span></div>`).join("") : `<div class="quiet">No terms written down yet.</div>`) +
-    (empty.length ? `<div class="quiet" style="margin-top:8px">Not set yet: ${empty.map(x => esc(x[1].replace(" (private)", ""))).join(", ")}</div>` : "") +
-    `<div class="acts0"><button data-editterms="${d.id}">${ic("edit")}Edit terms</button></div>`;
+// The procedure rail: every stage down one groove. An open stage is a block with its steps as cards and its name to the
+// left of the first card; a stage that is done or still waiting is one compact 32 px line (tap it to open).
+function checklistHtml(d, pg){
+  const stages = pg.stages, ci = pg.cur ? stages.indexOf(pg.cur) + 1 : stages.length;
+  let h = rplain(`procedure${d.kit ? " · sa kit" : ""}`, `stage ${ci} of ${stages.length}`) + railOpen(96);
+  stages.forEach((g, i) => {
+    const done = g.steps.filter(s => s.status !== "open").length, allDone = done === g.steps.length, isCur = !!(pg.cur && pg.cur.name === g.name);
+    const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
+    const name = g.name.replace(/\s*\([^)]*\)\s*$/, "") || g.name, when = (g.name.match(/\(([^)]*)\)\s*$/) || [])[1] || "";
+    const stn = `<button type="button" class="istn${open ? "" : " dim"}" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><b>${esc(name)}</b>${open ? esc(when || `${done} of ${g.steps.length} done`) : ""}</button>`;
+    if (!open) { h += `<div class="irow stage${allDone ? " done" : ""}"><i class="in${allDone ? " ion" : " sm"}" aria-hidden="true"></i>${stn}<button type="button" class="blank" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-label="Open stage ${esc(name)}"></button></div>`; return; }
+    h += `<section class="iblk deep">${g.steps.map((x, j) => stepHtml(x, pg.next && pg.next.id === x.id, j === 0 ? { stn, node: isCur ? " big" : "" } : {})).join("")}</section>`;
+  });
+  if (addStepFor === d.id) h += `<div class="stepp step-p"><label class="fld" style="margin-top:0"><span>New step</span><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"></label><label class="fld"><span>Stage</span><select id="nsStage">${stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select></label><div class="acts0"><button class="primary" data-savestep="${d.id}">${ic("plus")}Add step</button><button data-addstep="">Cancel</button></div></div>`;
+  h += railClose();
+  const openN = stages.filter(g => g.steps.some(s => s.status === "open")).length, late = itemsOf(d.id).filter(i => !i._me && i._stale).length;
+  h += rfoot(`${stages.length - openN} stage${stages.length - openN === 1 ? "" : "s"} done · ${openN} open · ${late ? late + " late on this deal" : "nothing late on this deal"}`);
+  if (addStepFor !== d.id) h += `<div class="acts0"><button data-addstep="${d.id}">${ic("plus")}Add a step</button></div>`;
+  return h;
 }
+// Terms as chips (the mock's "tap a chip · not agreed is the app's default"): a choice term is a row of chips – tap one
+// and it is saved; a typed term is a field that saves when you leave it. The private target and limit stay at the end.
+function termsHtml(d, defs){
+  const p = d.params || {}, setN = defs.filter(([k]) => p[k] && !/^not agreed$/i.test(p[k])).length;
+  let h = rplain(`terms · ${esc((d.area || d.kind).toLowerCase())}`, `${setN} of ${defs.length} set`);
+  h += defs.map(([k, label, opt]) => {
+    const priv = /\(private\)/.test(label), lab = label.replace(" (private)", ""), v = p[k] || "";
+    const state = priv ? "private" : v ? (/^(not agreed|to discuss)$/i.test(v) ? v.toLowerCase() : "set") : "not set";
+    if (Array.isArray(opt)) {
+      const opts = [...opt, ...(v && !opt.includes(v) ? [v] : [])];
+      return `<div class="trow"><div class="k"><b>${esc(lab)}</b><span>${esc(state)}</span></div><div class="tchips">${opts.map(o => { const on = v === o, warn = /^(not agreed|to discuss|avoid)/i.test(o) && (on || !v); return `<button type="button" data-term="${d.id}:${k}" data-v="${esc(o)}" class="${on ? "on" : ""}${warn ? " warn" : ""}" aria-pressed="${on}">${esc(o.replace(/\s*\((.*?)\)/, " · $1"))}</button>`; }).join("")}</div></div>`;
+    }
+    return `<div class="trow"><div class="k"><b>${esc(lab)}</b><span>${esc(state)}</span></div><input class="tin${priv ? " private" : ""}" data-tin="${d.id}:${k}" value="${esc(v)}" placeholder="${esc(opt)}${priv ? " · only you and Annemarie see this" : " · type it"}" autocomplete="off"></div>`;
+  }).join("");
+  return h;
+}
+// a term chip or field saves on its own (same save as the old Save terms button)
+async function saveTerm(dealId, key, value){
+  const d = dealById(dealId); if (!d) return;
+  const params = { ...(d.params || {}) }; if (value) params[key] = value; else delete params[key];
+  if (DEMO) { d.params = params; render(); return; }
+  const { error } = await sb.rpc("save_deal", { p_id: d.id, p_params: params });
+  if (error) { toast("Could not save: " + error.message, 6000); return; }
+  d.params = params; toast("Saved."); load();
+}
+$("list").addEventListener("click", e => { const b = e.target.closest("button[data-term]"); if (!b) return; const [id, k] = b.dataset.term.split(":"); const d = dealById(id); saveTerm(id, k, d && (d.params || {})[k] === b.dataset.v ? "" : b.dataset.v); });
+$("list").addEventListener("change", e => { const el = e.target.closest("input[data-tin]"); if (!el) return; const [id, k] = el.dataset.tin.split(":"); saveTerm(id, k, el.value.trim()); });
 function infoHtml(d){
   if (editInfo === d.id) {
     const f = (k, big) => `<label class="fld"><span>${INFO_LABELS[k]}</span>` + (big ? `<textarea class="i-${k}"${k === "key_facts" ? ' style="min-height:140px"' : ""}>${esc(d[k] || "")}</textarea>` : `<input class="i-${k}" value="${esc(d[k] || "")}">`) + `</label>`;
@@ -758,38 +789,51 @@ function dealTicketHtml(d, pg){
   const kLabel = tr ? (p.client_rate ? "Client rate" : "Loads") : "Buyer wants";
   const line = (tr ? [p.cargo, p.route, p.trucks] : [p.commodity, p.grade || "grade to confirm", has("basis") ? p.basis + (p.port ? " " + p.port : "") : "Incoterm not agreed", p.inspector ? "inspector: " + p.inspector : ""]).filter(Boolean).join(" · ");
   const stub = tr ? [[p.distance || "—", "distance"], [p.haulier_rate || "—", "transporter rate"], [has("vat") ? p.vat : "—", "VAT"]]
-    : [[p.price || "—", "price"], [p.commission || "—", "our cut"], [pg.total ? `${pg.done} / ${pg.total}` : "—", "steps done"]];
+    : [[p.price || "—", /wmt/i.test(p.unit || "") ? "price per WMT" : "price per DMT"], [p.commission || "—", "our cut per DMT"], [pg.total ? `${pg.done} / ${pg.total}` : "—", "steps done"]];
   const segs = pg.stages.length ? `<div class="tmeter"><span>steps ${pg.stages.filter(g => g.steps.every(s => s.status !== "open")).length}/${pg.stages.length}</span><span class="tm">${pg.stages.map(g => `<i class="${g.steps.every(s => s.status !== "open") ? "d" : pg.cur === g ? "c" : ""}"></i>`).join("")}</span></div>` : "";
-  return `<div class="rread rin"><span>ticket · ${esc((d.area || d.kind).toLowerCase())}</span><span>${tr ? "rate" : "price"}: ${has(tr ? "client_rate" : "price") ? "set" : "not agreed"}</span></div>
-    <div class="ticket"><div class="tk-top"><div class="tk-r"><span class="k">${kLabel}${big ? "" : " · not set"}</span>${pill}</div>${big ? odoHtml(big) || `<div class="tk-big">${esc(big)}</div>` : `<div class="tk-big quiet">Add it in Numbers › Terms</div>`}${line ? `<div class="tk-l">${esc(line)}</div>` : ""}</div>
+  return `<div class="ticket"><div class="tk-top"><div class="tk-r"><span class="k">${kLabel}${big ? "" : " · not set"}</span>${pill}</div>${big ? odoHtml(big) || `<div class="tk-big">${esc(big)}</div>` : `<div class="tk-big quiet">Add it in Numbers › Terms</div>`}${line ? `<div class="tk-l">${esc(line)}</div>` : ""}</div>
     <div class="tear"></div><div class="tk-stub">${stub.map(([v, l]) => `<div><b>${esc(v)}</b>${l}</div>`).join("")}</div>${segs}</div>`;
 }
 // A deal's own page: summary, then 4 tabs – Steps · Numbers · Notes and files · Guide
+// the plate's ring: which stage the deal is at ("3/12"), the arc shows the stages done
+function stageRing(cur, total, done){
+  const c = 2 * Math.PI * 15.5, p = total ? Math.max(done, cur - 1) / total : 0;
+  return `<span class="ring" role="img" aria-label="Stage ${cur} of ${total}"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="rt"/><circle cx="18" cy="18" r="15.5" class="rv" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"/></svg><span class="rn">${cur}/${total}</span></span>`;
+}
 function dealPageHtml(d){
   const pg = dealProgress(d.id), waits = itemsOf(d.id).sort(byPrioThenAge);
   const stale = waits.filter(i => i._stale && !i._me).length;
-  const defs = TERMS[d.kind] || [];
+  const defs = TERMS[d.kind] || [], p = d.params || {};
   const ns = dealNotes(d.id), dds = window.draftsFor ? draftsFor("deal", d.id) : [], hs = histOf(d.id), fN = attsFor("deal", d.id).length;
-  const tabs = [["steps", "list", "Steps"], ["numbers", "calc", "Numbers"], ["notes", "note", "Notes and files"], ...(d.kind === "mineral" && d.kit && window.kitGuideHtml ? [["guide", "guide", "Guide"]] : [])];
+  const tabs = [["steps", "list", "Steps"], ["numbers", "calc", "Numbers"], ["notes", "note", "Notes"], ...(d.kind === "mineral" && d.kit && window.kitGuideHtml ? [["guide", "guide", "Guide"]] : [])];
   const t = tabs.some(x => x[0] === dealTab[d.id]) ? dealTab[d.id] : "steps";
-  let h = `<div class="dpage" data-deal="${d.id}"><div class="dsum"><div class="dsum-t"><div class="ds">${esc(d.area)} · ${esc(d.status)}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</div>${d.stage ? `<div class="dx">${esc(d.stage)}</div>` : ""}</div>${pg.total ? ring(pg.done, pg.total) : ""}</div>`;
+  const ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length, kindWord = (d.area || d.kind || "").toLowerCase();
+  // status row + plate: name, what it is, the ring (mock: "‹ Deals ● live · deal 02 · stage 2/5")
+  let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, `${esc(kindWord)}${pg.stages.length ? ` · stage ${ci}/${pg.stages.length}` : ` · ${esc(d.status.toLowerCase())}`}`);
+  const sub = [d.kind === "mineral" && typeof KIT_SHORT !== "undefined" && d.kit_route ? KIT_SHORT[d.kit_route] : "", d.kind === "transport" ? p.route : p.buyer || p.seller || "", waits.length ? `${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""].filter(Boolean).join(" · ");
+  h += plateHtml(esc(d.name), esc(sub || d.stage || ""), pg.stages.length ? stageRing(ci, pg.stages.length, pg.stages.filter(g => g.steps.every(x => x.status !== "open")).length) : "");
+  const has = k => p[k] && !/^not agreed$/i.test(p[k]);
+  h += sheetOpen(`ticket · ${esc(kindWord)}`, d.kind === "transport" ? `rate: ${has("client_rate") ? "set" : "not agreed"}` : d.kind === "mineral" ? `price: ${has("price") ? "set" : "not agreed"}` : `${d.status.toLowerCase()}`, "dsheet");
   h += dealTicketHtml(d, pg);
-  if (pg.next) h += `<div class="nextup"><div class="nu-l">Next step · ${esc(pg.cur.name)}</div><div class="nu-t">${esc(pg.next.title)}</div>${pg.next.closes_with ? `<div class="nu-c">Done when: ${esc(pg.next.closes_with)}</div>` : ""}${t !== "steps" ? `<div class="acts0"><button class="primary" data-openstep="${d.id}:${pg.next.id}">${ic("list")}Open this step</button></div>` : ""}</div>`;
   h += `<div class="dtabs4" role="tablist">${tabs.map(([k, icn, label]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}</button>`).join("")}</div><div class="dpanel">`;
   if (t === "steps") {
-    h += `<div class="lbl" style="margin-top:0">Waiting on others for this deal</div>` + (waits.map(it => homeRowSafe(it)).join("") || `<div class="quiet">Nothing waiting on this deal.</div>`) + `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
-    h += `<div class="lbl">Checklist</div>` + (window.kitSecHtml ? kitSecHtml(d) : "") + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`);
+    const kit = window.kitSecHtml ? kitSecHtml(d) : "";
+    h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");
+    h += rplain("waiting on others", `${waits.length} open`) + railOpen(0) + (waits.length ? `<section class="iblk"><div class="ibody">${waits.map(it => window.swRow ? swRow(it, true) : homeRowSafe(it)).join("")}</div></section>` : `<section class="iblk"><div class="empty">nothing waiting on this deal</div></section>`) + railClose();
+    h += `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
   } else if (t === "numbers") {
-    if (defs.length) h += `<div class="lbl" style="margin-top:0">Terms</div>` + termsHtml(d, defs);
-    if (window.calcHtml && d.kind !== "general") h += `<div class="lbl">Calculator</div>` + calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
+    if (pg.next) h += `<div class="nextup"><div class="nu-l">Next step · ${esc(pg.cur.name)}</div><div class="nu-t">${esc(pg.next.title)}</div><div class="acts0"><button class="primary" data-openstep="${d.id}:${pg.next.id}">${ic("list")}Open this step</button></div></div>`;
+    if (defs.length) h += termsHtml(d, defs);
+    if (window.calcHtml && d.kind !== "general") h += calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
     if (d.kind === "transport" && window.openDocSheet) h += `<div class="acts0"><button class="primary" data-dquote="${d.id}">${ic("file")}Quote PDF for the client</button></div>`;
-    h += `<div class="lbl">Background</div>` + infoHtml(d);
+    h += rplain("background", d.updated_at ? "updated " + esc(fmtDay(d.updated_at)) : "") + `<div class="card">` + infoHtml(d) + `</div>`;
   } else if (t === "notes") {
-    h += (dds.length ? draftHtml("deal", d.id, "") : "") + `<div class="lbl" style="margin-top:0">Notes</div>` + notesBlock(ns, "deal", d.id);
-    h += `<div class="lbl">Files · ${fN}</div>` + (window.driveLinkHtml ? driveLinkHtml(d) : "") + filesHtml("deal", d.id);
-    h += `<div class="lbl">History</div>` + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
+    h += (dds.length ? draftHtml("deal", d.id, "") : "") + rplain("notes", `${ns.length}`) + notesBlock(ns, "deal", d.id);
+    h += rplain("files", `${fN}`) + (window.driveLinkHtml ? driveLinkHtml(d) : "") + filesHtml("deal", d.id);
+    h += rplain("history", `${hs.length}`) + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
   } else if (t === "guide") h += kitGuideHtml(d);
-  h += `</div><div class="dfoot">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}<label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div></div>`;
+  h += `</div>` + sheetClose();
+  h += `<div class="dfoot">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}<label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div>`;
   return h;
 }
 const homeRowSafe = it => window.homeRow ? homeRow(it, true) : miniHtml(it);
@@ -857,10 +901,20 @@ function render(){
   if (view === "deal" && !dp) view = "deals";
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === (view === "deal" ? "deals" : view)));
   $("pageTitle").textContent = dp ? dp.name : (PAGE_TITLES[view] || "Deal Board");
+  document.body.classList.toggle("hasplate", ["worklist", "deal", "leads", "phonebook", "calc"].includes(view));
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
   $("botBtn").classList.toggle("hidden", !me || view === "bot");   // Ask sits in the top bar; the + is the centre of the bottom bar (27 Sep)
   const secOn = ["worklist", "deals", "leads", "board"].includes(view) && !!window.secBarHtml && !!me;
   $("secSlot").innerHTML = secOn ? secBarHtml() : ""; $("secSlot").classList.toggle("hidden", !secOn); document.body.classList.toggle("hassec", secOn);
+  // Ion Rail: the section switch sits under the header plate, as on the mock, and stays pinned under the top bar while you scroll
+  const placeSecBar = () => {
+    if (!secOn || !document.documentElement.dataset.ion) return;
+    const sb = $("secSlot").firstElementChild; if (!sb) return;
+    const w = document.createElement("div"); w.className = "secpin"; w.appendChild(sb);
+    const pl = $("list").querySelector(".plate"); if (pl) pl.after(w); else $("list").prepend(w);
+    $("secSlot").classList.add("hidden"); document.body.classList.remove("hassec");
+    document.documentElement.style.setProperty("--hdrh", document.querySelector("header.appbar").offsetHeight + "px");
+  };
   $("composer").classList.toggle("hidden", view !== "board" || !me);
   document.body.classList.toggle("boardview", view === "board");
   if (window.boardDot) boardDot();
@@ -870,6 +924,7 @@ function render(){
     const Ls = window._leads || [];
     const cnt = f => Ls.filter(f).length;
     $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap the green import icon.</div></div>` : "") + dirHtml();
+    placeSecBar();
     $("foot").textContent = (me ? me + " · " : "") + "app v" + APP_VERSION;
     $("addBtn").classList.add("hidden");
     (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
@@ -902,6 +957,7 @@ function render(){
   if (window._sheetItem && !si) window._sheetItem = null;
   if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our job" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
   $("list").innerHTML = html;
+  placeSecBar();
   (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
   if (typeof syncSheetHist === "function") setTimeout(syncSheetHist, 0);
   $("addBtn").classList.toggle("hidden", !me || view === "bot");
@@ -1329,23 +1385,23 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609271525"></script>
-<script src="directory2.js?v=17.202609271525"></script>
-<script src="today.js?v=17.202609271525"></script>
-<script src="task.js?v=17.202609271525"></script>
-<script src="kitdata.js?v=17.202609271525"></script>
-<script src="dealkit.js?v=17.202609271525"></script>
-<script src="board.js?v=17.202609271525"></script>
-<script src="calc.js?v=17.202609271525"></script>
-<script src="archive.js?v=17.202609271525"></script>
-<script src="extras.js?v=17.202609271525"></script>
-<script src="easy.js?v=17.202609271525"></script>
-<script src="google.js?v=17.202609271525"></script>
-<script src="push.js?v=17.202609271525"></script>
-<script src="reader.js?v=17.202609271525"></script>
-<script src="sections.js?v=17.202609271525"></script>
-<script src="bot.js?v=17.202609271525"></script>
-<script src="motion.js?v=17.202609271525"></script>
+<script src="directory.js?v=17.202609271738"></script>
+<script src="directory2.js?v=17.202609271738"></script>
+<script src="today.js?v=17.202609271738"></script>
+<script src="task.js?v=17.202609271738"></script>
+<script src="kitdata.js?v=17.202609271738"></script>
+<script src="dealkit.js?v=17.202609271738"></script>
+<script src="board.js?v=17.202609271738"></script>
+<script src="calc.js?v=17.202609271738"></script>
+<script src="archive.js?v=17.202609271738"></script>
+<script src="extras.js?v=17.202609271738"></script>
+<script src="easy.js?v=17.202609271738"></script>
+<script src="google.js?v=17.202609271738"></script>
+<script src="push.js?v=17.202609271738"></script>
+<script src="reader.js?v=17.202609271738"></script>
+<script src="sections.js?v=17.202609271738"></script>
+<script src="bot.js?v=17.202609271738"></script>
+<script src="motion.js?v=17.202609271738"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
