@@ -581,7 +581,7 @@ function waitingPeopleHtml(q){
     (bucket[quiet] ||= []).push(one);
   }
   if (!order.length) return `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
-  html = `<div class="rread"><span>rail · days of silence</span><span>chase at 3d</span></div><div class="srail">`;
+  html = `<div class="rread"><span>rail · days of silence</span><span>chase at 3d</span></div><div class="silrail">`;
   for (let d = 0; d <= 7; d++) html += `<div class="sb${bucket[d] ? " has" : ""}${d >= 3 ? " late" : ""}"><span class="sd">${d}${d === 7 ? "+" : ""}d</span><i class="sn" aria-hidden="true"></i>${bucket[d] ? `<div class="sbc">${bucket[d].join("")}</div>` : ""}</div>`;
   return html + `</div>`;
 }

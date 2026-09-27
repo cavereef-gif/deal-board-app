@@ -17,7 +17,7 @@ html[data-ion][data-palette]{
   --ctext:#1A1B1E; --cmuted:#474956; --ccard:#DFE0E6; --ccard2:#D3D4DB; --cfield:#CBCCD4; --cline:#C2C3CB; --cline2:#9FA0AB;
   --mono:ui-monospace,"SF Mono",Menlo,"Roboto Mono","DejaVu Sans Mono",monospace;
   /* frame tokens (dark) */
-  --bg:#26292E; --bg-a:rgba(38,41,46,.9); --text:#D4D5DD; --muted:#B4B5C0; --ivory:#E6E7EC;
+  --bg:#26292E; --bg-a:rgba(38,41,46,.9); --text:#D4D5DD; --muted:#C1C2CC; --ivory:#E6E7EC;
   --card:var(--g1); --card2:var(--g1b); --row:var(--g2); --raise:var(--g3); --raise-2:var(--g4); --field:var(--groove); --well:var(--groove);
   --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.18);
   --primary:#4FC3F7; --primary-2:#6BCDF8; --on-primary:#1A1B1E; --accent:#B4B5C0; --accent2:#D4D5DD;
@@ -65,7 +65,7 @@ html[data-ion][data-palette] #botBtn svg.i{color:var(--ion)}
 /* ---------- bottom bar: labels, a blue dot under the one you're on, a round blue + in the middle ---------- */
 html[data-ion][data-palette] .tabs{background:var(--navc);background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 30px -12px rgba(0,0,0,.8);padding:6px 8px}
 html[data-ion][data-palette][data-theme="light"] .tabs{border-color:rgba(0,0,0,.1)}
-html[data-ion][data-palette] .tabs button{height:52px;min-height:52px;background:transparent;box-shadow:none;color:var(--muted);gap:6px;font-size:13px}
+html[data-ion][data-palette] .tabs button{height:52px;min-height:52px;background:transparent;box-shadow:none;color:var(--muted);gap:6px;font-size:14px}
 html[data-ion][data-palette] .tabs button:not(.plus) svg{display:none}
 html[data-ion][data-palette] .tabs button.on{background:transparent;box-shadow:none;color:var(--text)}
 html[data-ion][data-palette] .tabs button:after{content:"";position:static;order:2;width:5px;height:5px;margin:0;border-radius:50%;background:transparent}
@@ -143,7 +143,7 @@ html[data-ion][data-palette] .nowline i{position:absolute;left:-7px;top:50%;widt
 html[data-ion][data-palette] .nowline span{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:28px;display:flex;align-items:center;padding:0 12px;border-radius:999px;background:var(--ion);color:var(--ctext);font:400 14px/1 var(--mono)}
 
 /* ---------- READING SURFACES: off-white with charcoal letters (tokens switch inside, so every child follows) ---------- */
-html[data-ion][data-palette] :is(.hrow,.scard,.card,.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.bub.u,.ask,.sbar,.dtile,.fcard,.bothelp,form.panel,.qteaser,.cnote,.step,.sec,.kitban,.hist,.cres,.trr,.meets,.draft,.sugg,.warn,.seen,.lf,.qcard,.gcard,.ticket){
+html[data-ion][data-palette] :is(.hrow,.scard,.card,.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.bub.u,.ask,.sbar,.dtile,.fcard,.bothelp,form.panel,.qteaser,.cnote,.step,.sec,.kitban,.hist,.trr,.meets,.draft,.sugg,.warn,.seen,.lf,.qcard,.gcard,.ticket){
   --text:var(--ctext); --muted:var(--cmuted); --ivory:var(--ctext); --surface:var(--ccard); --card:var(--ccard); --card2:var(--ccard2); --row:var(--ccard);
   --raise:var(--ccard2); --raise-2:#E9EAEF; --field:var(--cfield); --well:var(--cfield); --line:var(--cline); --line2:var(--cline2);
   --btn:var(--ccard2); --seg-on:#2A2B31; --glass-soft:var(--ccard2); --glass-soft-edge:inset 0 0 0 1px rgba(0,0,0,.06);
@@ -158,7 +158,7 @@ html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.hero2,.nextup,.dsum,.
 html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.hero2,.nextup,.dsum,.brief,.bothelp,.post,.ask) :is(.seg.on,.seg2>button.on,.segbar>button.on) span{color:#D4D5DD}
 
 /* frame-level switches and buttons (on the graphite, not in a card) */
-html[data-ion][data-palette] :is(.seg2,.segbar,.dtabs4,.secbar,.wkstrip){background:var(--groove);box-shadow:var(--soft-in);border:1px solid rgba(255,255,255,.04);border-radius:10px}
+html[data-ion][data-palette] :is(.seg2,.segbar,.dtabs4,.secbar,.wkstrip){background:var(--field);box-shadow:var(--soft-in);border:1px solid rgba(255,255,255,.04);border-radius:10px}
 html[data-ion][data-palette][data-theme="light"] :is(.seg2,.segbar,.dtabs4,.secbar,.wkstrip){background:rgba(0,0,0,.14);border-color:transparent}
 html[data-ion][data-palette] :is(.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on,.secbar>button.on,.wkstrip>button.on){background:var(--g4);background-color:var(--g4);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 0 1px rgba(79,195,247,.35);color:var(--text)}
 html[data-ion][data-palette][data-theme="light"] :is(.seg2>button.on,.segbar>button.on,.dtabs4>.dtab.on,.secbar>button.on,.wkstrip>button.on){background:var(--ccard);background-color:var(--ccard);color:var(--ctext)}
@@ -319,7 +319,7 @@ html[data-ion][data-palette] .prail .stg:has(.step-p){grid-template-columns:1fr}
 html[data-ion][data-palette] .prail .stg:has(.step-p) .stg-b{grid-column:1;margin-left:0;position:relative;z-index:3}
 html[data-ion][data-palette] .prail .step{border-radius:12px;background:var(--ccard);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);border:0;padding:0;margin:0}
 html[data-ion][data-palette] .prail .step-r{display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 10px}
-html[data-ion][data-palette] .prail .step .cbox{flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid #7D7E8C;background:transparent;display:grid;place-items:center;font-size:12px;color:var(--ctext)}
+html[data-ion][data-palette] .prail .step .cbox{flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid #7D7E8C;background:transparent;display:grid;place-items:center;font-size:14px;color:var(--ctext)}
 html[data-ion][data-palette] .prail .step.done .cbox{background:var(--ion);border-color:var(--ion)}
 html[data-ion][data-palette] .prail .step .stt{flex:1;min-width:0;font-size:14px;line-height:1.3;color:var(--ctext)}
 html[data-ion][data-palette] .prail .step .step-c{display:none}
@@ -338,14 +338,14 @@ html[data-ion][data-palette] .rread span:last-child{white-space:nowrap}
 html[data-ion][data-palette] .dpage .nextup{margin-left:0;margin-right:0}
 
 /* ---------- People: the days-of-silence rail ---------- */
-html[data-ion][data-palette] .srail{position:relative;padding:10px 6px 14px 64px;border-radius:0 0 16px 16px;background:var(--g1);border:1px solid rgba(255,255,255,.07);border-top:0;box-shadow:var(--soft-up)}
-html[data-ion][data-palette] .srail:before{content:"";position:absolute;left:28px;top:12px;bottom:14px;width:24px;border-radius:12px;
+html[data-ion][data-palette] .silrail{position:relative;padding:10px 6px 14px 64px;border-radius:0 0 16px 16px;background:var(--g1);border:1px solid rgba(255,255,255,.07);border-top:0;box-shadow:var(--soft-up)}
+html[data-ion][data-palette] .silrail:before{content:"";position:absolute;left:28px;top:12px;bottom:14px;width:24px;border-radius:12px;
   background:repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.14) 22px 23px,transparent 23px 24px) left 2px top 0/4px 100% no-repeat,
              repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.14) 22px 23px,transparent 23px 24px) right 2px top 0/4px 100% no-repeat,var(--groove);
   box-shadow:0 0 0 6px var(--bay),inset 0 1px 0 rgba(0,0,0,.5)}
 html[data-ion][data-palette] .sb,html[data-ion][data-palette] .sb:not(.has){display:block;position:relative;min-height:36px}
-html[data-ion][data-palette] .srail .sd{display:block;position:absolute;left:-62px;top:18px;width:22px;transform:translateY(-50%);text-align:right;font:400 14px/1 var(--mono);color:var(--muted)}
-html[data-ion][data-palette] .srail .sn{display:block;position:absolute;left:-29px;top:18px;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#6B7079;border:2px solid var(--groove);z-index:2}
+html[data-ion][data-palette] .silrail .sd{display:block;position:absolute;left:-62px;top:18px;width:22px;transform:translateY(-50%);text-align:right;font:400 14px/1 var(--mono);color:var(--muted)}
+html[data-ion][data-palette] .silrail .sn{display:block;position:absolute;left:-29px;top:18px;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#6B7079;border:2px solid var(--groove);z-index:2}
 html[data-ion][data-palette] .sb.late .sn{background:var(--coral)}
 html[data-ion][data-palette] .sb.has .sd,html[data-ion][data-palette] .sb.has .sn{top:30px}
 html[data-ion][data-palette] .sb.has:before{content:"";position:absolute;left:-24px;top:30px;width:24px;height:1px;background:#6B7079}
@@ -408,3 +408,21 @@ html[data-ion][data-palette] .cres .kv .v{max-width:100%;white-space:normal;over
 html[data-ion][data-palette] .cres .kv.big:not(:last-child){background:var(--ccard);box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
 html[data-ion][data-palette] .cres .kv.big:not(:last-child) .k{color:var(--cmuted)}
 html[data-ion][data-palette] .cres .kv.big:not(:last-child):before{left:-29px;width:8px;height:8px;margin-top:-4px;background:var(--ion);box-shadow:0 0 0 2px var(--groove)}
+/* a solid colour under the grid (so every reader – and the readability check – sees the real graphite) */
+html[data-ion][data-palette] body{background-color:var(--g0b)}
+html[data-ion][data-palette] .ihead{background:#33363C}
+html[data-ion][data-palette][data-theme="light"] .ihead{background:#B3B7BE}
+html[data-ion][data-palette][data-theme="light"] body{background-color:var(--g0b)}
+html[data-ion][data-palette] .dcard .dh{flex:1;min-width:0}
+html[data-ion][data-palette] .dn{font-weight:500}
+html[data-ion][data-palette] .sact button,html[data-ion][data-palette] .sact button span{color:#D4D5DD}
+html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone) span{color:var(--ctext)}
+html[data-ion][data-palette] .tabs .plus .pl{color:var(--ctext)}
+/* a one-of-several switch inside an off-white card: light track, charcoal chosen segment */
+html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.post,.sheet-b .card) :is(.seg2,.segbar){box-shadow:inset 0 1px 2px rgba(0,0,0,.15);border-color:transparent}
+html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.post) :is(.seg2>button:not(.on),.segbar>button:not(.on),.seg2>label:not(.on)){color:var(--ctext)}
+html[data-ion][data-palette] .trdeals .ib:is(.on,#_),html[data-ion][data-palette] .trdeals .ib:is(.on,#_) :is(.ibw,svg.i){color:#D4D5DD}
+html[data-ion][data-palette] .cres .quiet{color:var(--muted)}
+html[data-ion][data-palette][data-theme="light"] .wkstrip .wd2{color:var(--text)}
+html[data-ion][data-palette][data-theme="light"] .cres{--text:#16181B;--muted:#33363D;color:#16181B}
+html[data-ion][data-palette][data-theme="light"] .sact button,html[data-ion][data-palette][data-theme="light"] .sact button span,html[data-ion][data-palette][data-theme="light"] .sact button svg.i{color:#16181B}

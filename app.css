@@ -1271,7 +1271,7 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .od .dash{font-size:20px;color:var(--muted);margin:0 2px}
 .od em.pre{margin:0 4px 0 0}
 /* People: days-of-silence rail parts (plain in other palettes) and the phone-book line (27 Sep 2026) */
-.srail .sd,.srail .sn{display:none}
+.silrail .sd,.silrail .sn{display:none}
 .sb:not(.has){display:none}
 .pbline{width:100%;margin-top:10px;min-height:40px;justify-content:flex-start;text-align:left;font-size:14px;background:transparent;box-shadow:none;border:1px dashed var(--line2);color:var(--muted)}
 .pbnote{margin-top:10px;font-size:14px;color:var(--muted)}

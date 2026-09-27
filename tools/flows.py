@@ -44,7 +44,7 @@ async def main():
             check("Task sheet opens and phone Back closes it", s1==1 and s2==0)
             # 3 new task for Annemarie due tomorrow
             taps=0
-            await tap("#askTab"); await tap("button[data-askadd=task]")
+            await tap("#plusTab"); await tap("button[data-add=task]")
             await pg.fill("#tsWhat","Send the truck list"); await tap("[data-towner=Annemarie]"); await tap("[data-tdue='1']"); await tap("#tsAdd")
             added=await ev("window._items.find(i=>i.waiting_for==='Send the truck list')")
             check("New task: Our job for Annemarie due tomorrow in <=5 taps", bool(added) and added['owner']=='Annemarie' and added['due_on'] and taps<=5, f"taps={taps} due={added and added['due_on']}")
@@ -108,7 +108,7 @@ async def main():
             # ---- step 1 (v17): easy guides, + New deal, calculators, Speak, voice note, checks ----
             # 10 "+ New deal" from inside the new-task form keeps the form and picks the new deal
             await ev("window._sheetItem=null; goView('worklist')"); await W()
-            await tap("#askTab"); await tap("button[data-askadd=task]"); await pg.fill("#tsWhat", "Book the trucks")
+            await tap("#plusTab"); await tap("button[data-add=task]"); await pg.fill("#tsWhat", "Book the trucks")
             await ev("document.querySelector('#taskSheet .tsmore').open = true"); await W(200)
             await pg.select_option("#tsDeal", "__newdeal"); await W()
             both=await ev("!document.getElementById('ndSheet').classList.contains('hidden') && !document.getElementById('taskSheet').classList.contains('hidden')")
@@ -204,12 +204,12 @@ async def main():
             sd=await ev("({ pts: document.querySelectorAll('.step-p .sd .easy li, .step-p .sd .easy .ez-p').length, focus: document.activeElement && document.activeElement.tagName })")
             check("Step details read as points; opening a step does not focus a text box", sd['pts']>=1 and sd['focus'] not in ("INPUT","TEXTAREA"), str(sd))
             # 16 voice note
-            await tap("#askTab"); await tap("button[data-askadd=voice]")
+            await tap("#plusTab"); await tap("button[data-add=voice]")
             vn=await ev("({ open: !document.getElementById('vnSheet').classList.contains('hidden'), speak: !!document.querySelector('#vnSheet .bigmic'), rec: !!document.getElementById('vnRecBtn') })")
             await pg.fill("#vnText", "Call the mill about Tuesday"); await tap("#vnSave")
             vc=await ev("document.getElementById('vnSheet').classList.contains('hidden')")
             check("+ › Voice note: Speak, type, Save closes the sheet", vn['open'] and vn['speak'] and vn['rec'] and vc, str(vn))
-            await tap("#askTab"); await tap("button[data-askadd=voice]"); await pg.go_back(); await W()
+            await tap("#plusTab"); await tap("button[data-add=voice]"); await pg.go_back(); await W()
             check("Back closes the voice-note sheet", await ev("document.getElementById('vnSheet').classList.contains('hidden')"))
             # 17 Speak buttons beside the text boxes
             await ev("openTaskSheet()"); await W()
@@ -227,7 +227,7 @@ async def main():
             # ---- step 2 (v17): the reader – WhatsApp quote, photo or PDF, voice note (demo answers; the real reader needs a login) ----
             await ev("document.getElementById('ckSheet').classList.add('hidden'); goView('worklist')"); await W()
             n0=await ev("window._items.length")
-            await tap("#askTab"); await tap("button[data-askadd=quote]")
+            await tap("#plusTab"); await tap("button[data-add=quote]")
             await pg.fill("#rdText", "Hi Chris, chrome conc 40-42% 5000t/month R2400/t FOT plant Rustenburg. Trucks from Monday.")
             await tap("#rdGo"); await W(700)
             rv=await ev("({ open: !document.getElementById('rvSheet').classList.contains('hidden'), card: !!document.querySelector('#rvBody .rvq'), missing: document.querySelectorAll('#rvBody .rvmiss li').length, ticked: document.querySelectorAll('#rvBody [data-rv^=\"task:\"]:checked').length })")
@@ -236,7 +236,7 @@ async def main():
             check("Decode a WhatsApp quote: tidy card, what is missing, tasks ticked, Save adds them", rv['open'] and rv['card'] and rv['missing']>=3 and rv['ticked']==2 and n1==n0+2 and closed, f"{rv} items {n0}->{n1}")
             # 27 Sep 2026: a messy WhatsApp with several loads – one card per load, what is missing, "Make it a deal" makes the deal and one ask-back task on it
             d0=await ev("window._deals.length"); n0=await ev("window._items.length")
-            await tap("#askTab"); await tap("button[data-askadd=quote]")
+            await tap("#plusTab"); await tap("button[data-add=quote]")
             await pg.fill("#rdText", "*LOADS AVAILABLE* 1) Rustenburg - RBay 10 x sidies R385/t chrome 2) Coal WTB to Maputo R620 per ton.... R600 if 34t payload. Need 15 trucks asap!! Lee 082 555 0199")
             await tap("#rdGo"); await W(700)
             ml=await ev("({ cards: document.querySelectorAll('#rvBody .rvload').length, ask: document.querySelectorAll('#rvBody .rvl-ask li').length, flags: document.querySelectorAll('#rvBody .rvflag').length, ticked: document.querySelectorAll('#rvBody [data-rv^=\"load:\"]:checked').length, sw: document.documentElement.scrollWidth })")
@@ -246,7 +246,7 @@ async def main():
             nd=await ev("(() => { const d = window._deals[window._deals.length-1]; const t = window._items.filter(i => i.deal_id === d.id); return { n: window._deals.length, name: d.name, kind: d.kind, area: d.area, p: d.params, tasks: t.map(i => i.waiting_on + ': ' + i.waiting_for) } })()")
             check("Messy WhatsApp: one card per load, what is missing, a warning; Make it a deal saves route, cargo, rate, VAT and one ask-back task on Lee", ml['cards']==2 and ml['ask']>=6 and ml['flags']==1 and ml['ticked']==0 and ml['sw']<=375 and 'excl VAT' in kvv and nd['n']==d0+1 and nd['kind']=="transport" and nd['area']=="Transport" and nd['p'].get('route','').startswith('WTB') and nd['p'].get('cargo')=="Coal" and nd['p'].get('vat')=="Excluded" and nd['p'].get('client_rate')=="R620 or R600 per ton" and len(nd['tasks'])==1 and nd['tasks'][0].startswith('Lee:'), f"{ml} {kvv} {nd}")
             png=__import__("base64").b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
-            await tap("#askTab"); await tap("button[data-askadd=read]")
+            await tap("#plusTab"); await tap("button[data-add=read]")
             await pg.set_input_files("#rdCamInput", files=[{"name": "notes.png", "mimeType": "image/png", "buffer": png}]); await W(500)
             img=await ev("!!document.querySelector('#rdPreview img')")
             await tap("#rdGo"); await W(700)
@@ -329,9 +329,9 @@ async def main():
             await ev("goView('worklist')"); await W()
             tod=await ev("({ deals: !!document.querySelector('.hcard.t-deal'), buyers: !!document.querySelector('.hcard.t-buyer'), ov: !!document.querySelector('.hgrp.ov'), tiles: document.querySelectorAll('.htile').length })")
             await ev("goView('deals')"); await W(); dov=await ev("!!document.querySelector('.hgrp.ov')")
-            check("Frame: bar Today·Deals·Ask·People·Board; section bar pinned on Today/Deals/People/Board only; Today without deals, buyer queue or overview; overview on Deals", bar=="Today,Deals,Ask,People,Board" and fr['worklist'] and fr['deals'] and fr['leads'] and fr['board'] and not fr['bot'] and not fr['calc'] and not tod['deals'] and not tod['buyers'] and not tod['ov'] and tod['tiles']==3 and dov, f"{bar} {fr} {tod} dealsOverview {dov}")
+            check("Frame: bar Today·Deals·+·People·Board (Ask in the top bar since 27 Sep); section bar pinned on Today/Deals/People/Board only; Today without deals, buyer queue or overview; overview on Deals", bar=="Today,Deals,Add,People,Board" and fr['worklist'] and fr['deals'] and fr['leads'] and fr['board'] and not fr['bot'] and not fr['calc'] and not tod['deals'] and not tod['buyers'] and not tod['ov'] and tod['tiles']==3 and dov, f"{bar} {fr} {tod} dealsOverview {dov}")
             await ev("goView('worklist')"); await W()
-            await tap("#askTab"); await tap("button[data-askadd=task]"); await ev("document.querySelector('#taskSheet .tsmore').open = true"); await W(200)
+            await tap("#plusTab"); await tap("button[data-add=task]"); await ev("document.querySelector('#taskSheet .tsmore').open = true"); await W(200)
             await pg.select_option("#tsDeal", "__newdeal"); await W()
             await pg.fill("#ndsName", "Coal – Example colliery → Example buyer"); await tap("[data-secp=nds] [data-secpick='+']")
             await pg.fill("#ndsSecName", "Coal"); await tap("#ndsAdd"); await W()
