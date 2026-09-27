@@ -46,10 +46,13 @@ function tsWeekHtml() {
   const key = tsDue === "pick" ? $("tsDate").value : tsDue === "" ? "" : saDayPlus(+tsDue);
   const cnt = {}; for (const it of (window._items || [])) { const d = it.due_on || (typeof dueDate === "function" && dueDate(it) ? saKey(dueDate(it)) : ""); if (d) cnt[d] = (cnt[d] || 0) + 1; }
   const what = tsParse($("tsWhat").value).clean || "This job", dn = dealById($("tsDeal").value);
+  const who = [tsKind === "wait" && $("tsFrom").value ? "Waiting on " + $("tsFrom").value : tsOwner, dn ? dn.name : ""].filter(Boolean).join(" · ");
+  // Ion Rail: the week as stations left of the groove; the job is the ion card on the day it lands (tap another day to move it)
   const rows = [...Array(7)].map((_, i) => { const k = saDayPlus(i), d = new Date(k + "T08:00:00+02:00"), on = k === key, n = cnt[k] || 0;
-    return `<button type="button" class="twr${on ? " on" : ""}" data-tday="${k}" aria-pressed="${on}"><span class="twd"><span>${i === 0 ? "Today" : WDAY[d.getUTCDay()] + " " + d.getUTCDate()}</span><span class="twn">${n ? n + " job" + (n > 1 ? "s" : "") : "–"}</span></span><i class="twk" aria-hidden="true"></i>${on ? `<span class="twc"><span class="twt">${esc(what)}</span><span class="tws">${esc([tsKind === "wait" && $("tsFrom").value ? "Waiting on " + $("tsFrom").value : tsOwner, dn ? dn.name : ""].filter(Boolean).join(" · "))}</span></span>` : ""}</button>`; }).join("");
-  const later = key && !rows.includes(`data-tday="${key}" `) && ![...Array(7)].some((_, i) => saDayPlus(i) === key);
-  return `<div class="rread rin"><span>rail · this week</span><span>${later ? "due " + esc(dayName(new Date(key + "T08:00:00+02:00"))) : key ? "tap a day" : "no date yet"}</span></div><div class="twrail">${rows}</div>`;
+    const stn = `<span class="istn${on ? "" : n ? "" : " dim"}"><b>${i === 0 ? "Today" : WDAY[d.getUTCDay()] + " " + d.getUTCDate()}</b>${n ? n + " job" + (n > 1 ? "s" : "") : "—"}</span>`;
+    return `<div class="irow day${on ? " pick cur" : " blank"}"><i class="in${on ? " big" : ""}" aria-hidden="true"></i>${stn}<button type="button" class="${on ? "icard pick" : "blank"}" data-tday="${k}" aria-pressed="${on}" aria-label="${i === 0 ? "Today" : dayName(d)}">${on ? `<span class="t">${esc(what)}<small>${esc(who)}</small></span>` : ""}</button></div>`; }).join("");
+  const later = key && ![...Array(7)].some((_, i) => saDayPlus(i) === key);
+  return rplain("rail · this week", later ? "due " + esc(dayName(new Date(key + "T08:00:00+02:00"))) : key ? "tap a day to move it" : "no date yet", true) + `<div class="irail" style="--col:80px"><section class="iblk">${rows}</section></div>`;
 }
 function tsPaint(fromWords) {
   document.querySelectorAll("#taskSheet [data-tk]").forEach(b => b.classList.toggle("on", b.dataset.tk === tsKind));

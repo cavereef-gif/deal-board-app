@@ -274,13 +274,13 @@ function tripCalc() {
 }
 function tripTop() {
   const c = tripCalc(), tone = v => v == null ? "" : v < 0 ? " t-bad" : " t-ok";
-  const r = (tn, k, v, unit) => `<div class="trr${tn}"><span class="k">${k}</span><span class="v">${v == null ? "–" : fRand(v) + unit}</span></div>`;
-  return r(" t-cost", "Transport cost", c.perTon, " a ton") + r(tone(c.left), "Left for you", c.left, " a ton") + r(tone(c.month), "Left a month", c.month, "")
+  const r = (tn, k, v, unit, sub) => `<div class="trr${tn} irow${v == null ? " ask" : tn === " t-cost" ? "" : " out"}"><i class="in${v == null || tn === " t-cost" ? "" : " big"}" aria-hidden="true"></i><div class="icard${v == null ? " ask" : tn === " t-cost" ? "" : " ion"}"><span class="t">${k}<small class="mono">${sub}</small></span><span class="v">${v == null ? "?" : fRand(v) + unit}</span></div></div>`;
+  return `<div class="irail" style="--col:0px"><section class="iblk deep">` + r(" t-cost", "Transport cost", c.perTon, " a ton", "road + tolls, per ton") + r(tone(c.left), "Left for you", c.left, " a ton", "client rate − transport") + r(tone(c.month), "Left a month", c.month, "", num(TR.loads) ? `${num(TR.loads)} loads` : "type the loads") + `</section></div>`
     + (c.left != null && c.left < 0 ? `<div class="trwarn"><i class="dot" style="background:var(--bad)"></i>Transport costs more than the client pays.</div>` : "")
-    + (c.perTon == null ? `<div class="quiet trhint">Fill in steps 1 to 3 below.</div>` : "");
+    + (c.perTon == null ? `<div class="rfoot">fill in steps 1 to 3 below</div>` : "");
 }
 function tripResults() {
-  if (!TR.km) return `<div class="quiet">Type where from and where to, then tap Find the road distance. Or type the kilometres yourself.</div>`;
+  if (!TR.km) return `<div class="rfoot">type where from and where to, then tap Work it out – or type the kilometres yourself</div>`;
   const c = tripCalc(), rows = [];
   const truckRoute = /truck/i.test(TR.provider || "");
   rows.push(["Road distance", `${nfmt(Math.round(TR.km))} km one way${TR.mins ? ` · about ${Math.floor(TR.mins / 60)} h ${Math.round(TR.mins % 60)} min ${truckRoute ? "driving (truck route)" : "by car (trucks are slower)"}` : ""}`]);
@@ -298,7 +298,10 @@ function tripResults() {
     if (c.month != null) rows.push([`Left per month (${num(TR.loads)} loads)`, fRand(c.month), 1]);
     if (c.left < 0) rows.push(["Warning", "Transport costs more than the client pays"]);
   }
-  return rows.map(([k, v, big]) => `<div class="kv${big ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
+  // Ion Rail: the working shown as one rail – every line a card, the ones that matter in blue
+  const wf = window.wfRow || (r => `<div class="kv${r.out ? " big" : ""}"><span class="k">${esc(r.k)}</span><span class="v">${esc(r.v)}</span></div>`);
+  const lastBig = rows.map(r => !!r[2]).lastIndexOf(true);
+  return `<div class="irail" style="--col:0px"><section class="iblk">${rows.map(([k, v, big], i) => wf({ k, v, out: i === lastBig, ask: /^Warning$/.test(k) || /^Type /.test(v) })).join("")}</section></div>`;
 }
 // Route part (26 Sep 2026, free services): the server works out the truck distance and time, the toll gates on the way and
 // the weather at both ends; the official diesel price arrives as "Suggested" and is used only when a person taps Use it.
@@ -374,11 +377,16 @@ function everydayCalcHtml() {
 }
 function calcTabsPage() {
   const tabs = [["transport", "truck", "Transport"], ["chrome", "gem", "Chrome & ore"], ["everyday", "calc", "Everyday"]];
-  let h = `<div class="dtabs4 calctabs">${tabs.map(([k, icn, t]) => `<button class="dtab${calcTab === k ? " on" : ""}" data-calctab="${k}">${ic(icn)}${t}</button>`).join("")}</div>`;
+  const dOn = calcTab === "transport" ? (TR.deal && dealById(TR.deal)) : calcTab === "chrome" ? (calcDeal && dealById(calcDeal)) : null;
+  let h = stRow(`calc <span class="live"><i></i>live</span>`, `${calcTab === "chrome" ? "chrome & ore" : calcTab}${dOn ? " · deal" : ""}`);
+  h += plateHtml("Calculator", dOn ? `Deal: ${esc(dOn.name)} · filled from its terms` : calcTab === "everyday" ? "Plus, minus, VAT on and off" : "Deal: none – free calculation");
+  h += `<div class="dtabs4 calctabs">${tabs.map(([k, icn, t]) => `<button class="dtab${calcTab === k ? " on" : ""}" data-calctab="${k}">${ic(icn)}${t}</button>`).join("")}</div>`;
+  const strip = calcTab === "transport" ? ["calc · transport", TR.km ? `${nfmt(Math.round(TR.km))} km one way` : "no route yet"] : calcTab === "chrome" ? ["calc · chrome & ore", dOn ? "from the terms" : "example figures"] : ["calc · everyday", "tap or type"];
+  h += sheetOpen(strip[0], strip[1]);
   if (calcTab === "transport") h += transportCalcHtml();
   else if (calcTab === "everyday") h += everydayCalcHtml();
   else h += window._origCalcPage ? window._origCalcPage() : "";
-  return h;
+  return h + sheetClose();
 }
 if (window.calcPageHtml && !window._origCalcPage) { window._origCalcPage = window.calcPageHtml; window.calcPageHtml = calcTabsPage; }
 // everyday calculator: safe arithmetic without eval (+ − × ÷ with normal precedence)

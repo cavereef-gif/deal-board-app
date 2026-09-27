@@ -86,12 +86,33 @@ function hCard(key, tone, title, rows, o) {
   o = o || {};
   if (!rows.length) return "";
   const k = "home:" + key, open = o.fold ? isOpen(k, o.dflt !== false) : true;
-  const head = `<i class="hc-dot" style="background:var(--g-${tone})"></i><span class="hc-t">${title}</span><span class="hc-n">${rows.length}</span>`;
-  const h = o.fold ? `<button class="hc-h" data-tog="${k}" data-dflt="${o.dflt === false ? 0 : 1}" aria-expanded="${open}">${head}<span class="chev"></span></button>` : `<div class="hc-h">${head}${o.extra || ""}</div>`;
+  // Ion Rail: a block on the rail – a mono label line ("overdue · 2") then the cards, 6 px apart (docs/ION-GEOMETRY.md)
+  const head = `<span class="hc-t">${title.toLowerCase()}</span><span class="hc-n">· ${rows.length}</span>${o.extra || ""}`;
+  const h = o.fold ? `<button class="ilab hc-h" data-tog="${k}" data-dflt="${o.dflt === false ? 0 : 1}" aria-expanded="${open}">${head}<span class="ilab-x mono">${open ? "hide" : "show"}</span></button>` : `<div class="ilab hc-h">${head}</div>`;
   let body = rows;
   if (o.limit && rows.length > o.limit && !isOpen(k + ":all", false)) body = rows.slice(0, o.limit).concat(`<button class="hc-more" data-tog="${k}:all" data-dflt="0">Show ${rows.length - o.limit} more</button>`);
-  return `<section class="hcard t-${tone}">${h}${open ? `<div class="hc-b">${body.join("")}</div>` : ""}</section>`;
+  return `<section class="iblk hcard t-${tone}${tone === "over" || tone === "bad" ? " deep" : ""}">${h}${open ? `<div class="ibody hc-b">${body.join("")}</div>` : ""}</section>`;
 }
+// Ion Rail helpers (27 Sep 2026): the status row, the header plate and the sheet – see docs/ION-GEOMETRY.md
+function stRow(left, right) { return `<div class="st"><span class="mono">${left}</span><span class="mono">${right}</span></div>`; }
+function plateHtml(title, sub, right) { return `<section class="plate"><div class="pl-l"><h2 class="pl-t">${title}</h2>${sub ? `<div class="pl-s">${sub}</div>` : ""}</div>${right || ""}</section>`; }
+function meterHtml() {
+  const d = SA(), day = d.getUTCDate(), dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate(), on = Math.round(day / dim * 30);
+  return `<div class="meter" aria-label="Day ${day} of ${dim}"><span class="mono">day ${day} / ${dim}</span><span class="dots">${[...Array(30)].map((_, i) => `<i${i < on ? ' class="on"' : ""}></i>`).join("")}</span></div>`;
+}
+const sheetOpen = (l, r, cls) => `<section class="rsheet${cls ? " " + cls : ""}"><div class="rstrip"><span>${l}</span><span>${r}</span></div>`;
+const sheetClose = () => `<i class="hud" aria-hidden="true"></i></section>`;
+const railOpen = col => `<div class="irail" style="--col:${col || 0}px">`;
+const railClose = () => `</div>`;
+const rplain = (l, r, first) => `<div class="rplain${first ? " first" : ""}"><span>${l}</span><span>${r}</span></div>`;
+const rfoot = t => `<div class="rfoot">${t}</div>`;
+// one card on the rail (not a swipe row): a node, a hairline and an off-white card
+function icardRow(o) {
+  // o: {cls (row classes), node ("" | big | sm), go (data-tgo) | step (data-step) | attrs, left (html: ck/av), title, sub, right (html), cardCls, stn (html)}
+  const btn = o.go ? `data-tgo="${esc(o.go)}"` : o.attrs || "";
+  return `<div class="irow${o.cls ? " " + o.cls : ""}"><i class="in${o.node ? " " + o.node : ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${o.cardCls ? " " + o.cardCls : ""}" ${btn}>${o.left || ""}<span class="t">${o.title}${o.sub ? `<small${o.mono ? ' class="mono"' : ""}>${o.sub}</small>` : ""}</span>${o.right || ""}</button></div>`;
+}
+window.stRow = stRow; window.plateHtml = plateHtml; window.meterHtml = meterHtml; window.sheetOpen = sheetOpen; window.sheetClose = sheetClose; window.railOpen = railOpen; window.railClose = railClose; window.rplain = rplain; window.rfoot = rfoot; window.icardRow = icardRow;
 // Groups for Home. Suggestions stay apart (a person accepts them first). Buyer-search follow-ups join the day they are due.
 function homeGroups(items, target) {
   const own = x => target === "All" || (x.owner || "Chris") === target;
@@ -148,25 +169,16 @@ function taskParts(it, showOwner) {
 const swBtn = (id, [act, icn, t]) => `<button type="button" class="sw-${act}" data-sw="${act}" data-id="${esc(id)}">${ic(icn)}<span>${t}</span></button>`;
 // one row: swipe right for the left action, swipe left for the right ones; tap the row to open it
 function swRow(it, showOwner) {
-  const p = taskParts(it, showOwner), n = dayDiff(dueDate(it));
-  const rc = it.state === "Proposed" ? " sugg" : it.priority === 1 ? " urgent" : n < 0 ? " late" : "";
-  return `<div class="rrow${rc}"><i class="rn" aria-hidden="true"></i><div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
-    <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button></div>
+  const p = taskParts(it, showOwner), n = dayDiff(dueDate(it)), sugg = it.state === "Proposed";
+  const rc = sugg ? " prop" : it.priority === 1 ? " urgent" : n < 0 ? " late" : "";
+  // the pill on the right: coral for late, a plain word for a day, an Accept button for a suggestion (the mock's "Accept")
+  return `<div class="irow${rc}"><i class="in" aria-hidden="true"></i><div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
+    <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span>${stChip(it)}</button>${sugg ? `<button type="button" class="tag i acc" data-sw="confirm" data-id="${esc(p.id)}">Accept</button>` : ""}</div>
     <div class="sact r">${p.right.map(x => swBtn(p.id, x)).join("")}</div></div></div></div>`;
 }
-// Ion Rail (27 Sep 2026): the clock in South Africa, the header plate and the readout strip above the rail
 function saClock() { const d = SA(); return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0"); }
-function ionHeadHtml(g, list, sugg) {
-  const d = SA(), day = d.getUTCDate(), dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
-  const date = d.toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" }).replace(",", "");
-  const waiting = list.filter(i => !i._me && !i._ft).length, hr = d.getUTCHours();
-  const parts = [g.overdue.length ? `${g.overdue.length} late` : "", `${g.today.length} due today`, `${waiting} waiting`, sugg.length ? `${sugg.length} suggested` : ""].filter(Boolean).join(" · ");
-  return `<section class="ihead" aria-label="Today at a glance"><div class="ih-r"><span class="mono">${saClock()} <span class="live"><i></i>live</span></span><span class="mono">${esc(date)}${g.overdue.length ? ` · ${g.overdue.length} late` : ""}</span></div>
-    <div class="ih-m"><div><div class="ih-t">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</div><div class="ih-s">${parts}</div></div>
-    <div class="meter" aria-label="Day ${day} of ${dim}"><span class="mono">day ${day} / ${dim}</span><span class="dots">${[...Array(30)].map((_, i) => `<i${i < Math.round(day / dim * 30) ? ' class="on"' : ""}></i>`).join("")}</span></div></div></section>`;
-}
-const railRead = (l, r) => `<div class="rread"><span>${l}</span><span>${r}</span></div>`;
-const nowLine = () => `<div class="nowline" aria-hidden="true"><i></i><span>${saClock()} now</span></div>`;
+const nowLine = () => `<div class="inow" aria-hidden="true"><i></i><span>${saClock()} now</span></div>`;
+window.saClock = saClock;
 // the one thing to do next: urgent first, then late, then today, then the soonest
 function nextUp(list) {
   const score = it => (it.priority === 1 ? 0 : 10) + Math.max(-5, Math.min(30, dayDiff(dueDate(it))));
@@ -195,9 +207,17 @@ function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
   const { mine, list, g, sugg } = homeGroups(items, target);
   const br = parseBrief(window._brief);
-  const hr = SA().getUTCHours(), all = target === "All";
-  let h = `<section class="hello3"><span class="hd">${new Date(Date.now()).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" })}</span><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span></section>`;
-  h += ionHeadHtml(g, list, sugg);
+  const all = target === "All", d = SA();
+  const date = d.toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" }).replace(",", "");
+  const waiting = list.filter(i => !i._me && !i._ft).length;
+  const secOn = typeof section !== "undefined" && section !== "All" ? section : "";
+  // status row + header plate (the mock's "Today · 2 late · 3 due · 7 waiting · day 27 / 30")
+  const secDeals = secOn ? (window._deals || []).filter(x => x.area === secOn && (x.status === "Active" || x.status === "On hold")).length : 0;
+  let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, secOn ? `${esc(secOn.toLowerCase())} · ${secDeals} deal${secDeals === 1 ? "" : "s"} · ${list.length} open` : `${esc(date)}${g.overdue.length ? ` · ${g.overdue.length} late` : ""}`);
+  // a section's plate reads like the mock: its live deal and what the buyer wants; otherwise the day's counts
+  const secDeal = secOn ? (window._deals || []).find(x => x.area === secOn && (x.status === "Active" || x.status === "On hold")) : null, sp = (secDeal && secDeal.params) || {};
+  const secSub = secDeal ? [secDeal.name, sp.volume || sp.client_rate || sp.cargo].filter(Boolean).join(" · ") : secOn ? `no ${secOn.toLowerCase()} deal yet` : "";
+  h += plateHtml(esc(secOn || "Today"), esc(secSub) || `${g.overdue.length} late · ${g.today.length} due · ${waiting} waiting`, meterHtml());
   h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   h += weekStripHtml(list);
   if (window.meetingsHtml) h += meetingsHtml(target);
@@ -205,9 +225,10 @@ function todayHtml(items) {
   const R = arr => arr.map(i => swRow(i, all));
   const cards = [["overdue", "over", "Overdue", g.overdue], ["today", "today", "Today", g.today], ["tomorrow", "tmrw", "Tomorrow", g.tomorrow], ["week", "week", "Next 7 days", g.week], ["later", "later", "Later than a week", g.later]];
   const tiles = `<div class="htiles htiles3" role="group" aria-label="Show only">${[["urgent", "bad", "Urgent", "flag", cnt.urgent], ["overdue", "over", "Late", "clock", cnt.overdue], ["sugg", "prop", "Suggested", "sparkle", cnt.sugg]].map(([k, tone, t, icn, n]) => { const on = homeFilter === k; return `<button class="htile t-${tone}${on ? " on" : ""}" ${k === "sugg" ? 'data-jump="sugg"' : `data-hf="${k}"`} aria-pressed="${on}"><span class="ht-top"><span class="ht-n" data-count="${n}">${n}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`; }).join("")}</div>`;
+  const strip = r => sheetOpen(`rail · time${secOn ? " · " + esc(secOn.toLowerCase()) + " only" : ""}`, r, "hlist") + railOpen(0);
   // a day picked on the strip, or a tile: only those
   if (homeDay || homeFilter) {
-    h += tiles + railRead("rail · time", homeDay ? "one day" : "filtered") + `<div class="hlist">`;
+    h += tiles + strip(homeDay ? "one day" : "filtered");
     let out = "";
     if (homeDay) {
       const td = saKey(Date.now()), pick = list.filter(it => { const n = dayDiff(dueDate(it)); return homeDay === td ? n <= 0 : saKey(dueDate(it)) === homeDay; });
@@ -218,27 +239,29 @@ function todayHtml(items) {
       if (homeFilter === "urgent") out = hCard("f-sugg", "prop", "Suggested", R(only(sugg))) + out;
     }
     h += out || `<div class="empty">Nothing ${homeDay ? "due that day" : homeFilter === "overdue" ? "late" : homeFilter} right now.</div>`;
-    return h + `<button class="wide hf-all" data-hf="">Show everything</button></div>`;
+    return h + railClose() + sheetClose() + `<button class="wide hf-all" data-hf="">Show everything</button>`;
   }
   const nx = nextUp(list); if (nx) h += heroHtml(nx, all);
   h += tiles;
-  h += railRead("rail · time", "now " + saClock()) + `<div class="hlist">`;
   // the brief: one line, tap to read it all
   const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
   const bOpen = isOpen("home:brief", false);
   if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">${ic("brief")}Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
   else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
     <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
-  // suggestions: cards you swipe through sideways, each with Accept / Drop (a person decides; the bot never confirms)
-  if (sugg.length) h += `<section class="hcard t-prop sugg2" id="hsugg"><div class="hc-h"><i class="hc-dot" style="background:var(--g-prop)"></i><span class="hc-t">Suggested</span><span class="hc-n">${sugg.length}</span><button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button></div>
-    <div class="scar">${sugg.map(it => { const p = taskParts(it, all); return `<div class="scard hrow"><button class="sc-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs)}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button><div class="sc-acts">${swBtn(p.id, ["confirm", "check", "Accept"])}${swBtn(p.id, ["drop", "drop", "Drop"])}</div></div>`; }).join("")}</div></section>`;
-  for (const [k, tone, t, arr] of cards) { h += hCard(k, tone, t, R(arr), k === "later" ? { fold: true, dflt: false } : undefined); if (k === "overdue" && list.length) h += nowLine(); }
-  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${all ? "the list" : esc(target) + "'s list"}${typeof section !== "undefined" && section !== "All" ? " in " + esc(section) : ""}. Tap Ask to add a task.</div>`;
-  else if (list.length) h += `<div class="swhint">${ic("sparkle")}Swipe a task right for Done, left for Chased or Tomorrow. Tap it for everything else.</div>`;
+  // the rail: late above the now line, then today, tomorrow, the week, later; suggestions are rows with an Accept pill
+  h += strip("now " + saClock());
+  if (g.overdue.length) h += hCard("overdue", "over", "Overdue", R(g.overdue));
+  if (list.length || sugg.length) h += nowLine();
+  if (sugg.length) h += hCard("sugg", "prop", "Suggested", R(sugg), { extra: `<button type="button" class="ilab-x" data-qa="acceptall">${ic("check")}Accept all</button>` }).replace('class="iblk hcard t-prop"', 'class="iblk hcard t-prop sugg2" id="hsugg"');
+  for (const [k, tone, t, arr] of cards) { if (k === "overdue") continue; h += hCard(k, tone, t, R(arr), k === "later" ? { fold: true, dflt: false } : undefined); }
+  if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${all ? "the list" : esc(target) + "'s list"}${secOn ? " in " + esc(secOn) : ""}. Tap + to add a task.</div>`;
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
-  h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => r.ref_type && r.ref_id && refName(r) ? linkRow(r.ref_type + ":" + r.ref_id, esc(r.text), "On: " + esc(refName(r)), "r-bad") : `<div class="hrow r-bad"><div class="hr-main"><span class="hr-t">${esc(r.text)}</span></div></div>`), { fold: true, dflt: false });
-  h += `</div>`;
+  h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => icardRow({ cls: "late", go: r.ref_type && r.ref_id && refName(r) ? r.ref_type + ":" + r.ref_id : "", left: `<i class="ck late"></i>`, title: esc(r.text), sub: r.ref_type && refName(r) ? "On: " + esc(refName(r)) : "" })), { fold: true, dflt: false });
+  h += railClose();
+  if (list.length) h += rfoot(`swipe right = done · left = chased or tomorrow · tap = everything else`);
+  h += sheetClose();
   if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   return h;
 }
