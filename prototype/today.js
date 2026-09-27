@@ -115,14 +115,16 @@ const HF = [["urgent", "bad", "Urgent", "flag"], ["overdue", "over", "Overdue", 
 // Tomorrow – each action is a real button, and the same actions are in the task sheet). Colour: the avatar carries the
 // section, the status chip carries priority (urgent red, late amber, suggested grey); every word stays neutral.
 let homeDay = null;   // a day picked on the strip (YYYY-MM-DD): only that day's tasks (today also shows the late ones)
-const chip2 = (tone, t) => `<span class="chip2 c-${tone}"><i></i>${esc(t)}</span>`;
+// t = the full words; sh = the short form the Ion Rail shows in the pill on the right of a row ("4d", "Today", "Wed 30")
+const chip2 = (tone, t, sh) => `<span class="chip2 c-${tone}"${sh ? ` title="${esc(t)}"` : ""}><i></i>${sh ? `<span class="cl">${esc(t)}</span><span class="cs">${esc(sh)}</span>` : esc(t)}</span>`;
 function stChip(it) {
-  const n = dayDiff(dueDate(it)), late = n < 0 ? `${-n} day${n === -1 ? "" : "s"} late` : "";
-  if (it._ft) return n < 0 ? chip2("warn", "Follow-up " + late) : chip2("plain", "Follow up " + (n === 0 ? "today" : n === 1 ? "tomorrow" : dayName(dueDate(it))));
-  if (it.state === "Proposed") return chip2("prop", it.priority === 1 ? "Suggested · Urgent" : "Suggested");
-  if (it.priority === 1) return chip2("bad", late ? "Urgent · " + late : "Urgent");
-  if (late) return chip2("warn", late);
-  return chip2(n === 0 ? "today" : "plain", n === 0 ? "Today" : n === 1 ? "Tomorrow" : dayName(dueDate(it)));
+  const n = dayDiff(dueDate(it)), late = n < 0 ? `${-n} day${n === -1 ? "" : "s"} late` : "", d = dueDate(it);
+  const dayShort = n === 0 ? "Today" : n === 1 ? "Tmrw" : d ? WDAY[new Date(d).getUTCDay()] + " " + new Date(d).getUTCDate() : "";
+  if (it._ft) return n < 0 ? chip2("warn", "Follow-up " + late, -n + "d late") : chip2("plain", "Follow up " + (n === 0 ? "today" : n === 1 ? "tomorrow" : dayName(dueDate(it))), dayShort);
+  if (it.state === "Proposed") return chip2("prop", it.priority === 1 ? "Suggested · Urgent" : "Suggested", "Suggested");
+  if (it.priority === 1) return chip2("bad", late ? "Urgent · " + late : "Urgent", late ? -n + "d late" : "Urgent");
+  if (late) return chip2("warn", late, -n + "d late");
+  return chip2(n === 0 ? "today" : "plain", n === 0 ? "Today" : n === 1 ? "Tomorrow" : dayName(dueDate(it)), dayShort);
 }
 function av2(label, secs, icon) {
   const c = secs && secs.length === 1 ? secColor(secs[0]) : "var(--s-all)";
@@ -146,11 +148,25 @@ function taskParts(it, showOwner) {
 const swBtn = (id, [act, icn, t]) => `<button type="button" class="sw-${act}" data-sw="${act}" data-id="${esc(id)}">${ic(icn)}<span>${t}</span></button>`;
 // one row: swipe right for the left action, swipe left for the right ones; tap the row to open it
 function swRow(it, showOwner) {
-  const p = taskParts(it, showOwner);
-  return `<div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
+  const p = taskParts(it, showOwner), n = dayDiff(dueDate(it));
+  const rc = it.state === "Proposed" ? " sugg" : it.priority === 1 ? " urgent" : n < 0 ? " late" : "";
+  return `<div class="rrow${rc}"><i class="rn" aria-hidden="true"></i><div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
     <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button></div>
-    <div class="sact r">${p.right.map(x => swBtn(p.id, x)).join("")}</div></div></div>`;
+    <div class="sact r">${p.right.map(x => swBtn(p.id, x)).join("")}</div></div></div></div>`;
 }
+// Ion Rail (27 Sep 2026): the clock in South Africa, the header plate and the readout strip above the rail
+function saClock() { const d = SA(); return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0"); }
+function ionHeadHtml(g, list, sugg) {
+  const d = SA(), day = d.getUTCDate(), dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  const date = d.toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" }).replace(",", "");
+  const waiting = list.filter(i => !i._me && !i._ft).length, hr = d.getUTCHours();
+  const parts = [g.overdue.length ? `${g.overdue.length} late` : "", `${g.today.length} due today`, `${waiting} waiting`, sugg.length ? `${sugg.length} suggested` : ""].filter(Boolean).join(" · ");
+  return `<section class="ihead" aria-label="Today at a glance"><div class="ih-r"><span class="mono">${saClock()} <span class="live"><i></i>live</span></span><span class="mono">${esc(date)}${g.overdue.length ? ` · ${g.overdue.length} late` : ""}</span></div>
+    <div class="ih-m"><div><div class="ih-t">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</div><div class="ih-s">${parts}</div></div>
+    <div class="meter" aria-label="Day ${day} of ${dim}"><span class="mono">day ${day} / ${dim}</span><span class="dots">${[...Array(30)].map((_, i) => `<i${i < Math.round(day / dim * 30) ? ' class="on"' : ""}></i>`).join("")}</span></div></div></section>`;
+}
+const railRead = (l, r) => `<div class="rread"><span>${l}</span><span>${r}</span></div>`;
+const nowLine = () => `<div class="nowline" aria-hidden="true"><i></i><span>${saClock()} now</span></div>`;
 // the one thing to do next: urgent first, then late, then today, then the soonest
 function nextUp(list) {
   const score = it => (it.priority === 1 ? 0 : 10) + Math.max(-5, Math.min(30, dayDiff(dueDate(it))));
@@ -181,6 +197,7 @@ function todayHtml(items) {
   const br = parseBrief(window._brief);
   const hr = SA().getUTCHours(), all = target === "All";
   let h = `<section class="hello3"><span class="hd">${new Date(Date.now()).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "numeric", month: "long" })}</span><span class="hn">${hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening"}, ${esc(me || "there")}</span></section>`;
+  h += ionHeadHtml(g, list, sugg);
   h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   h += weekStripHtml(list);
   if (window.meetingsHtml) h += meetingsHtml(target);
@@ -190,7 +207,7 @@ function todayHtml(items) {
   const tiles = `<div class="htiles htiles3" role="group" aria-label="Show only">${[["urgent", "bad", "Urgent", "flag", cnt.urgent], ["overdue", "over", "Late", "clock", cnt.overdue], ["sugg", "prop", "Suggested", "sparkle", cnt.sugg]].map(([k, tone, t, icn, n]) => { const on = homeFilter === k; return `<button class="htile t-${tone}${on ? " on" : ""}" ${k === "sugg" ? 'data-jump="sugg"' : `data-hf="${k}"`} aria-pressed="${on}"><span class="ht-top"><span class="ht-n" data-count="${n}">${n}</span><span class="ht-i">${ic(icn)}</span></span><span class="ht-l">${t}</span></button>`; }).join("")}</div>`;
   // a day picked on the strip, or a tile: only those
   if (homeDay || homeFilter) {
-    h += tiles + `<div class="hlist">`;
+    h += tiles + railRead("rail · time", homeDay ? "one day" : "filtered") + `<div class="hlist">`;
     let out = "";
     if (homeDay) {
       const td = saKey(Date.now()), pick = list.filter(it => { const n = dayDiff(dueDate(it)); return homeDay === td ? n <= 0 : saKey(dueDate(it)) === homeDay; });
@@ -205,7 +222,7 @@ function todayHtml(items) {
   }
   const nx = nextUp(list); if (nx) h += heroHtml(nx, all);
   h += tiles;
-  h += `<div class="hlist">`;
+  h += railRead("rail · time", "now " + saClock()) + `<div class="hlist">`;
   // the brief: one line, tap to read it all
   const sum = br && br.summary ? br.summary : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh.";
   const bOpen = isOpen("home:brief", false);
@@ -215,7 +232,7 @@ function todayHtml(items) {
   // suggestions: cards you swipe through sideways, each with Accept / Drop (a person decides; the bot never confirms)
   if (sugg.length) h += `<section class="hcard t-prop sugg2" id="hsugg"><div class="hc-h"><i class="hc-dot" style="background:var(--g-prop)"></i><span class="hc-t">Suggested</span><span class="hc-n">${sugg.length}</span><button class="primary hc-btn" data-qa="acceptall">${ic("check")}Accept all</button></div>
     <div class="scar">${sugg.map(it => { const p = taskParts(it, all); return `<div class="scard hrow"><button class="sc-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs)}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span></button><div class="sc-acts">${swBtn(p.id, ["confirm", "check", "Accept"])}${swBtn(p.id, ["drop", "drop", "Drop"])}</div></div>`; }).join("")}</div></section>`;
-  for (const [k, tone, t, arr] of cards) h += hCard(k, tone, t, R(arr), k === "later" ? { fold: true, dflt: false } : undefined);
+  for (const [k, tone, t, arr] of cards) { h += hCard(k, tone, t, R(arr), k === "later" ? { fold: true, dflt: false } : undefined); if (k === "overdue" && list.length) h += nowLine(); }
   if (!mine.length && !list.length) h += `<div class="empty">Nothing on ${all ? "the list" : esc(target) + "'s list"}${typeof section !== "undefined" && section !== "All" ? " in " + esc(section) : ""}. Tap Ask to add a task.</div>`;
   else if (list.length) h += `<div class="swhint">${ic("sparkle")}Swipe a task right for Done, left for Chased or Tomorrow. Tap it for everything else.</div>`;
   const risks = (br && br.risks) || [];

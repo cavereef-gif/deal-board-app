@@ -31,7 +31,7 @@ function makePdf(draw) {
     right(xr, yy, s, size, bold, grey) { P.text(xr - pdfWidth(s, size), yy, s, size, bold, grey); },
     line(x1, y1, x2, y2) { ops.push(`0.80 0.82 0.85 RG 0.6 w ${x1} ${y1.toFixed(1)} m ${x2} ${y2.toFixed(1)} l S`); },
     box(x, yy, w, h) { ops.push(`0.94 0.95 0.96 rg ${x} ${yy.toFixed(1)} ${w} ${h.toFixed(1)} re f`); },
-    need(h) { if (y - h < 60) { pages.push(ops.join("\n")); ops = []; y = 800; } },
+    need(h) { if (y - h < 40) { pages.push(ops.join("\n")); ops = []; y = 800; } },
   };
   draw(P);
   pages.push(ops.join("\n"));
@@ -56,6 +56,7 @@ function makePdf(draw) {
 function docPdf(d) {
   return makePdf(P => {
     const L = 56, R = 539;
+    if (coOn()) { letterhead(P, L, R); d = Object.assign({}, d, { from: "" }); }
     P.text(L, P.y, d.title, 22, true); P.right(R, P.y, d.number, 11, false, true);
     P.y -= 20; if (d.from) P.text(L, P.y, d.from, 12, false);
     let ry = P.y; for (const [k, v] of d.meta) { P.right(R, ry, `${k}: ${v}`, 10, false, true); ry -= 14; }
@@ -73,6 +74,55 @@ function docPdf(d) {
     P.y -= 18; P.need(20); P.text(L, P.y, d.footer || "", 9, false, true);
   });
 }
+// Our letterhead (27 Sep 2026): registered name, trading name, registration and VAT numbers, address and contacts – from
+// Settings › Company details. The Companies Act asks for the full name and registration number on a company's documents.
+function coOn() { const c = window._company; return !!(c && c.legal_name && c.show_on_docs !== false); }
+function letterhead(P, L, R) {
+  const c = window._company || {};
+  P.text(L, P.y, c.legal_name, 16, true);
+  let y2 = P.y - 15;
+  if (c.trading_as) { P.text(L, y2, "trading as " + c.trading_as, 10, false, true); y2 -= 13; }
+  const ids = [c.reg_no ? "Reg. no. " + c.reg_no : "", c.vat_no ? "VAT no. " + c.vat_no : ""].filter(Boolean).join("   ·   ");
+  if (ids) { P.text(L, y2, ids, 9.5, false, true); y2 -= 13; }
+  let ry = P.y;
+  for (const l of [...pdfWrap(c.address || "", 9.5, 200), c.phone, c.email, c.website].filter(Boolean)) { P.right(R, ry, l, 9.5, false, true); ry -= 13; }
+  P.y = Math.min(y2, ry) - 6; P.line(L - 6, P.y, R + 6, P.y); P.y -= 22;
+}
+// the transport quotation, laid out the way South African hauliers quote: who and when, the job, the price with VAT shown,
+// what is included and excluded, the terms, and a place for the client to accept
+function quotePdf(d) {
+  return makePdf(P => {
+    const L = 56, R = 539, W = R - L;
+    if (coOn()) letterhead(P, L, R);
+    P.text(L, P.y, "Transport quotation", 20, true); P.right(R, P.y, d.number, 11, false, true); P.y -= 18;
+    let ry = P.y; for (const [k, v] of d.meta) { P.right(R, ry, `${k}: ${v}`, 10, false, true); ry -= 14; }
+    if (!coOn() && d.from) P.text(L, P.y, d.from, 12, false);
+    P.y = Math.min(P.y - 6, ry) - 8;
+    P.text(L, P.y, "Quote to", 10, false, true); P.y -= 15;
+    for (const l of pdfWrap(d.to || "–", 13, 300)) { P.text(L, P.y, l, 13, true); P.y -= 16; }
+    if (d.attn) { P.text(L, P.y, "Attention: " + d.attn, 10.5, false); P.y -= 14; }
+    P.y -= 10;
+    const section = t => { P.need(40); P.box(L - 6, P.y - 5, W + 12, 19); P.text(L, P.y, t, 10.5, true); P.y -= 21; };
+    const kv = (k, v) => { if (!v) return; const lines = pdfWrap(v, 10.5, W - 170); P.need(lines.length * 13 + 3); P.text(L, P.y, k, 10.5, false, true); lines.forEach((l, i) => P.text(L + 170, P.y - i * 13, l, 10.5)); P.y -= lines.length * 13 + 3; };
+    section("The job");
+    for (const [k, v] of d.job) kv(k, v);
+    P.y -= 4; section("Price (South African rand)");
+    for (const [k, v, big] of d.rows) {
+      const lines = pdfWrap(k, 10.5, 330); P.need(lines.length * 14 + 12);
+      lines.forEach((l, i) => P.text(L, P.y - i * 14, l, 10.5, !!big)); P.right(R, P.y, v, big ? 12 : 10.5, !!big);
+      P.y -= lines.length * 14 + 1; P.line(L - 6, P.y, R + 6, P.y); P.y -= 12;
+    }
+    const list = (t, arr) => { if (!arr.length) return; P.y -= 4; section(t); for (const a of arr) { const lines = pdfWrap(a, 9.5, W - 14); P.need(lines.length * 12 + 2); P.text(L, P.y, "•", 9.5); lines.forEach((l, i) => P.text(L + 12, P.y - i * 12, l, 9.5)); P.y -= lines.length * 12 + 2; } };
+    list("Included", d.incl); list("Not included (charged separately if they apply)", d.excl); list("Terms", d.terms);
+    if (d.notes) { P.y -= 6; section("Notes"); for (const l of pdfWrap(d.notes, 10, W)) { P.need(14); P.text(L, P.y, l, 10); P.y -= 13; } }
+    P.y -= 6; P.need(76); section("Acceptance – we accept this quotation and its terms");
+    P.y -= 18;
+    const ln = (x, w, lab) => { P.line(x, P.y, x + w, P.y); P.text(x, P.y - 11, lab, 8.5, false, true); };
+    ln(L, 110, "Name"); ln(L + 122, 120, "Signature"); ln(L + 254, 90, "Date"); ln(L + 356, 127, "Order number (if any)"); P.y -= 28;
+    P.need(24); P.text(L, P.y, d.footer || "", 8.5, false, true);
+  });
+}
+window.quotePdf = quotePdf;
 async function shareFile(blob, name, title) {
   const file = new File([blob], name, { type: blob.type });
   try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title }); return "shared"; } }
@@ -89,6 +139,7 @@ const easySet = (k, v) => { try { localStorage.setItem(k + ":" + (me || ""), v);
 const randR = n => (n < 0 ? "-" : "") + "R " + Math.round(Math.abs(n)).toLocaleString("en-ZA").replace(/[  ,]/g, " ");
 const randR2 = n => "R " + (Math.round(n * 100) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const docNo = p => { const d = new Date(Date.now() + 2 * 3600e3); return p + "-" + d.toISOString().slice(2, 10).replace(/-/g, "") + "-" + d.toISOString().slice(11, 16).replace(":", ""); };
+const fmtT = t => (Math.round(t * 100) / 100).toLocaleString("en-ZA").replace(/[  ,]/g, " ");
 const longDay = k => new Date(k + "T08:00:00+02:00").toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Johannesburg" });
 
 // ---------- the document sheet ----------
@@ -104,14 +155,16 @@ function docField(k, label, ph, opts) {
 function docRows() {
   const f = DOC.f, n = k => num(f[k]);
   if (DOC.kind === "quote") {
-    // 27 Sep 2026: transport from South Africa to another country is zero-rated (VAT Act s11(2)(a)) – "0% VAT (cross-border)"
-    const zero = f.vat === QUOTE_ZERO, incl = f.vat === QUOTE_IN, tag = zero ? " (0% VAT)" : incl ? " (incl. VAT)" : " (excl. VAT)";
-    const rate = n("rate"), ex = incl ? rate / 1.15 : rate, tpl = n("tpl") || 34, rows = [];
-    rows.push([`Road transport ${f.fromPlace || "?"} to ${f.toPlace || "?"}${n("km") ? ` (about ${Math.round(n("km"))} km one way)` : ""}`, ""]);
-    rows.push(["Rate per ton" + (zero ? " (0% VAT – transport to another country)" : incl ? " (including 15% VAT)" : " (excluding VAT)"), randR2(rate), 1]);
-    if (!zero && !incl) rows.push(["Rate per ton including 15% VAT", randR2(rate * 1.15)]);
-    rows.push([`Per load of ${tpl} tons` + tag, randR(rate * tpl)]);
-    if (n("loads")) rows.push([`${n("loads")} loads a month` + tag, randR(rate * tpl * n("loads"))]);
+    // 27 Sep 2026: transport from South Africa to another country is zero-rated (VAT Act s11(2)(a)) – "0% VAT (cross-border)".
+    // Industry layout: rate excl. VAT, the VAT, the rate incl. VAT, then per load and the month's estimate.
+    const zero = f.vat === QUOTE_ZERO, incl = f.vat === QUOTE_IN;
+    const rate = n("rate"), ex = incl ? rate / 1.15 : rate, vat = zero ? 0 : ex * 0.15, tpl = n("tpl") || 34, rows = [];
+    rows.push(["Rate per ton, excluding VAT", randR2(ex)]);
+    rows.push([zero ? "VAT at 0% (zero-rated – transport to another country)" : "VAT at 15%", randR2(vat)]);
+    rows.push(["Rate per ton" + (zero ? "" : ", including VAT"), randR2(ex + vat), 1]);
+    rows.push([`Per load of ${fmtT(tpl)} tons, excluding VAT`, randR(ex * tpl)]);
+    if (!zero) rows.push([`Per load of ${fmtT(tpl)} tons, including VAT`, randR((ex + vat) * tpl)]);
+    if (n("loads")) rows.push([`Estimate for ${n("loads")} loads (${fmtT(tpl * n("loads"))} tons)${zero ? "" : ", including VAT"}`, randR((ex + vat) * tpl * n("loads"))]);
     return { rows, ok: rate > 0, ex };
   }
   const q = n("qty"), rate = n("rate"), sub = q * rate, vat = f.vat === "Add 15% VAT" ? sub * 0.15 : 0;
@@ -123,23 +176,33 @@ function docRows() {
 function docSheetHtml() {
   const q = DOC.kind === "quote", r = docRows();
   return (q
-    ? docField("to", "Quote to (client)", "Company or person") + docField("from", "From (your name – remembered)", "e.g. your trading name") +
-      `<div class="calc">${docField("rate", "Rate per ton (R)", "e.g. 420", "num")}${docField("tpl", "Tons per load", "34", "num")}</div>` +
+    ? (coOn() ? `<div class="coline">${ic("file")}<span>On our letterhead: ${esc(window._company.legal_name)}${window._company.reg_no ? "" : " – registration number missing (Settings › Company details)"}</span></div>` : `<div class="coline">${ic("info")}<span>No company details yet – add them in Settings › Company details so the quote carries our registration and VAT numbers.</span></div>` + docField("from", "From (your name – remembered)", "e.g. your trading name")) +
+      docField("to", "Quote to (client company)", "Company") + docField("attn", "Attention", "optional – the person") +
+      `<div class="calc">${docField("fromPlace", "Collection point", "e.g. Mooinooi plant")}${docField("toPlace", "Delivery point", "e.g. Richards Bay")}</div>` +
+      `<div class="calc">${docField("cargo", "Cargo", "e.g. chrome ore, ROM")}${docField("km", "Km one way", "optional", "num")}</div>` +
+      `<div class="calc">${docField("vehicle", "Vehicle", "34 t side tipper")}${docField("tpl", "Tons per load", "34", "num")}</div>` +
+      `<div class="calc">${docField("loads", "Loads", "optional", "num")}${docField("start", "First loading", "", "date")}</div>` +
+      `<div class="calc">${docField("rate", "Rate per ton (R)", "e.g. 420", "num")}${docField("valid", "Valid (days)", "7", "num")}</div>` +
       docField("vat", "The rate is", "", [QUOTE_EX, QUOTE_IN, QUOTE_ZERO]) +
       (DOC.f.vat === QUOTE_ZERO ? `<div class="quiet">0% VAT is for transport from South Africa to another country (zero-rated, VAT Act section 11(2)(a)). Keep the delivery note, transport papers and proof of payment.</div>` : "") +
-      `<div class="calc">${docField("loads", "Loads a month", "optional", "num")}${docField("valid", "Valid (days)", "7", "num")}</div>` +
-      docField("notes", "Notes on the quote", "e.g. Payment 30 days from POD. Weighbridge at loading counts.", "area")
+      `<div class="fld"><span>Included in the rate</span></div><div class="chips docinc">${QUOTE_INC.map(([k, t]) => `<button type="button" data-docinc="${k}" class="${DOC.f["inc_" + k] ? "on" : ""}" aria-pressed="${!!DOC.f["inc_" + k]}">${t}</button>`).join("")}</div>` +
+      docField("diesel", "Rate based on diesel at (R a litre)", "e.g. 22.50 – the fuel clause uses it", "num") +
+      docField("pay", "Payment terms", "e.g. 30 days from statement") + docField("standing", "Standing time", "e.g. 4 hours free, then R650 an hour") +
+      docField("notes", "Anything else for the client", "optional", "area")
     : docField("to", "Statement to (who pays the commission)", "Company") + docField("from", "From (your name – remembered)", "e.g. your trading name") +
       docField("deal", "Deal or reference", "e.g. Chrome lumpy – August") +
       `<div class="calc">${docField("qty", "Dry tons (DMT)", "e.g. 940", "num")}${docField("rate", "Rate per DMT (R)", "e.g. 40", "num")}</div>` +
       docField("vat", "VAT", "", ["No VAT", "Add 15% VAT"]) + docField("due", "Payment due", "", "date") +
       docField("notes", "Payment details and notes", "e.g. Pay by EFT, reference as above. Bank details as on our invoice.", "area"))
     + `<div class="lbl">On the document</div><div class="cres">${r.rows.filter(x => x[1]).map(([k, v, b]) => `<div class="kv${b ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`
-    + `<div class="quiet">${q ? "Only the client's price goes on the quote – never our costs or margin." : "Check the tons and rate against the weighbridge and the signed commission agreement."}</div>`
+    + `<div class="quiet">${q ? "Only the client's price goes on the quote – never our costs, the transporter's rate or our margin." : "Check the tons and rate against the weighbridge and the signed commission agreement."}</div>`
     + `<button class="primary wide" data-docmake="1"${r.ok ? "" : " disabled"}>${ic("file")}Make the PDF and share it</button>`;
 }
+const QUOTE_INC = [["diesel", "Diesel"], ["tolls", "Tolls"], ["driver", "Driver"], ["tracking", "Tracking"], ["git", "Goods-in-transit cover"]];
 function openDocSheet(kind, f) {
-  DOC = { kind, f: Object.assign({ from: easyGet("docFrom"), valid: "7", tpl: "34", vat: kind === "quote" ? (CROSS_BORDER.test((f && f.toPlace) || "") ? QUOTE_ZERO : QUOTE_EX) : "No VAT" }, f) };
+  const co = window._company || {};
+  DOC = { kind, f: Object.assign({ from: easyGet("docFrom"), valid: "7", tpl: "34", vehicle: "34 t side tipper", pay: co.payment_terms || "", standing: co.standing_rate || "", inc_diesel: true, inc_tolls: true, inc_driver: true, inc_tracking: true, inc_git: false,
+    diesel: (() => { const t = window._trip || {}, fu = (window._fuel || [])[0]; return t.diesel ? String(t.diesel) : fu && (fu.inland || fu.coastal) ? String(fu.inland || fu.coastal) : ""; })(), vat: kind === "quote" ? (CROSS_BORDER.test((f && f.toPlace) || "") ? QUOTE_ZERO : QUOTE_EX) : "No VAT" }, f) };
   $("docTitle").textContent = kind === "quote" ? "Quote PDF" : "Commission statement PDF";
   $("docBody").innerHTML = docSheetHtml(); $("docSheet").classList.remove("hidden");
 }
@@ -151,8 +214,25 @@ async function docMake() {
   const number = docNo(q ? "Q" : "CS"), today = saDayPlus(0);
   const meta = [["Date", longDay(today)]];
   if (q) meta.push(["Valid until", longDay(saDayKey(Date.now() + (num(f.valid) || 7) * 864e5))]); else if (/^\d{4}-\d{2}-\d{2}$/.test(f.due || "")) meta.push(["Payment due", longDay(f.due)]);
-  const blob = docPdf({ title: q ? "Transport quote" : "Commission statement", number, from: f.from || me || "", to: f.to || "", meta, rows: r.rows, notes: f.notes || "",
-    footer: q ? "Prices in South African rand. Subject to truck availability on the day of loading." : "This statement is for the commission agreed in writing for the deal above." });
+  let blob;
+  if (q) {
+    const cross = f.vat === QUOTE_ZERO || CROSS_BORDER.test(f.toPlace || ""), inc = QUOTE_INC.filter(([k]) => f["inc_" + k]).map(([, t]) => t), out = QUOTE_INC.filter(([k]) => !f["inc_" + k]).map(([, t]) => t);
+    const job = [["Collection", f.fromPlace], ["Delivery", f.toPlace], ["Distance", num(f.km) ? `about ${Math.round(num(f.km))} km one way` : ""], ["Cargo", f.cargo], ["Vehicle", f.vehicle],
+      ["Tons per load", fmtT(num(f.tpl) || 34) + " t (payload)"], ["Loads", num(f.loads) ? String(num(f.loads)) : ""], ["First loading", /^\d{4}-\d{2}-\d{2}$/.test(f.start || "") ? longDay(f.start) : ""]];
+    const incl = inc.length ? [inc.join(", ") + " – included in the rate per ton."] : [];
+    const excl = [...(out.length ? [out.join(", ") + "."] : []), f.standing ? `Standing time: ${f.standing}.` : "Standing time beyond 4 hours at loading or offloading, at our standing rate.",
+      "Loading and offloading equipment, and any site or gate fees.", ...(cross ? ["Border, clearing and agent fees, import duties and permits.", "Delays at the border beyond 24 hours."] : [])];
+    const terms = [
+      "Rates are per ton on the loading weighbridge ticket, unless agreed otherwise in writing.",
+      f.diesel ? `Fuel: the rate is based on diesel at R${num(f.diesel).toFixed(2)} a litre (inland wholesale price). If the official price moves by more than 5%, the rate is adjusted in proportion to the diesel part of the cost.` : "Fuel: the rate may be adjusted if the official diesel price moves by more than 5% before loading.",
+      `Payment: ${f.pay || "as agreed in writing before the first load"}. Banking details are on our tax invoice.`,
+      "Subject to truck availability on the day of loading, and to safe, legal loading within the vehicle's permitted mass.",
+      "Claims for loss or damage must reach us in writing within 7 days of delivery, noted on the delivery note.",
+      `This quote is valid for ${num(f.valid) || 7} days. Prices are in South African rand.`];
+    blob = quotePdf({ number, from: f.from || me || "", to: f.to || "", attn: f.attn || "", meta, job, rows: r.rows, incl, excl, terms, notes: f.notes || "",
+      footer: coOn() ? [window._company.legal_name, window._company.reg_no && "Reg. no. " + window._company.reg_no, window._company.vat_no && "VAT no. " + window._company.vat_no].filter(Boolean).join("  ·  ") : "Prices in South African rand." });
+  } else blob = docPdf({ title: "Commission statement", number, from: f.from || me || "", to: f.to || "", meta, rows: r.rows, notes: f.notes || "",
+    footer: "This statement is for the commission agreed in writing for the deal above. Banking details are on our tax invoice." });
   const name = (q ? "Quote " : "Commission statement ") + (f.to || "").replace(/[^\w\- ]+/g, "").trim().slice(0, 40) + " " + number + ".pdf";
   const how = await shareFile(blob, name.replace(/\s+/g, " "), q ? "Transport quote" : "Commission statement");
   if (how === "cancel") return;
@@ -169,11 +249,20 @@ document.addEventListener("input", e => {
 document.addEventListener("click", async e => {
   if (e.target.id === "docSheet" || e.target.closest("#docClose")) { $("docSheet").classList.add("hidden"); return; }
   const sg = e.target.closest("button[data-docseg]"); if (sg && DOC) { DOC.f[sg.dataset.docseg] = sg.dataset.v; docRefresh(); return; }
+  const di = e.target.closest("button[data-docinc]"); if (di && DOC) { const k = "inc_" + di.dataset.docinc; DOC.f[k] = !DOC.f[k]; docRefresh(); return; }
+  // from a transport deal's Numbers tab (a deal reloaded from WhatsApp carries its terms)
+  const dq = e.target.closest("button[data-dquote]");
+  if (dq) {
+    const d = dealById(dq.dataset.dquote), p = (d && d.params) || {}, rt = String(p.route || "").split(/\s*(?:→|->|–| to )\s*/);
+    openDocSheet("quote", { to: p.client || p.buyer || "", rate: String(numIn(p.client_rate) || ""), cargo: p.cargo || "", km: String(numIn(p.distance) || ""), fromPlace: rt[0] || "", toPlace: rt[1] || "", loads: String(numIn(p.loads) || ""), vat: /incl/i.test(p.vat || "") ? QUOTE_IN : undefined });
+    if (!DOC.f.vat) DOC.f.vat = CROSS_BORDER.test(DOC.f.toPlace || "") ? QUOTE_ZERO : QUOTE_EX;
+    docRefresh(); return;
+  }
   if (e.target.closest("button[data-docmake]")) { docMake(); return; }
   // from the Transport calculator
   if (e.target.closest("button[data-trquote]")) {
     const TRp = window._trip || {}, d = TRp.deal && dealById(TRp.deal);
-    openDocSheet("quote", { to: d ? (d.params && (d.params.client || d.params.buyer)) || "" : "", rate: TRp.client || "", tpl: String(TRp.tpl || 34), loads: TRp.loads || "", km: TRp.km || "", fromPlace: TRp.from || "", toPlace: TRp.to || "" });
+    openDocSheet("quote", { to: d ? (d.params && (d.params.client || d.params.buyer)) || "" : "", rate: TRp.client || "", tpl: String(TRp.tpl || 34), loads: TRp.loads || "", km: TRp.km || "", fromPlace: TRp.from || "", toPlace: TRp.to || "", cargo: d && d.params ? d.params.cargo || "" : "" });
     return;
   }
   // from the Chrome & ore calculator

@@ -3,7 +3,55 @@
 
 // ---------- New task sheet ----------
 let tsKind = "own", tsOwner = "Chris", tsDue = "";
-function tsPaint() {
+// ---------- quick words in the task line (Ion Rail "New job", 27 Sep 2026) ----------
+// Type it once: "Chase Adrian for tippers fri @annemarie #pmc" lands on Friday, for Annemarie, on the deal with "pmc" in its name.
+const TS_DAYS = { sun: 0, mon: 1, tue: 2, tues: 2, wed: 3, thu: 4, thur: 4, thurs: 4, fri: 5, sat: 6 };
+function tsParse(text) {
+  const out = { clean: [], due: null, owner: null, from: null, deal: null, urgent: false, toks: [] };
+  const today = new Date(saDayPlus(0) + "T08:00:00+02:00").getUTCDay();
+  for (const w of String(text || "").split(/\s+/).filter(Boolean)) {
+    const lw = w.toLowerCase().replace(/[.,;:]$/, "");
+    if (/^(today|tod)$/.test(lw)) { out.due = saDayPlus(0); out.toks.push(["day", "Today"]); continue; }
+    if (/^(tmrw|tmr|tomorrow|tomorow)$/.test(lw)) { out.due = saDayPlus(1); out.toks.push(["day", "Tomorrow"]); continue; }
+    if (lw in TS_DAYS) { const n = (TS_DAYS[lw] - today + 7) % 7; out.due = saDayPlus(n); out.toks.push(["day", n === 0 ? "Today" : dayName(new Date(out.due + "T08:00:00+02:00"))]); continue; }
+    if (/^@[a-z]/i.test(w) && w.length > 2) {
+      const n = w.slice(1).replace(/[.,;:]$/, "");
+      if (/^(chris|me)$/i.test(n)) { out.owner = "Chris"; out.toks.push(["who", "Chris"]); }
+      else if (/^(annemarie|am|anne)$/i.test(n)) { out.owner = "Annemarie"; out.toks.push(["who", "Annemarie"]); }
+      else { out.from = n.charAt(0).toUpperCase() + n.slice(1); out.toks.push(["from", "Waiting on " + out.from]); }
+      continue;
+    }
+    if (/^#\w/.test(w) && w.length > 2 && typeof liveDeals === "function") {
+      const q = w.slice(1).toLowerCase(), d = liveDeals().find(x => x.name.toLowerCase().includes(q));
+      if (d) { out.deal = d.id; out.toks.push(["deal", d.name]); continue; }
+    }
+    if (w === "!" || lw === "urgent") { out.urgent = true; out.toks.push(["urg", "Urgent"]); continue; }
+    out.clean.push(w);
+  }
+  out.clean = out.clean.join(" ");
+  return out;
+}
+function tsApplyWords() {
+  const p = tsParse($("tsWhat").value);
+  if (p.due) { tsDue = "pick"; $("tsDate").value = p.due; }
+  if (p.owner) tsOwner = p.owner;
+  if (p.from) { tsKind = "wait"; $("tsFrom").value = p.from; }
+  if (p.deal) { $("tsDeal").value = p.deal; const d = dealById(p.deal); if (d && [...$("tsArea").options].some(o => o.value === d.area)) $("tsArea").value = d.area; }
+  if (p.urgent) $("tsUrgent").checked = true;
+  $("tsToks").innerHTML = p.toks.map(([k, t]) => `<span class="tok t-${k}">${esc(t)}</span>`).join("");
+  tsPaint(true);
+}
+// the week as a rail: seven days, how many jobs each already has, and where this one lands (tap a day to move it)
+function tsWeekHtml() {
+  const key = tsDue === "pick" ? $("tsDate").value : tsDue === "" ? "" : saDayPlus(+tsDue);
+  const cnt = {}; for (const it of (window._items || [])) { const d = it.due_on || (typeof dueDate === "function" && dueDate(it) ? saKey(dueDate(it)) : ""); if (d) cnt[d] = (cnt[d] || 0) + 1; }
+  const what = tsParse($("tsWhat").value).clean || "This job", dn = dealById($("tsDeal").value);
+  const rows = [...Array(7)].map((_, i) => { const k = saDayPlus(i), d = new Date(k + "T08:00:00+02:00"), on = k === key, n = cnt[k] || 0;
+    return `<button type="button" class="twr${on ? " on" : ""}" data-tday="${k}" aria-pressed="${on}"><span class="twd"><span>${i === 0 ? "Today" : WDAY[d.getUTCDay()] + " " + d.getUTCDate()}</span><span class="twn">${n ? n + " job" + (n > 1 ? "s" : "") : "–"}</span></span><i class="twk" aria-hidden="true"></i>${on ? `<span class="twc"><span class="twt">${esc(what)}</span><span class="tws">${esc([tsKind === "wait" && $("tsFrom").value ? "Waiting on " + $("tsFrom").value : tsOwner, dn ? dn.name : ""].filter(Boolean).join(" · "))}</span></span>` : ""}</button>`; }).join("");
+  const later = key && !rows.includes(`data-tday="${key}" `) && ![...Array(7)].some((_, i) => saDayPlus(i) === key);
+  return `<div class="rread rin"><span>rail · this week</span><span>${later ? "due " + esc(dayName(new Date(key + "T08:00:00+02:00"))) : key ? "tap a day" : "no date yet"}</span></div><div class="twrail">${rows}</div>`;
+}
+function tsPaint(fromWords) {
   document.querySelectorAll("#taskSheet [data-tk]").forEach(b => b.classList.toggle("on", b.dataset.tk === tsKind));
   document.querySelectorAll("#taskSheet [data-towner]").forEach(b => b.classList.toggle("on", b.dataset.towner === tsOwner));
   document.querySelectorAll("#taskSheet [data-tdue]").forEach(b => b.classList.toggle("on", b.dataset.tdue === tsDue));
@@ -11,7 +59,12 @@ function tsPaint() {
   $("tsWhatL").textContent = tsKind === "wait" ? "What are we waiting for?" : "What needs doing?";
   $("tsWhat").placeholder = tsKind === "wait" ? "e.g. Permits" : "e.g. Send the truck list";
   $("tsDateBox").classList.toggle("hidden", tsDue !== "pick");
+  const wk = $("tsWeek"); if (wk) wk.innerHTML = tsWeekHtml();
+  if (!fromWords && $("tsToks")) $("tsToks").innerHTML = tsParse($("tsWhat").value).toks.map(([k, t]) => `<span class="tok t-${k}">${esc(t)}</span>`).join("");
 }
+$("tsWhat").addEventListener("input", tsApplyWords);
+$("tsDate").addEventListener("change", () => tsPaint());
+$("tsFrom").addEventListener("input", () => tsPaint());
 function openTaskSheet(opts) {
   opts = opts || {};
   tsKind = opts.kind || "own"; tsOwner = me === "Annemarie" ? "Annemarie" : "Chris"; tsDue = "";
@@ -38,10 +91,11 @@ $("taskSheet").addEventListener("click", e => {
   const k = e.target.closest("[data-tk]"); if (k) { tsKind = k.dataset.tk; tsPaint(); (tsKind === "wait" ? $("tsFrom") : $("tsWhat")).focus(); return; }
   const o = e.target.closest("[data-towner]"); if (o) { tsOwner = o.dataset.towner; tsPaint(); return; }
   const d = e.target.closest("[data-tdue]"); if (d) { tsDue = d.dataset.tdue; tsPaint(); if (tsDue === "pick") $("tsDate").focus(); return; }
+  const wd = e.target.closest("[data-tday]"); if (wd) { tsDue = "pick"; $("tsDate").value = wd.dataset.tday; tsPaint(); return; }
 });
-$("tsDeal").addEventListener("change", () => { const d = dealById($("tsDeal").value); if (d && [...$("tsArea").options].some(o => o.value === d.area)) $("tsArea").value = d.area; });
+$("tsDeal").addEventListener("change", () => { tsPaint(); const d = dealById($("tsDeal").value); if (d && [...$("tsArea").options].some(o => o.value === d.area)) $("tsArea").value = d.area; });
 $("tsAdd").onclick = async () => {
-  const what = $("tsWhat").value.trim(), from = $("tsFrom").value.trim();
+  const what = tsParse($("tsWhat").value).clean.trim(), from = $("tsFrom").value.trim();
   if (!what) { $("tsMsg").textContent = "Type what needs doing first."; $("tsWhat").focus(); return; }
   if (tsKind === "wait" && !from) { $("tsMsg").textContent = "Type who we are waiting on."; $("tsFrom").focus(); return; }
   const due = tsDue === "" ? null : tsDue === "pick" ? ($("tsDate").value || null) : saDayPlus(+tsDue);
