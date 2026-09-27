@@ -1276,3 +1276,17 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .pbline{width:100%;margin-top:10px;min-height:40px;justify-content:flex-start;text-align:left;font-size:14px;background:transparent;box-shadow:none;border:1px dashed var(--line2);color:var(--muted)}
 .pbnote{margin-top:10px;font-size:14px;color:var(--muted)}
 .pc-min{display:none}
+/* New task: quick words and the week rail (27 Sep 2026) */
+.tstoks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tstoks:empty{display:none}
+.tok{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:8px;font-size:14px;background:var(--raise);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.tshint{font-size:14px;margin-top:6px}
+.twrail{display:flex;flex-direction:column;gap:4px}
+.twr{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 8px;justify-content:flex-start;text-align:left;background:transparent;box-shadow:none;border:0;color:var(--text);font-weight:400}
+.twd{display:flex;flex-direction:column;width:76px;flex:none;font-size:14px;line-height:1.25}
+.twn{color:var(--muted);font-size:14px}
+.twk{width:10px;height:10px;border-radius:50%;background:var(--line2);flex:none}
+.twr.on .twk{background:var(--primary)}
+.twc{flex:1;min-width:0;display:flex;flex-direction:column;padding:8px 12px;border-radius:12px;background:var(--primary);color:var(--on-primary)}
+.twt{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tws{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

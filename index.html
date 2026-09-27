@@ -103,12 +103,15 @@
     <div class="sheet-h"><span id="tsTitle">New task</span><button id="tsClose" type="button">Close</button></div>
     <div class="seg2" role="group" aria-label="What kind of task"><button type="button" data-tk="own">Our job</button><button type="button" data-tk="wait">Waiting on someone</button></div>
     <label class="fld"><span id="tsWhatL">What needs doing?</span><input id="tsWhat" maxlength="300" autocomplete="off"></label>
+    <div class="tstoks" id="tsToks" aria-live="polite"></div>
+    <div class="quiet tshint">Quick words: fri · tmrw · @annemarie · @chris · @name (waiting on them) · #deal · ! for urgent</div>
     <label class="fld hidden" id="tsFromBox"><span>Waiting on whom?</span><input id="tsFrom" list="people" autocomplete="off" placeholder="e.g. Sam &amp; Lee"></label>
     <div class="lbl">Who does it</div>
     <div class="seg2" role="group" aria-label="Who does it"><button type="button" data-towner="Chris">Chris</button><button type="button" data-towner="Annemarie">Annemarie</button></div>
     <div class="lbl">Due</div>
     <div class="seg2" role="group" aria-label="Due"><button type="button" data-tdue="">No date</button><button type="button" data-tdue="0">Today</button><button type="button" data-tdue="1">Tomorrow</button><button type="button" data-tdue="pick">Pick date</button></div>
     <label class="fld hidden" id="tsDateBox"><span>Due date</span><input type="date" id="tsDate"></label>
+    <div id="tsWeek"></div>
     <details class="tsmore"><summary>More: deal, holding up, next step, area, urgent</summary>
       <label class="fld"><span>Deal</span><select id="tsDeal"><option value="">No deal</option></select></label>
       <label class="fld"><span>Holding up (what can't move until this is done)</span><input id="tsBlocks" autocomplete="off" placeholder="e.g. Maize loads"></label>
