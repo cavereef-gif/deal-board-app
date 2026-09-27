@@ -8,9 +8,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script>try{document.documentElement.dataset.palette=localStorage.getItem("palette")||"titanium"}catch(e){document.documentElement.dataset.palette="titanium"}</script>
+<script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"){d.dataset.palette="titanium";d.dataset.ion="1"}else d.dataset.palette=p})()</script>
 <link rel="stylesheet" href="app.css?v=17">
 <link rel="stylesheet" href="titanium.css?v=17">
+<link rel="stylesheet" href="ion.css?v=17">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -42,7 +43,7 @@
   <nav class="tabs" aria-label="Main">
     <button data-v="worklist" aria-label="Today" title="Today" data-ico="home">Today</button>
     <button data-v="deals" aria-label="Deals" title="Deals" data-ico="deals">Deals</button>
-    <button class="plus" data-v="bot" id="askTab" type="button" aria-label="Ask – open, add or change anything" title="Ask" data-ico="sparkle"><span class="pl">Ask</span></button>
+    <button class="plus" id="plusTab" type="button" aria-label="Add – task, deal, contact, voice note, photo, WhatsApp quote" title="Add" data-ico="plus"><span class="pl">Add</span></button>
     <button data-v="leads" aria-label="People" title="People" data-ico="people">People</button>
     <button data-v="board" aria-label="Notice board" title="Notice board" data-ico="board">Board<span class="nb hidden" id="boardDot"></span></button>
   </nav>
@@ -306,9 +307,11 @@ function isOpen(k, dflt){ if (openKeys.has("+" + k)) return true; if (openKeys.h
 function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openKeys].slice(-300))); } catch(e){} }
 function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
+function curPalette(){ const d = document.documentElement; return d.dataset.ion ? "ion" : (d.dataset.palette || "titanium"); }
+function applyPalette(k){ const d = document.documentElement; if (k === "ion") { d.dataset.palette = "titanium"; d.dataset.ion = "1"; } else { d.dataset.palette = k; delete d.dataset.ion; } }
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
   const ti = document.documentElement.dataset.palette === "titanium";
-  document.querySelector('meta[name="theme-color"]').content = ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
+  document.querySelector('meta[name="theme-color"]').content = document.documentElement.dataset.ion ? (t === "light" ? "#A2A6AE" : "#26292E") : ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -580,7 +583,7 @@ function savedContactsHtml(q){
 window.waitingPeopleHtml = waitingPeopleHtml; window.savedContactsHtml = savedContactsHtml;
 function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
-  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${(document.documentElement.dataset.palette || "titanium") === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
+  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
     <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
     <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(me) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
@@ -612,7 +615,7 @@ $("list").addEventListener("click", e => {
 $("list").addEventListener("click", async e => {
   const b = e.target.closest("button[data-set]"); if (!b) return;
   if (b.dataset.set === "theme") { setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"); render(); }
-  else if (b.dataset.set === "palette") { document.documentElement.dataset.palette = b.dataset.v; try { localStorage.setItem("palette", b.dataset.v); } catch (e) {} setTheme(document.documentElement.dataset.theme || "dark"); render(); }
+  else if (b.dataset.set === "palette") { applyPalette(b.dataset.v); try { localStorage.setItem("palette", b.dataset.v); } catch (e) {} setTheme(document.documentElement.dataset.theme || "dark"); render(); }
   else if (b.dataset.set === "refresh") location.reload();
   else if (b.dataset.set === "out") { await sb.auth.signOut(); me = ""; show(); }
 });
@@ -636,8 +639,11 @@ function checklistHtml(d, pg){
     const done = g.steps.filter(s => s.status !== "open").length;
     const isCur = !!(pg.cur && pg.cur.name === g.name);
     const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);
-    return `<div class="stg${isCur ? " cur" : ""}"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="st">${esc(g.name)}${isCur ? `<span class="nowtag">Now</span>` : ""}</span><span class="cnt">${done} of ${g.steps.length} done</span><span class="chev"></span></div>${open ? g.steps.map(x => stepHtml(x, pg.next && pg.next.id === x.id)).join("") : ""}</div>`;
+    const allDone = done === g.steps.length;
+    return `<div class="stg${isCur ? " cur" : ""}${open ? " open" : ""}${allDone ? " done" : ""}"><div class="stg-h" role="button" tabindex="0" data-tog="${esc(k)}" data-dflt="${isCur ? 1 : 0}" aria-expanded="${open}"><span class="st">${esc(g.name.replace(/\s*\([^)]*\)\s*$/, "") || g.name)}${isCur ? `<span class="nowtag">Now</span>` : ""}</span>${(m => m ? `<span class="ss">${esc(m[1])}</span>` : "")(g.name.match(/\(([^)]*)\)\s*$/))}<span class="cnt">${done} of ${g.steps.length} done</span><span class="chev"></span><i class="pn" aria-hidden="true"></i></div>${open ? `<div class="stg-b">${g.steps.map(x => stepHtml(x, pg.next && pg.next.id === x.id)).join("")}</div>` : ""}</div>`;
   }).join("");
+  const ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length;
+  h = `<div class="rread rin"><span>rail · procedure${d.kit ? " · sa deal kit" : ""}</span><span>stage ${ci} of ${pg.stages.length}</span></div><div class="prail">${h}</div>`;
   if (addStepFor === d.id) h += `<div class="step-p"><label class="fld" style="margin-top:0"><span>New step</span><input id="nsTitle" placeholder="e.g. Site visit booked" maxlength="200"></label><label class="fld"><span>Stage</span><select id="nsStage">${pg.stages.map(g => `<option>${esc(g.name)}</option>`).join("")}${pg.stages.some(g => g.name === "Extra steps") ? "" : "<option>Extra steps</option>"}</select></label><div class="acts0"><button class="primary" data-savestep="${d.id}">${ic("plus")}Add step</button><button data-addstep="">Cancel</button></div></div>`;
   else h += `<div class="acts0"><button data-addstep="${d.id}">${ic("plus")}Add a step</button></div>`;
   return h;
@@ -693,6 +699,32 @@ function dealCardHtml(d){
       ${pg.total ? `<span class="dx">${pg.next ? `Next step: ${esc(pg.next.title)}` : "Checklist complete"}</span>` : (d.next_milestone ? `<span class="dx">Next: ${esc(d.next_milestone)}</span>` : "")}
     </span>${pg.total ? ring(pg.done, pg.total) : ""}<span class="chev"></span></button></div>`;
 }
+// The deal's ticket (Ion Rail, 27 Sep 2026): the one number that matters in big digits, the key terms in a line, and a stub
+// with three figures. Built only from the deal's own terms – the private target and walk-away limit never appear here.
+function odoHtml(txt){
+  const t = String(txt || ""), m = t.match(/(\d[\d\s,]*(?:\.\d+)?)(?:\s*[–-]\s*(\d[\d\s,]*(?:\.\d+)?))?/); if (!m) return "";
+  const pre = t.slice(0, m.index).trim(), rest = t.slice(m.index + m[0].length).trim();
+  const n = x => x ? Number(x.replace(/[\s,]/g, "")) : NaN;
+  let a = n(m[1]), b = n(m[2]), unit = "";
+  if (a >= 1000 && a % 1000 === 0 && (!m[2] || (b >= 1000 && b % 1000 === 0))) { a /= 1000; b /= 1000; unit = "k "; }
+  const box = x => String(Math.round(x)).slice(0, 7).replace(/\B(?=(\d{3})+(?!\d))/g, " ").split("").map(c => c === " " ? `<span class="gap"></span>` : `<i>${c}</i>`).join("");
+  return `<div class="od" aria-label="${esc(t)}">${pre ? `<em class="pre">${esc(pre)}</em>` : ""}${box(a)}${m[2] ? `<span class="dash">–</span>${box(b)}` : ""}${unit || rest ? `<em>${esc(unit + rest)}</em>` : ""}</div>`;
+}
+function dealTicketHtml(d, pg){
+  const p = d.params || {}, tr = d.kind === "transport", mn = d.kind === "mineral";
+  if (!tr && !mn) return "";
+  const has = k => p[k] && !/^not agreed$/i.test(p[k]);
+  const pill = has("commission") ? `<span class="tpill">${tr ? "Margin" : "Commission"} agreed</span>` : `<span class="tpill late">${tr ? "Margin" : "Commission"} not agreed</span>`;
+  const big = tr ? (p.client_rate || p.loads) : p.volume;
+  const kLabel = tr ? (p.client_rate ? "Client rate" : "Loads") : "Buyer wants";
+  const line = (tr ? [p.cargo, p.route, p.trucks] : [p.commodity, p.grade || "grade to confirm", has("basis") ? p.basis + (p.port ? " " + p.port : "") : "Incoterm not agreed", p.inspector ? "inspector: " + p.inspector : ""]).filter(Boolean).join(" · ");
+  const stub = tr ? [[p.distance || "—", "distance"], [p.haulier_rate || "—", "transporter rate"], [has("vat") ? p.vat : "—", "VAT"]]
+    : [[p.price || "—", "price"], [p.commission || "—", "our cut"], [pg.total ? `${pg.done} / ${pg.total}` : "—", "steps done"]];
+  const segs = pg.stages.length ? `<div class="tmeter"><span>steps ${pg.stages.filter(g => g.steps.every(s => s.status !== "open")).length}/${pg.stages.length}</span><span class="tm">${pg.stages.map(g => `<i class="${g.steps.every(s => s.status !== "open") ? "d" : pg.cur === g ? "c" : ""}"></i>`).join("")}</span></div>` : "";
+  return `<div class="rread rin"><span>ticket · ${esc((d.area || d.kind).toLowerCase())}</span><span>${tr ? "rate" : "price"}: ${has(tr ? "client_rate" : "price") ? "set" : "not agreed"}</span></div>
+    <div class="ticket"><div class="tk-top"><div class="tk-r"><span class="k">${kLabel}${big ? "" : " · not set"}</span>${pill}</div>${big ? odoHtml(big) || `<div class="tk-big">${esc(big)}</div>` : `<div class="tk-big quiet">Add it in Numbers › Terms</div>`}${line ? `<div class="tk-l">${esc(line)}</div>` : ""}</div>
+    <div class="tear"></div><div class="tk-stub">${stub.map(([v, l]) => `<div><b>${esc(v)}</b>${l}</div>`).join("")}</div>${segs}</div>`;
+}
 // A deal's own page: summary, then 4 tabs – Steps · Numbers · Notes and files · Guide
 function dealPageHtml(d){
   const pg = dealProgress(d.id), waits = itemsOf(d.id).sort(byPrioThenAge);
@@ -702,6 +734,7 @@ function dealPageHtml(d){
   const tabs = [["steps", "list", "Steps"], ["numbers", "calc", "Numbers"], ["notes", "note", "Notes and files"], ...(d.kind === "mineral" && d.kit && window.kitGuideHtml ? [["guide", "guide", "Guide"]] : [])];
   const t = tabs.some(x => x[0] === dealTab[d.id]) ? dealTab[d.id] : "steps";
   let h = `<div class="dpage" data-deal="${d.id}"><div class="dsum"><div class="dsum-t"><div class="ds">${esc(d.area)} · ${esc(d.status)}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</div>${d.stage ? `<div class="dx">${esc(d.stage)}</div>` : ""}</div>${pg.total ? ring(pg.done, pg.total) : ""}</div>`;
+  h += dealTicketHtml(d, pg);
   if (pg.next) h += `<div class="nextup"><div class="nu-l">Next step · ${esc(pg.cur.name)}</div><div class="nu-t">${esc(pg.next.title)}</div>${pg.next.closes_with ? `<div class="nu-c">Done when: ${esc(pg.next.closes_with)}</div>` : ""}${t !== "steps" ? `<div class="acts0"><button class="primary" data-openstep="${d.id}:${pg.next.id}">${ic("list")}Open this step</button></div>` : ""}</div>`;
   h += `<div class="dtabs4" role="tablist">${tabs.map(([k, icn, label]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}</button>`).join("")}</div><div class="dpanel">`;
   if (t === "steps") {
@@ -785,7 +818,7 @@ function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === (view === "deal" ? "deals" : view)));
   $("pageTitle").textContent = dp ? dp.name : (PAGE_TITLES[view] || "Deal Board");
   const stale = items.filter(i => i._stale && !i._me).length, proposed = items.filter(i => i.state === "Proposed").length, mine = items.filter(i => i._me).length;
-  $("botBtn").classList.add("hidden");   // Ask is the centre of the bottom bar now
+  $("botBtn").classList.toggle("hidden", !me || view === "bot");   // Ask sits in the top bar; the + is the centre of the bottom bar (27 Sep)
   const secOn = ["worklist", "deals", "leads", "board"].includes(view) && !!window.secBarHtml && !!me;
   $("secSlot").innerHTML = secOn ? secBarHtml() : ""; $("secSlot").classList.toggle("hidden", !secOn); document.body.classList.toggle("hassec", secOn);
   $("composer").classList.toggle("hidden", view !== "board" || !me);
@@ -887,6 +920,7 @@ window.addEventListener("popstate", () => {
 $("backBtn").onclick = () => { if (navStack.length) history.back(); };
 
 document.querySelector(".tabs").addEventListener("click", e => {
+  if (e.target.closest("#plusTab")) { $("addSheet").classList.remove("hidden"); return; }   // the + in the middle opens Add (27 Sep, Ion Rail)
   const b = e.target.closest("button[data-v]"); if (!b) return;
   if (b.dataset.v !== view) navPush();
   view = b.dataset.v; try{ localStorage.setItem("view", view) }catch(e){} render();

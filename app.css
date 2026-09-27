@@ -1242,3 +1242,31 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 /* Settings: Google link steps */
 .gsteps ol{margin:6px 0 10px;padding-left:22px;font-size:16px;line-height:1.5;color:var(--text)}.gsteps li{margin:6px 0}.gsteps a{color:var(--text);text-decoration:underline}
 .ahit.static{cursor:default}.ahit.static:active{transform:none}
+
+/* short and long pill words (27 Sep): the long form everywhere except the Ion Rail rows */
+.chip2 .cs{display:none}
+
+/* the deal's ticket (27 Sep 2026) – plain styling for every palette; the Ion Rail dresses it up in ion.css */
+.ticket{margin:12px 0 4px;border-radius:14px;background:var(--card2);color:var(--text);overflow:hidden;position:relative}
+.tk-top{padding:12px 14px 10px}
+.tk-r{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tk-r .k{font-size:14px;color:var(--muted)}
+.tpill{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;background:var(--raise);color:var(--text);font-size:14px;white-space:nowrap}
+.tk-big{font-size:20px;margin:8px 0 4px}
+.tk-l{font-size:14px;line-height:1.4;color:var(--muted);margin-top:6px}
+.od{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;margin:10px 0 4px}
+.od i{display:inline-flex;align-items:center;justify-content:center;width:30px;height:38px;border-radius:7px;background:var(--raise);font-style:normal;font-size:26px;line-height:1;font-weight:400}
+.od .gap{width:6px}
+.od em{font-style:normal;font-size:16px;margin-left:6px;color:var(--muted)}
+.tear{position:relative;height:0;border-top:1px dashed var(--line2);margin:0 14px}
+.tk-stub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 14px}
+.tk-stub div{font-size:14px;line-height:1.3;color:var(--muted);min-width:0}
+.tk-stub b{display:block;font-weight:400;font-size:16px;color:var(--text);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tmeter{display:flex;align-items:center;gap:10px;padding:0 14px 12px;font-size:14px;color:var(--muted)}
+.tmeter .tm{flex:1;display:flex;gap:4px}
+.tmeter .tm i{flex:1;height:5px;border-radius:3px;background:var(--line2)}
+.tmeter .tm i.d{background:var(--primary)} .tmeter .tm i.c{background:transparent;box-shadow:inset 0 0 0 1px var(--primary)}
+.stg-h .pn{display:none}
+.stg-h .ss{display:none}
+.od .dash{font-size:20px;color:var(--muted);margin:0 2px}
+.od em.pre{margin:0 4px 0 0}
