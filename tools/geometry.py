@@ -67,7 +67,7 @@ JS_FRAME = r"""
   const R = e => { if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height, r: r.right + scrollX, b: r.bottom + scrollY, radius: getComputedStyle(e).borderTopLeftRadius }; };
   const tabs = document.querySelector('.tabs'), plus = document.querySelector('.tabs .plus svg');
   return { w: document.documentElement.clientWidth, scrollW: document.documentElement.scrollWidth, plate: R(document.querySelector('.plate')), st: R(document.querySelector('.st')),
-    strips: [...document.querySelectorAll('.rstrip')].filter(s => s.offsetParent).map(R), sheets: [...document.querySelectorAll('.rsheet')].filter(s => s.offsetParent).map(R), tabs: R(tabs), plus: R(plus), secbar: R(document.querySelector('#secSlot .secbar')),
+    strips: [...document.querySelectorAll('.rstrip')].filter(s => s.offsetParent).map(R), sheets: [...document.querySelectorAll('.rsheet')].filter(s => s.offsetParent).map(R), tabs: R(tabs), plus: R(plus), secbar: R(document.querySelector('#list .secpin .secbar') || document.querySelector('#secSlot:not(.hidden) .secbar')), secpin: document.querySelector('#list .secpin') ? getComputedStyle(document.querySelector('#list .secpin')).position : '',
     tabCols: tabs ? [...tabs.querySelectorAll('button')].map(b => b.getBoundingClientRect().width) : [], meter: R(document.querySelector('.plate .meter')), ring: R(document.querySelector('.plate .ring svg')),
     hud: [...document.querySelectorAll('.rsheet')].map(s => { const b = getComputedStyle(s, '::before'); return { l: parseFloat(b.left), t: parseFloat(b.top), w: parseFloat(b.width) }; }),
     stripLines: [...document.querySelectorAll('.rstrip, .rplain')].filter(s => s.offsetParent).map(s => Math.round(s.getBoundingClientRect().height)),
@@ -105,7 +105,9 @@ async def run_dev(p, dev, site):
         if fr["tabs"]:
             t = fr["tabs"]; check(S, "bottom bar x8 · width−16 · 56 high · r18 · 5 equal columns", near(t["x"], M) and near(t["w"], fr["w"] - 2 * M) and near(t["h"], 56) and t["radius"] == "18px" and len(fr["tabCols"]) == 5 and max(fr["tabCols"]) - min(fr["tabCols"]) < 1, f"x{t['x']:.1f} w{t['w']:.1f} h{t['h']:.1f} cols {[round(c, 1) for c in fr['tabCols']]}")
             if fr["plus"]: check(S, "+ is a 36 circle centred", near(fr["plus"]["w"], 36) and near(fr["plus"]["x"] + 18, fr["w"] / 2, 1), f"w{fr['plus']['w']:.1f} cx{fr['plus']['x'] + 18:.1f}")
-        if fr["secbar"]: check(S, "section switch x8 · width−16 · 40 high · r12", near(fr["secbar"]["x"], M) and near(fr["secbar"]["w"], fr["w"] - 2 * M) and near(fr["secbar"]["h"], 40) and fr["secbar"]["radius"] == "12px", f"x{fr['secbar']['x']:.1f} w{fr['secbar']['w']:.1f} h{fr['secbar']['h']:.1f}")
+        if fr["secbar"]:
+            check(S, "section switch x8 · width−16 · 40 high · r12", near(fr["secbar"]["x"], M) and near(fr["secbar"]["w"], fr["w"] - 2 * M) and near(fr["secbar"]["h"], 40) and fr["secbar"]["radius"] == "12px", f"x{fr['secbar']['x']:.1f} w{fr['secbar']['w']:.1f} h{fr['secbar']['h']:.1f}")
+            if fr["plate"]: check(S, "section switch 8 under the plate and pinned", near(fr["secbar"]["y"], fr["plate"]["b"] + 8) and fr["secpin"] == "sticky", f"gap{fr['secbar']['y'] - fr['plate']['b']:.1f} {fr['secpin']}")
         check(S, f"{ncols} rail(s) on the screen", len(rails) >= ncols, str(len(rails)))
         for i, rl in enumerate(rails):
             T = f"{S} rail{i + 1}"

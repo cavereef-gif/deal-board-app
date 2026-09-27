@@ -324,7 +324,7 @@ async def main():
             fr={}
             for v in ["worklist","deals","leads","board","bot","calc"]:
                 await ev(f"goView('{v}'); window.scrollTo(0,0)"); await W(150)
-                fr[v]=await ev("!!document.querySelector('#secSlot .secbar') && getComputedStyle(document.querySelector('header.appbar')).position === 'sticky'")
+                fr[v]=await ev("(() => { const sb = document.querySelector('#secSlot .secbar, #list .secpin .secbar'); if (!sb) return false; const pin = sb.closest('.secpin') || document.querySelector('header.appbar'); return getComputedStyle(pin).position === 'sticky'; })()")
             bar=await ev("[...document.querySelectorAll('.tabs button')].map(b=>b.getAttribute('aria-label').split(' ')[0].replace('Notice','Board')).join(',')")
             await ev("goView('worklist')"); await W()
             tod=await ev("({ deals: !!document.querySelector('.hcard.t-deal'), buyers: !!document.querySelector('.hcard.t-buyer'), ov: !!document.querySelector('.hgrp.ov'), tiles: document.querySelectorAll('.htile').length })")

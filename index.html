@@ -789,12 +789,17 @@ function dealTicketHtml(d, pg){
   const kLabel = tr ? (p.client_rate ? "Client rate" : "Loads") : "Buyer wants";
   const line = (tr ? [p.cargo, p.route, p.trucks] : [p.commodity, p.grade || "grade to confirm", has("basis") ? p.basis + (p.port ? " " + p.port : "") : "Incoterm not agreed", p.inspector ? "inspector: " + p.inspector : ""]).filter(Boolean).join(" · ");
   const stub = tr ? [[p.distance || "—", "distance"], [p.haulier_rate || "—", "transporter rate"], [has("vat") ? p.vat : "—", "VAT"]]
-    : [[p.price || "—", "price"], [p.commission || "—", "our cut"], [pg.total ? `${pg.done} / ${pg.total}` : "—", "steps done"]];
+    : [[p.price || "—", /wmt/i.test(p.unit || "") ? "price per WMT" : "price per DMT"], [p.commission || "—", "our cut per DMT"], [pg.total ? `${pg.done} / ${pg.total}` : "—", "steps done"]];
   const segs = pg.stages.length ? `<div class="tmeter"><span>steps ${pg.stages.filter(g => g.steps.every(s => s.status !== "open")).length}/${pg.stages.length}</span><span class="tm">${pg.stages.map(g => `<i class="${g.steps.every(s => s.status !== "open") ? "d" : pg.cur === g ? "c" : ""}"></i>`).join("")}</span></div>` : "";
   return `<div class="ticket"><div class="tk-top"><div class="tk-r"><span class="k">${kLabel}${big ? "" : " · not set"}</span>${pill}</div>${big ? odoHtml(big) || `<div class="tk-big">${esc(big)}</div>` : `<div class="tk-big quiet">Add it in Numbers › Terms</div>`}${line ? `<div class="tk-l">${esc(line)}</div>` : ""}</div>
     <div class="tear"></div><div class="tk-stub">${stub.map(([v, l]) => `<div><b>${esc(v)}</b>${l}</div>`).join("")}</div>${segs}</div>`;
 }
 // A deal's own page: summary, then 4 tabs – Steps · Numbers · Notes and files · Guide
+// the plate's ring: which stage the deal is at ("3/12"), the arc shows the stages done
+function stageRing(cur, total, done){
+  const c = 2 * Math.PI * 15.5, p = total ? Math.max(done, cur - 1) / total : 0;
+  return `<span class="ring" role="img" aria-label="Stage ${cur} of ${total}"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="rt"/><circle cx="18" cy="18" r="15.5" class="rv" stroke-dasharray="${(p * c).toFixed(1)} ${c.toFixed(1)}"/></svg><span class="rn">${cur}/${total}</span></span>`;
+}
 function dealPageHtml(d){
   const pg = dealProgress(d.id), waits = itemsOf(d.id).sort(byPrioThenAge);
   const stale = waits.filter(i => i._stale && !i._me).length;
@@ -806,13 +811,14 @@ function dealPageHtml(d){
   // status row + plate: name, what it is, the ring (mock: "‹ Deals ● live · deal 02 · stage 2/5")
   let h = stRow(`${saClock()} <span class="live"><i></i>live</span>`, `${esc(kindWord)}${pg.stages.length ? ` · stage ${ci}/${pg.stages.length}` : ` · ${esc(d.status.toLowerCase())}`}`);
   const sub = [d.kind === "mineral" && typeof KIT_SHORT !== "undefined" && d.kit_route ? KIT_SHORT[d.kit_route] : "", d.kind === "transport" ? p.route : p.buyer || p.seller || "", waits.length ? `${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""].filter(Boolean).join(" · ");
-  h += plateHtml(esc(d.name), esc(sub || d.stage || ""), pg.total ? ring(pg.done, pg.total) : "");
+  h += plateHtml(esc(d.name), esc(sub || d.stage || ""), pg.stages.length ? stageRing(ci, pg.stages.length, pg.stages.filter(g => g.steps.every(x => x.status !== "open")).length) : "");
   const has = k => p[k] && !/^not agreed$/i.test(p[k]);
   h += sheetOpen(`ticket · ${esc(kindWord)}`, d.kind === "transport" ? `rate: ${has("client_rate") ? "set" : "not agreed"}` : d.kind === "mineral" ? `price: ${has("price") ? "set" : "not agreed"}` : `${d.status.toLowerCase()}`, "dsheet");
   h += dealTicketHtml(d, pg);
   h += `<div class="dtabs4" role="tablist">${tabs.map(([k, icn, label]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}</button>`).join("")}</div><div class="dpanel">`;
   if (t === "steps") {
-    h += (window.kitSecHtml ? kitSecHtml(d) : "") + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`);
+    const kit = window.kitSecHtml ? kitSecHtml(d) : "";
+    h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");
     h += rplain("waiting on others", `${waits.length} open`) + railOpen(0) + (waits.length ? `<section class="iblk"><div class="ibody">${waits.map(it => window.swRow ? swRow(it, true) : homeRowSafe(it)).join("")}</div></section>` : `<section class="iblk"><div class="empty">nothing waiting on this deal</div></section>`) + railClose();
     h += `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
   } else if (t === "numbers") {
@@ -900,6 +906,15 @@ function render(){
   $("botBtn").classList.toggle("hidden", !me || view === "bot");   // Ask sits in the top bar; the + is the centre of the bottom bar (27 Sep)
   const secOn = ["worklist", "deals", "leads", "board"].includes(view) && !!window.secBarHtml && !!me;
   $("secSlot").innerHTML = secOn ? secBarHtml() : ""; $("secSlot").classList.toggle("hidden", !secOn); document.body.classList.toggle("hassec", secOn);
+  // Ion Rail: the section switch sits under the header plate, as on the mock, and stays pinned under the top bar while you scroll
+  const placeSecBar = () => {
+    if (!secOn || !document.documentElement.dataset.ion) return;
+    const sb = $("secSlot").firstElementChild; if (!sb) return;
+    const w = document.createElement("div"); w.className = "secpin"; w.appendChild(sb);
+    const pl = $("list").querySelector(".plate"); if (pl) pl.after(w); else $("list").prepend(w);
+    $("secSlot").classList.add("hidden"); document.body.classList.remove("hassec");
+    document.documentElement.style.setProperty("--hdrh", document.querySelector("header.appbar").offsetHeight + "px");
+  };
   $("composer").classList.toggle("hidden", view !== "board" || !me);
   document.body.classList.toggle("boardview", view === "board");
   if (window.boardDot) boardDot();
@@ -909,6 +924,7 @@ function render(){
     const Ls = window._leads || [];
     const cnt = f => Ls.filter(f).length;
     $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap the green import icon.</div></div>` : "") + dirHtml();
+    placeSecBar();
     $("foot").textContent = (me ? me + " · " : "") + "app v" + APP_VERSION;
     $("addBtn").classList.add("hidden");
     (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
@@ -941,6 +957,7 @@ function render(){
   if (window._sheetItem && !si) window._sheetItem = null;
   if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our job" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
   $("list").innerHTML = html;
+  placeSecBar();
   (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
   if (typeof syncSheetHist === "function") setTimeout(syncSheetHist, 0);
   $("addBtn").classList.toggle("hidden", !me || view === "bot");
