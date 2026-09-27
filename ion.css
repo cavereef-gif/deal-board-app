@@ -336,3 +336,38 @@ html[data-ion][data-palette] .prail .step:is(.done,.na) .step-r{min-height:40px;
 html[data-ion][data-palette] .prail .step:is(.done,.na) .stt{color:var(--cmuted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 html[data-ion][data-palette] .rread span:last-child{white-space:nowrap}
 html[data-ion][data-palette] .dpage .nextup{margin-left:0;margin-right:0}
+
+/* ---------- People: the days-of-silence rail ---------- */
+html[data-ion][data-palette] .srail{position:relative;padding:10px 6px 14px 64px;border-radius:0 0 16px 16px;background:var(--g1);border:1px solid rgba(255,255,255,.07);border-top:0;box-shadow:var(--soft-up)}
+html[data-ion][data-palette] .srail:before{content:"";position:absolute;left:28px;top:12px;bottom:14px;width:24px;border-radius:12px;
+  background:repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.14) 22px 23px,transparent 23px 24px) left 2px top 0/4px 100% no-repeat,
+             repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.14) 22px 23px,transparent 23px 24px) right 2px top 0/4px 100% no-repeat,var(--groove);
+  box-shadow:0 0 0 6px var(--bay),inset 0 1px 0 rgba(0,0,0,.5)}
+html[data-ion][data-palette] .sb,html[data-ion][data-palette] .sb:not(.has){display:block;position:relative;min-height:36px}
+html[data-ion][data-palette] .srail .sd{display:block;position:absolute;left:-62px;top:18px;width:22px;transform:translateY(-50%);text-align:right;font:400 14px/1 var(--mono);color:var(--muted)}
+html[data-ion][data-palette] .srail .sn{display:block;position:absolute;left:-29px;top:18px;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#6B7079;border:2px solid var(--groove);z-index:2}
+html[data-ion][data-palette] .sb.late .sn{background:var(--coral)}
+html[data-ion][data-palette] .sb.has .sd,html[data-ion][data-palette] .sb.has .sn{top:30px}
+html[data-ion][data-palette] .sb.has:before{content:"";position:absolute;left:-24px;top:30px;width:24px;height:1px;background:#6B7079}
+html[data-ion][data-palette] .sbc{display:flex;flex-direction:column;gap:8px;padding:4px 0 8px}
+html[data-ion][data-palette] .sbc .pcard{margin:0;border-radius:12px;padding:10px 12px}
+html[data-ion][data-palette] .sbc .pcard .card-h .dot{display:none}
+html[data-ion][data-palette] .sbc .pcard .card-h .name{font-weight:500}
+html[data-ion][data-palette] .sbc .pcard .hg-b .hrow{background:var(--ccard2);box-shadow:none;border-radius:10px}
+html[data-ion][data-palette] .pbline{border-color:rgba(255,255,255,.18);color:var(--muted);background:transparent}
+html[data-ion][data-palette] .dtools .search{background:var(--groove);box-shadow:var(--soft-in);border:1px solid rgba(255,255,255,.04)}
+html[data-ion][data-palette] :is(.hscroll,.carousel){margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}
+html[data-ion][data-palette] .hlist .scar{margin:-6px -6px -8px;padding:6px 6px 16px;scroll-padding:0 6px}
+/* a person on the silence rail: one compact line; tap it for the actions and every open ask */
+html[data-ion][data-palette] .sbc .pcard{padding:0;overflow:hidden}
+html[data-ion][data-palette] .sbc .pcard:not(.open)>:not(.pc-min){display:none}
+html[data-ion][data-palette] .sbc .pcard.open>:not(.pc-min){margin-left:12px;margin-right:12px}
+html[data-ion][data-palette] .sbc .pcard.open>.card-h{display:none}
+html[data-ion][data-palette] .sbc .pcard.open>:last-child{margin-bottom:12px}
+html[data-ion][data-palette] .pc-min{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 10px;background:transparent;box-shadow:none;border:0;border-radius:0;text-align:left;justify-content:flex-start;color:var(--ctext);font-weight:400}
+html[data-ion][data-palette] .pc-min .av2{width:30px;height:30px;font-size:14px}
+html[data-ion][data-palette] .pm-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html[data-ion][data-palette] .pm-n{font-size:16px;line-height:1.3;color:var(--ctext)}
+html[data-ion][data-palette] .pm-s{font-size:14px;line-height:1.3;color:var(--cmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .pm-d{flex:none;height:28px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:var(--ccard2);color:var(--ctext);font:400 14px/1 var(--mono)}
+html[data-ion][data-palette] .pm-d.late{background:var(--coral-1)}

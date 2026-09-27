@@ -149,9 +149,15 @@ function taskFormHtml(leadId) {
 }
 
 // ---------- list ----------
+// Only people you can reach (27 Sep 2026, Chris: "only load contacts that has email adress or phone numbers or who explicitly
+// name the companies they work for so we dont clutter the app"). Nothing is deleted: More › Phone book shows everyone.
+function leadReachable(l) { return !!(numbersOf(l).length || emailOf(l) || waOf(l) || peopleOf(l.id).some(p => p.phone || p.email)); }
+function contactReachable(c) { return !!(c.phone || c.whatsapp || c.email || (c.company && c.company.trim())); }
+window.contactReachable = contactReachable;
+const pbAll = () => !!window._pbAll;
 function filtered() {
   const q = dQ.trim().toLowerCase();
-  let arr = (window._leads || []).filter(l => inSeg(l, dSeg)).filter(l => !window.inSecLead || inSecLead(l));
+  let arr = (window._leads || []).filter(l => inSeg(l, dSeg)).filter(l => !window.inSecLead || inSecLead(l)).filter(l => pbAll() || leadReachable(l));
   if (dCountry) arr = arr.filter(l => l.country === dCountry);
   if (q) {
     const pp = new Set((window._lpeople || []).filter(p => (p.name + " " + p.email + " " + p.phone).toLowerCase().includes(q)).map(p => p.lead_id));
@@ -166,10 +172,12 @@ function dirHtml() {
   const list = base.filter(l => dStat === "any" || (dStat === "notyet" ? ["new", "ready"].includes(l.status) : dStat === "done" ? ["contacted", "replied", "qualified", "deal", "bounced"].includes(l.status) : l.status === dStat))
     .sort((a, b) => a.priority - b.priority || ["replied", "qualified", "deal", "ready", "contacted", "new", "bounced", "parked", "skip", "dnd"].indexOf(a.status) - ["replied", "qualified", "deal", "ready", "contacted", "new", "bounced", "parked", "skip", "dnd"].indexOf(b.status) || a.name.localeCompare(b.name));
   const waitN = new Set((window._items || []).filter(i => !i._me).map(i => i.waiting_on)).size;
-  const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).length : (window._leads || []).filter(l => inSeg(l, s)).length;
+  const segCount = s => s === "waiting" ? waitN : s === "saved" ? (window._contacts || []).filter(c => pbAll() || contactReachable(c)).length : (window._leads || []).filter(l => inSeg(l, s) && (pbAll() || leadReachable(l))).length;
+  const hidden = pbAll() ? 0 : (window._leads || []).filter(l => !leadReachable(l)).length + (window._contacts || []).filter(c => !contactReachable(c)).length;
   const countries = [...new Set((window._leads || []).filter(l => inSeg(l, dSeg)).map(l => l.country))].sort();
   let h = `<div class="dtools"><div class="search">${ic("search")}<input id="dQ" type="search" placeholder="Search people, companies, numbers, grades…" value="${esc(dQ)}" autocomplete="off"></div>
-    <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>`;
+    <div class="hscroll">${SEGS.map(([k, t]) => `<button class="seg${dSeg === k ? " on" : ""}" data-dseg="${k}">${t} <span>${segCount(k)}</span></button>`).join("")}</div>
+    ${pbAll() ? `<div class="pbnote">Phone book: everyone, including people with no number, email or company. People shows only those you can reach.</div>` : hidden ? `<button class="pbline" data-mview2="phonebook">${hidden} without a number, email or company are kept in the Phone book</button>` : ""}`;
   if (dSeg === "waiting" || dSeg === "saved") {
     h += `</div>` + (dSeg === "waiting" ? waitingPeopleHtml(dQ) : savedContactsHtml(dQ));
     if (dQ.trim()) { const n = base.length; if (n) h += `<button class="wide" data-dseg="all" style="margin-top:14px">${ic("search")}${n} match${n > 1 ? "es" : ""} in the buyer and supplier list</button>`; }

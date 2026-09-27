@@ -199,6 +199,7 @@
     <div class="sheet-h"><span>More</span><button id="menuClose" type="button">Close</button></div>
     <div class="menu">
       <button class="mi" type="button" data-mview="archive" data-ico="archive">Archive – have we used them before?</button>
+      <button class="mi" type="button" data-mview="phonebook" data-ico="phone">Phone book – everyone, even with no number yet</button>
       <button class="mi" type="button" data-mview="calc" data-ico="calc">Calculators – transport, chrome, everyday</button>
       <button class="mi" type="button" data-mview="chat" data-ico="chatin">Import a WhatsApp chat – pick whose chat it is</button>
       <button class="mi" type="button" data-mview="guides" data-ico="book">Guides – how we work, deal kit, scripts</button>
@@ -317,7 +318,7 @@ let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 fillIcons();
-const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings" };
+const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings", phonebook: "Phone book" };
 function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
 window.goView = goView;
 function openMenu(){ $("menuFoot").textContent = (me ? "Signed in as " + me + " · " : "") + "app v" + APP_VERSION; $("menuSheet").classList.remove("hidden"); }
@@ -328,6 +329,7 @@ $("menuSheet").addEventListener("click", e => {
   const mv = e.target.closest("button[data-mview]"); if (mv) { closeMenu(); if (mv.dataset.mview === "chat") { openPickSheet(); return; } goView(mv.dataset.mview); }
 });
 $("botBtn").onclick = () => goView("bot");
+document.addEventListener("click", e => { const b = e.target.closest("button[data-mview2]"); if (b) goView(b.dataset.mview2); });
 $("addClose").onclick = () => $("addSheet").classList.add("hidden");
 $("addSheet").addEventListener("click", e => {
   if (e.target.id === "addSheet") { $("addSheet").classList.add("hidden"); return; }
@@ -558,21 +560,29 @@ function waitingPeopleHtml(q){
   for (const it of items) if (!it._me && (!window.inSecItem || inSecItem(it))) (groups[it.waiting_on || "Unknown"] ||= []).push(it);
   let order = Object.entries(groups).sort((a,b) => Math.min(...a[1].map(i=>i.priority||2)) - Math.min(...b[1].map(i=>i.priority||2)) || Math.max(...b[1].map(i=>i._days)) - Math.max(...a[1].map(i=>i._days)));
   if (q) order = order.filter(([name, arr]) => (name + " " + arr.map(i => i.waiting_for).join(" ")).toLowerCase().includes(q));
+  // Ion Rail (27 Sep 2026): a rail of days of silence – 0 at the top, 7+ at the bottom; it turns coral from day 3 (chase after 3)
+  const bucket = {};
   let html = "";
   for (const [name, arr] of order) {
     arr.sort(byPrioThenAge);
     const oldest = arr.reduce((a, i) => i._days > a._days ? i : a, arr[0]);
     const anyStale = arr.some(i => i._stale);
     const cs = contactsFor(name).filter(c => c.phone || c.whatsapp);
-    html += `<div class="card pcard"><div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · first ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></div></div>
+    const quiet = Math.min(7, oldest._days || 0), ok = "sil:" + name, pOpen = isOpen(ok, false);
+    const pmin = `<button type="button" class="pc-min" data-tog="${esc(ok)}" data-dflt="0" aria-expanded="${pOpen}">${window.av2 ? av2(name, []) : ""}<span class="pm-tx"><span class="pm-n">${esc(name)}</span><span class="pm-s">${esc(arr[0].waiting_for)}${arr.length > 1 ? ` +${arr.length - 1} more` : ""} · ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></span><span class="pm-d${oldest._days >= 3 ? " late" : ""}">${oldest._days || 0}d</span></button>`;
+    const one = `<div class="card pcard${pOpen ? " open" : ""}">${pmin}<div class="card-h"><i class="dot ${anyStale ? "d-stale" : "d-ok"}"></i><div class="name">${esc(name)}<span class="sub">${arr.length} open · first ${agoWords(oldest.last_chased || oldest.created_at, "asked")}</span></div></div>
       <div class="pc-acts">${ib("chat", "wa", `data-wa="${esc(name)}"`, "WhatsApp all")}${cs.length && cs[0].phone ? ib("phone", "call", `data-call="${esc(cs[0].phone)}"`, "Call") : ""}${ib("bot", "bot", `data-botperson="${esc(name)}"`, "Ask")}${window.bookingBtn ? bookingBtn(name) : ""}${cs.length ? "" : `<button data-cnew="${esc(firstName(name))}">${ic("userplus")}Save number</button>`}</div>
       <div class="hg-b">${arr.map(it => window.homeRow ? homeRow(it, true, true) : miniHtml(it)).join("")}</div></div>`;
+    (bucket[quiet] ||= []).push(one);
   }
-  return html || `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
+  if (!order.length) return `<div class="empty">${q ? "Nobody we're waiting on matches." : "Nothing waiting on anyone."}</div>`;
+  html = `<div class="rread"><span>rail · days of silence</span><span>chase at 3d</span></div><div class="srail">`;
+  for (let d = 0; d <= 7; d++) html += `<div class="sb${bucket[d] ? " has" : ""}${d >= 3 ? " late" : ""}"><span class="sd">${d}${d === 7 ? "+" : ""}d</span><i class="sn" aria-hidden="true"></i>${bucket[d] ? `<div class="sbc">${bucket[d].join("")}</div>` : ""}</div>`;
+  return html + `</div>`;
 }
 function savedContactsHtml(q){
   q = (q || "").trim().toLowerCase();
-  let contacts = window._contacts || [];
+  let contacts = (window._contacts || []).filter(c => window._pbAll || !window.contactReachable || contactReachable(c));
   if (q) contacts = contacts.filter(c => [c.name, c.company, c.role, c.phone, c.email, c.notes].join(" ").toLowerCase().includes(q));
   if (window.inSecContact) contacts = contacts.filter(inSecContact);
   let html = `<div class="h2row" id="contactsHead"><h2>Saved contacts · ${contacts.length}</h2><button data-cnew="">${ic("userplus")}New contact</button></div>`;
@@ -825,7 +835,8 @@ function render(){
   document.body.classList.toggle("boardview", view === "board");
   if (window.boardDot) boardDot();
   $("strip").innerHTML = "";
-  if (view === "leads") {
+  window._pbAll = view === "phonebook";
+  if (view === "leads" || view === "phonebook") {
     const Ls = window._leads || [];
     const cnt = f => Ls.filter(f).length;
     $("list").innerHTML = (window._shared ? `<div class="warn"><i class="dot d-ok"></i><div>WhatsApp chat received (${esc(window._shared.name)}). Open the person below (or in People) and tap the green import icon.</div></div>` : "") + dirHtml();
