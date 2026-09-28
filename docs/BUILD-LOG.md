@@ -7,6 +7,17 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 28 Sep 2026 (evening) – v17 prototype: clean-up – one section line, remove a deal, clear the board, clear forms, tolls, calculator shade (not live)
+- Chris (19:34): some places too busy; a better way to pick Chrome · Manganese · Transport and Active · Closed · All; condense the week in Deals; Energim showed as a default under "Fill in from a deal"; where to get litres per 100 km; a clear-form button; could not clear the board; could not remove a test deal; toll calcs missing on routes; the calculator's own numbers in a different shade.
+- One section line (same 40 px box as the approved mock, so the locked geometry holds): a drop-down for the section with its colour dot; on Deals also Active · Closed · All and + Deal – two rows became one.
+- Deals › Overview: the 7-day strip is now one line ("This week: 4 tasks due – Tue 1 · Wed 2 · Thu 1").
+- Transport calculator: nothing is filled from a deal until "Fill in from a deal" is tapped (the 26 Sep rule of no drop-down lists kept); picking a deal works out the route, tolls and weather at once; "Clear the form" on every calculator, the quote/statement sheet and the template sheet (clears the names); litres per 100 km explained (ask the transporter; rough guide about 50 for a loaded side tipper = 2 km a litre; "Use 50"); the working always has a Tolls line – the gates by name and class, or "no toll gates on this truck route".
+- Calculator shade: figures the app works out sit on a steel-blue card; typed figures stay off-white with an outline; the answer stays ion.
+- Remove a deal completely (deal page, bottom): two taps; removes the deal, steps, documents, tasks and files. The history stays (append-only) with one "deal removed" line. Board: Remove on each message and "Clear the board" (two taps; pinned messages stay).
+- Database change 013 (delete_deal, clear_board, post_action 'delete'; the two links from the history to deals and tasks became plain ids) – applied from the Claude project and tried on a copy inside a rolled-back transaction first.
+- Checks: node --check; flows.py 65 of 65 PASS (5 new: section line, remove a deal, clear the board, calculator deal/clear, tolls in the working); geometry.py 1,028 PASS, 0 FAIL; screens.py 188 screens (lowest contrast 4.51, no coloured letters, nothing under 14 px); screenshots of Deals, the transport calculator and the board looked at – two fixes made (+ Deal height, message buttons spilling out of the bubble).
+- Not live yet. Prototype link updated.
+
 ## 28 Sep 2026 (afternoon) – v17 prototype: flat rates, signature, Documents, Sign-ups, bot answers route questions, audit (not live)
 - Chris (16:15): flat rate on transport; a signature block; one place for every job's NCNDAs and other papers; the bot jumped to Today instead of answering "anything risky from Piet Retief to Richards Bay"; can the bot check the sites he is signed into; no way to record his Tradekey sign-up; a full audit against similar apps.
 - Bot: a question now gets an answer in words – the app opens a page only when asked to open or show something; otherwise the bot's page link becomes a "Tap to open" line. Server function ask v13: a route_check tool (km, hours, toll gates and 3-day weather from our own tools function), South African road-freight risk notes (N2 northern KZN, protests and blockades, Richards Bay queues, R33/R34 potholes, weighbridges, diesel), and one more try in words if the answer came back empty.

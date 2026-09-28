@@ -313,13 +313,13 @@ async def main():
             bars={}
             for v in ["worklist","deals","leads","board"]:
                 await ev(f"goView('{v}'); window.scrollTo(0,0)"); await W(200)
-                bars[v]=await ev("[...document.querySelectorAll('.secbar button')].map(b=>b.dataset.sec).join(',')")
+                bars[v]=await ev("[...document.querySelectorAll('.secbar select[data-secsel] option')].map(o=>o.value).join(',')")
             await ev("goView('worklist'); window.scrollTo(0,0)"); await W()
-            await tap(".secbar button[data-sec=Chrome]")
+            await pg.select_option(".secbar select[data-secsel]", "Chrome"); await W()
             sc=await ev("(() => { const ids=[...document.querySelectorAll('.hlist [data-tgo^=\"item:\"]')].map(b=>b.dataset.tgo.slice(5)); const its=ids.map(id=>window._items.find(i=>i.id===id)).filter(Boolean); return { n: its.length, notChrome: its.filter(i=>!secsOfItem(i).includes('Chrome')).length, saved: localStorage.getItem('section') }; })()")
             await ev("goView('deals')"); await W()
             dc=await ev("[...document.querySelectorAll('.deal.srail .dn')].map(x=>x.textContent).join(' | ')")
-            await tap(".secbar button[data-sec=All]")
+            await pg.select_option(".secbar select[data-secsel]", "All"); await W()
             check("Sections: switch on Today, Deals, Contacts and Board; Chrome shows only chrome tasks and deals, remembered", all(b=="All,Chrome,Manganese,Transport" for b in bars.values()) and sc['n']>=1 and sc['notChrome']==0 and sc['saved']=="Chrome" and "Chrome" in dc and "Maize" not in dc, f"{bars} {sc} deals: {dc}")
             # Redesign frame (26 Sep, page map approved): bar order, the section bar pinned in the header, Today holds only what needs doing
             fr={}
@@ -338,7 +338,7 @@ async def main():
             await pg.fill("#ndsSecName", "Coal"); await tap("#ndsAdd"); await W()
             cd=await ev("(() => { const d=(window._deals||[]).find(x=>x.name.startsWith('Coal –')); return { area: d&&d.area, kind: d&&d.kind, secs: sectionsList().join(',') }; })()")
             await tap("#tsClose"); await ev("goView('deals')"); await W()
-            cbar=await ev("[...document.querySelectorAll('.secbar button')].map(b=>b.dataset.sec).join(',')")
+            cbar=await ev("[...document.querySelectorAll('.secbar select[data-secsel] option')].map(o=>o.value).join(',')")
             check("Add a section: a new deal in section Coal (mineral checklist) makes Coal appear in the switch", cd['area']=="Coal" and cd['kind']=="mineral" and "Coal" in cbar, f"{cd} bar {cbar}")
             # The bot that does things: quick commands the app works out itself (no Claude call), then prepared changes with "Do it"
             await ev("chat.length = 0; section = 'All'; goView('bot')"); await W()
@@ -430,6 +430,27 @@ async def main():
               const b=quotePdf({sig:on, number:'Q', from:'', to:'X', meta:[], job:[], rows:[['r','R 1',1]], incl:[], excl:[], terms:[], notes:''}); const s=await b.text(); document.getElementById('docSheet').classList.add('hidden'); window._sigOn={};
               return { t, off: !!off, on: !!on, img: s.includes('/Subtype /Image') && s.includes('/Im1 Do') }; })()""")
             check("Signature: 'Sign it as Chris' is off until tapped; when on, the drawn signature is placed in the PDF", sg['t'] and not sg['off'] and sg['on'] and sg['img'], str(sg))
+            # 28 Sep 2026 evening clean-up: one section line, remove a deal, clear the board, clear forms, route from a deal, week line
+            await ev("goView('deals'); window.scrollTo(0,0)"); await W()
+            ln=await ev("(() => { const b=document.querySelector('.secbar'); return { sec: !!b.querySelector('select[data-secsel]'), st: !!b.querySelector('select[data-dfsel]'), add: !!b.querySelector('[data-newdeal]'), oldRow: !!document.querySelector('.h2row [data-dealfilter]'), wk: !!document.querySelector('.card.week'), wkline: [...document.querySelectorAll('.prog .lg b')].some(x=>/^This week/.test(x.textContent)) }; })()")
+            await pg.select_option(".secbar select[data-dfsel]", "All"); await W(); fa=await ev("dealFilter"); await pg.select_option(".secbar select[data-dfsel]", "Active"); await W()
+            check("One section line on Deals: section and Active/Closed/All drop-downs with + Deal; the week is one line in the Overview", ln['sec'] and ln['st'] and ln['add'] and not ln['oldRow'] and not ln['wk'] and ln['wkline'] and fa=="All", f"{ln} filter {fa}")
+            await ev("openDealPage('dm2'); goView('deal')"); await W()
+            await tap("button[data-dealrm=dm2]"); one=await ev("!!dealById('dm2')"); await tap("button[data-dealrm=dm2]")
+            rmv=await ev("({ gone: !dealById('dm2'), tasks: (window._items||[]).filter(i=>i.deal_id==='dm2').length, view })")
+            check("Remove a deal completely: the first tap only asks, the second removes the deal and its tasks", one and rmv['gone'] and rmv['tasks']==0 and rmv['view']=="deals", f"after one tap {one} {rmv}")
+            await ev("goView('board')"); await W()
+            np=await ev("(window._posts||[]).length")
+            await tap("button[data-boardclear]"); n1=await ev("(window._posts||[]).length"); await tap("button[data-boardclear]")
+            bd=await ev("({ left: (window._posts||[]).length, unpinned: (window._posts||[]).filter(p=>!p.pinned).length })")
+            check("Clear the board: asks once, then clears every message except the pinned ones", np>0 and n1==np and bd['unpinned']==0, f"before {np} after one tap {n1} {bd}")
+            await ev("goView('calc'); calcTab='transport'; render()"); await W()
+            tr=await ev("(() => ({ none: !document.querySelector('button[data-trdeal]') && (!!document.querySelector('button[data-trpick]') || !liveDeals().some(d=>d.kind==='transport'&&d.params&&d.params.route)), clr: !!document.querySelector('button[data-trclear]') }))()")
+            await pg.fill("[data-tr=km]", "169"); await tap("button[data-trclear]"); cl=await ev("({ km: _trip.km, from: _trip.from })")
+            check("Transport calculator: no deal filled in until 'Fill in from a deal' is tapped; Clear the form empties it", tr['none'] and tr['clr'] and not cl['km'] and not cl['from'], f"{tr} after clear {cl}")
+            await ev("(async()=>{ _trip.from='City Deep'; _trip.to='Durban Harbour'; await tripFind(); })()"); await W(900)
+            tl=await ev("[...document.querySelectorAll('#trRes .icard')].map(c=>c.innerText.replace(/\\n/g,' ')).filter(t=>/^Tolls/.test(t)).join(' | ')")
+            check("Routes show the toll gates in the working (names and class)", "Tolls per trip" in tl and "gate" in tl, tl)
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

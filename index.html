@@ -875,7 +875,8 @@ function dealPageHtml(d){
     h += rplain("history", `${hs.length}`) + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
   }
   h += `</div>` + sheetClose();
-  h += `<div class="dfoot"><button class="primary wide" data-dstatus="${d.id}">${ic("send")}Send the status</button><div class="dfoot3">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}</div><label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div>`;
+  h += `<div class="dfoot"><button class="primary wide" data-dstatus="${d.id}">${ic("send")}Send the status</button><div class="dfoot3">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}</div><label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label>
+    <div class="acts0 drm"><button type="button" data-dealrm="${d.id}">${ic("drop")}${window._dealRm === d.id ? "Tap again – remove it for good" : "Remove this deal completely"}</button></div>${window._dealRm === d.id ? `<div class="quiet">Removes the deal, its steps, documents, tasks and files. Only the history line stays. For a deal that was only a test of the numbers.</div>` : ""}</div>`;
   return h;
 }
 const homeRowSafe = it => window.homeRow ? homeRow(it, true) : miniHtml(it);
@@ -906,7 +907,7 @@ function areaHtml(name, arr){
 function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => (!window.inSecDeal || inSecDeal(d))).filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  let h = "";   // Active · Closed · All and + Deal now sit in the section line at the top (sections.js secBarHtml)
   if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
       ${secPickHtml("nd")}
       ${window.KIT ? `<label class="fld${(SEC_KIND[section] || "mineral") === "mineral" || section === "All" ? "" : " hidden"}" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
@@ -1104,6 +1105,21 @@ $("list").addEventListener("click", async e => {
 $("list").addEventListener("click", async e => {
   const fb = e.target.closest("button[data-dealfilter]");
   if (fb) { dealFilter = fb.dataset.dealfilter; try { localStorage.setItem("dealFilter", dealFilter); } catch(e){} render(); return; }
+  const rm = e.target.closest("button[data-dealrm]");
+  if (rm) {
+    const id = rm.dataset.dealrm, d = dealById(id); if (!d) return;
+    if (window._dealRm !== id) { window._dealRm = id; render(); setTimeout(() => { if (window._dealRm === id) { window._dealRm = null; render(); } }, 6000); return; }
+    window._dealRm = null;
+    if (DEMO) { window._deals = window._deals.filter(x => x.id !== id); window._items = (window._items || []).filter(i => i.deal_id !== id); }
+    else {
+      rm.disabled = true;
+      const paths = attsFor("deal", id).map(a => a.path).filter(Boolean);
+      if (paths.length) { try { await sb.storage.from("files").remove(paths); } catch (x) {} }
+      const { error } = await sb.rpc("delete_deal", { p_id: id });
+      if (error) { rm.disabled = false; toast("Could not remove: " + error.message, 6000); return; }
+    }
+    toast(`Removed: ${d.name}`); dealPage = ""; try { localStorage.setItem("dealPage", ""); } catch (x) {} goView("deals"); if (!DEMO) load(); return;
+  }
   const nd = e.target.closest("button[data-newdeal]");
   if (nd) { newDealOpen = !newDealOpen; render(); if (newDealOpen && $("ndName")) $("ndName").focus(); return; }
   const cd = e.target.closest("button[data-createdeal]");

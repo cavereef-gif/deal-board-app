@@ -735,3 +735,17 @@ html[data-ion][data-palette] .sigt button{height:40px;min-height:40px;padding:0 
 html[data-ion][data-palette] .signo{margin:10px 0 4px}
 html[data-ion][data-palette] .tplfrom.cpl .kv .k{flex:1 1 auto;color:var(--text)}
 html[data-ion][data-palette] .tplfrom.cpl .kv .v{flex:none}
+/* 28 Sep 2026 evening: the section line – drop-downs in the same 40 px box (section · Active/Closed/All · + Deal) */
+html[data-ion][data-palette] .secbar.fl{display:flex;gap:6px;overflow:visible;padding:0;border:0;background:transparent}
+html[data-ion][data-palette] .secbar.fl .fpill{margin:0;position:relative;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:40px;padding:0 32px 0 14px;border-radius:12px;background:var(--ccard) var(--chev) right 10px center/14px no-repeat;color:var(--ctext);font:400 16px/1 var(--font);box-shadow:var(--card-shadow)}
+html[data-ion][data-palette] .secbar.fl .fpill span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-ion][data-palette] .secbar.fl .fpill i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--sc)}
+html[data-ion][data-palette] .secbar.fl .fpill select{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;padding:0;opacity:0;border:0;cursor:pointer}
+html[data-ion][data-palette] .secbar.fl .fpill:focus-within{box-shadow:0 0 0 2px var(--ion)}
+html[data-ion][data-palette] .secbar.fl .fst{flex:0 0 auto;min-width:100px}
+html[data-ion][data-palette] :is(#_,.secbar.fl>button.fadd){flex:none;height:40px;min-height:0;margin:0;align-self:center;padding:0 14px;gap:6px;border-radius:12px;background:var(--ion);background-color:var(--ion);color:var(--ctext);font:400 16px/1 var(--font);overflow:visible}
+html[data-ion][data-palette] .secbar.fl>button.fadd:after{display:none}
+/* 28 Sep 2026 evening: figures the calculator works out sit on their own shade (steel blue), apart from the typed figures
+   (off-white with an outline) and the answer (ion) */
+html[data-ion][data-palette] .icard.wo{background:#CBD5DE;background-color:#CBD5DE}
+html[data-ion="twilight"][data-palette] .icard.wo{background:#CFE0E6;background-color:#CFE0E6}

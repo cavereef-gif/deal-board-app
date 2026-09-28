@@ -94,7 +94,7 @@ async def run(p, dev, theme, results, errors, palette="ion"):
     await js("goTo('task:t2')"); await pg.wait_for_timeout(500); await snap("step-followup")
     await js("goTo('lead:l4')"); await pg.wait_for_timeout(300); await js("const t = document.querySelector('.tnote'); if (t) t.scrollIntoView({block:'center'})"); await snap("step-followup-set")
     # sections (26 Sep): Today on Chrome, the new-deal form with + Add a section
-    await go("worklist"); await js("document.querySelector('.secbar [data-sec=Chrome]').click()"); await snap("home-chrome"); await js("document.querySelector('.secbar [data-sec=All]').click()")
+    await go("worklist"); await js("setSection('Chrome')"); await snap("home-chrome"); await js("setSection('All')")
     await go("deals"); await js("document.querySelector('[data-newdeal]').click()"); await js("document.querySelector('[data-secpick=\"+\"]').click()"); await snap("deal-new-section"); await js("document.querySelector('[data-newdeal]').click()")
     # the bot that does things (26 Sep): the notes on what you can ask, a "Which one?" choice and "Do it" cards
     await js("chat.length = 0; goView('bot')"); await snap("ask-help"); await snap("ask-help-full", True)

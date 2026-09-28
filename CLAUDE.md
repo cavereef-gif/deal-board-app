@@ -48,6 +48,8 @@ tools/make_preview.py (builds preview/ from the root files) · tools/screens.py 
 - Transport rates can be per ton, a flat rate per load, or one amount for the whole job (params.rate_basis; calc.js rateBasis/perTonRate). The calculator, quote PDF, ticket, status and split follow it – keep it that way for anything new that uses the client rate.
 - Signatures (change 012): each partner draws one in Settings; it goes on a document only when "Sign it as …" is tapped on that document (off by default each time). Only the two of them can read it.
 - Sign-ups register (change 012): never store passwords – the app refuses notes with a password; logins live in the phone's password manager.
+- Removing (28 Sep 2026 evening, change 013): a person may remove a whole deal or clear the board – always two taps, never the bot. The history (events) is append-only and is never deleted.
+- The section switch is one line of drop-downs inside the locked 40 px box (section; on Deals also Active/Closed/All and + Deal). The transport calculator itself still has no drop-down lists (26 Sep rule).
 - Market prices come from the free weekly SMM read as "Suggested" (one tap to accept, or type one); the paid SMM feed (about R2,185 a month) is not approved.
 
 ## Git workflow

@@ -135,3 +135,4 @@ batch1_items_events · batch2_owner_access · batch2_add_item · harden_search_p
 - v17_due_dates (26 Sep 2026): items.due_on; add_item gains p_due (optional); item_action gains 'due' (p_value = YYYY-MM-DD or empty). Same as docs/db/001-due-dates.sql.
 - 010_lean_deals (28 Sep 2026): documents per deal, who and by when on a step, market prices – docs/db/010-lean-deals.sql. Timer deal-board-market (28 Sep 2026) – docs/db/011-market-timer.sql.
 - signatures_platforms (28 Sep 2026): signatures and the sign-ups register – docs/db/012-signatures-platforms.sql.
+- remove_deal_clear_board + remove_deal_keep_history (28 Sep 2026 evening): delete_deal(p_id), clear_board(p_keep_pinned), post_action gains 'delete'; events keeps deal_id and item_id as plain ids (foreign keys dropped) so history survives a removed deal – docs/db/013-remove-deal-clear-board.sql.

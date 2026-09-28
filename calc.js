@@ -90,7 +90,7 @@ function calcCompute(st) {
   return out;
 }
 // one card on the rail for a figure the app worked out
-const wfRow = r => `<div class="irow${r.out ? " out" : r.ask ? " ask" : ""}"><i class="in${r.out ? " big" : ""}" aria-hidden="true"></i><div class="icard${r.out ? " ion" : r.ask ? " ask" : ""}"><span class="t">${esc(r.k)}${r.s ? `<small class="mono">${esc(r.s)}</small>` : ""}</span><span class="v">${esc(r.v)}</span></div></div>`;
+const wfRow = r => `<div class="irow${r.out ? " out" : r.ask ? " ask" : ""}"><i class="in${r.out ? " big" : ""}" aria-hidden="true"></i><div class="icard${r.out ? " ion" : r.ask ? " ask" : " wo"}"><span class="t">${esc(r.k)}${r.s ? `<small class="mono">${esc(r.s)}</small>` : ""}</span><span class="v">${esc(r.v)}</span></div></div>`;
 window.wfRow = wfRow;
 // one card for a figure you type
 function wfInput(key, st, [k, label, opt, sub]) {
@@ -102,13 +102,14 @@ function calcHtml(key, d, kind) {
   const st = calcState(key, d, kind), F = kind === "transport" ? trFields(st) : MIN_F, rows = calcCompute(st);
   const groups = [...new Set(F.map(f => f[4]))];
   const first = F[0], last = rows.length ? rows[rows.length - 1] : null;
-  let h = rplain(`rail · ${kind === "transport" ? "rate → our share" : "tonnes → invoice"}`, st._src.length ? "from the terms" : "outlined = typed") + railOpen(0);
+  let h = rplain(`rail · ${kind === "transport" ? "rate → our share" : "tonnes → invoice"}`, st._src.length ? "from the terms" : "outlined = typed · shaded = worked out") + railOpen(0);
   for (const g of groups) {
     const ins = F.filter(f => f[4] === g && !(f[0] === "fx" && st.cur !== "US$"));
     h += `<section class="iblk${g === groups[groups.length - 1] ? " deep" : ""}">${ins.map(f => wfInput(key, st, f)).join("")}<div class="ibody" data-cout="${key}:${g}">${rows.filter(r => r.g === g).map(wfRow).join("")}</div></section>`;
   }
   h += railClose();
   if (st._src.length) h += rfoot(`filled in from the deal terms – check and adjust: ${esc(st._src.join(" · "))}`);
+  h += `<div class="acts0 trclr"><button type="button" data-calcclear="${key}">${ic("undo")}Clear the form</button></div>`;
   h += `<div class="calcacts">${d ? `<button class="primary" data-calcsave="${key}" data-deal="${d.id}">${ic("note")}Save to notes</button>` : `<button class="primary" data-calcsave="${key}">${ic("board")}Post to board</button>`}<button type="button" data-calccopy="${key}">${ic("copy")}Copy</button>${kind !== "transport" && window.openDocSheet ? `<button type="button" data-commpdf="${key}">${ic("file")}Statement PDF</button>` : `<span></span>`}</div>`;
   return h;
 }
@@ -140,6 +141,8 @@ $("list").addEventListener("change", e => {
   if (e.target.id === "calcDealSel") { calcDeal = e.target.value; try { localStorage.setItem("calcDeal", calcDeal); } catch (x) {} render(); }
 });
 $("list").addEventListener("click", async e => {
+  const cc = e.target.closest("button[data-calcclear]");
+  if (cc) { const st = window._calc[cc.dataset.calcclear]; if (st) { for (const k of Object.keys(st)) if (!/^_/.test(k)) st[k] = ""; Object.assign(st, st._kind === "transport" ? { basis: "Per ton", vatin: "No", tpl: 34, share: 100 } : { cur: "R", share: 100, vat: "No" }); st._src = []; } toast("Form cleared."); render(); return; }
   const k = e.target.closest("button[data-calckind]"); if (k) { delete window._calc.free; window._calc.free = null; calcState("free", null, k.dataset.calckind); render(); return; }
   const cp = e.target.closest("button[data-calccopy]");
   if (cp) { const key = cp.dataset.calccopy; try { await navigator.clipboard.writeText(calcText(key, dealById(key))); toast("Copied."); } catch (x) { toast("Copy not allowed here."); } return; }

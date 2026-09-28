@@ -231,6 +231,7 @@ function docSheetHtml() {
       docField("notes", "Payment details and notes", "e.g. Pay by EFT, reference as above. Bank details as on our invoice.", "area"))
     + `<div class="lbl">On the document</div><div class="cres">${r.rows.filter(x => x[1]).map(([k, v, b]) => `<div class="kv${b ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`
     + `<div class="quiet">${q ? "Only the client's price goes on the quote – never our costs, the transporter's rate or our margin." : "Check the tons and rate against the weighbridge and the signed commission agreement."}</div>`
+    + `<div class="acts0 trclr"><button type="button" data-docclear="1">${ic("undo")}Clear the form</button></div>`
     + (window.sigToggleHtml ? sigToggleHtml("doc") : "")
     + `<button class="primary wide" data-docmake="1"${r.ok ? "" : " disabled"}>${ic("file")}Make the PDF and share it</button>`;
 }
@@ -295,6 +296,7 @@ document.addEventListener("click", async e => {
     docRefresh(); return;
   }
   if (e.target.closest("button[data-docmake]")) { docMake(); return; }
+  if (e.target.closest("button[data-docclear]") && DOC) { const k = DOC.kind; openDocSheet(k, {}); Object.keys(DOC.f).forEach(x => { if (!/^(from|valid|tpl|vehicle|pay|standing|vat|basis|inc_\w+|diesel)$/.test(x)) DOC.f[x] = ""; }); docRefresh(); toast("Form cleared."); return; }
   // from the Transport calculator
   if (e.target.closest("button[data-trquote]")) {
     const TRp = window._trip || {}, d = TRp.deal && dealById(TRp.deal);

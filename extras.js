@@ -274,7 +274,7 @@ function tripCalc() {
 }
 function tripTop() {
   const c = tripCalc(), tone = v => v == null ? "" : v < 0 ? " t-bad" : " t-ok";
-  const r = (tn, k, v, unit, sub) => `<div class="trr${tn} irow${v == null ? " ask" : tn === " t-cost" ? "" : " out"}"><i class="in${v == null || tn === " t-cost" ? "" : " big"}" aria-hidden="true"></i><div class="icard${v == null ? " ask" : tn === " t-cost" ? "" : " ion"}"><span class="t">${k}<small class="mono">${sub}</small></span><span class="v">${v == null ? "?" : fRand(v) + unit}</span></div></div>`;
+  const r = (tn, k, v, unit, sub) => `<div class="trr${tn} irow${v == null ? " ask" : tn === " t-cost" ? "" : " out"}"><i class="in${v == null || tn === " t-cost" ? "" : " big"}" aria-hidden="true"></i><div class="icard${v == null ? " ask" : tn === " t-cost" ? " wo" : " ion"}"><span class="t">${k}<small class="mono">${sub}</small></span><span class="v">${v == null ? "?" : fRand(v) + unit}</span></div></div>`;
   return `<div class="irail" style="--col:0px"><section class="iblk deep">` + r(" t-cost", "Transport cost", c.perTon, " a ton", "road + tolls, per ton") + r(tone(c.left), "Left for you", c.left, " a ton", "client rate − transport") + r(tone(c.month), "Left a month", c.month, "", num(TR.loads) ? `${num(TR.loads)} loads` : "type the loads") + `</section></div>`
     + (c.left != null && c.left < 0 ? `<div class="trwarn"><i class="dot" style="background:var(--bad)"></i>Transport costs more than the client pays.</div>` : "")
     + (c.perTon == null ? `<div class="rfoot">fill in steps 1 to 3 below</div>` : "");
@@ -284,7 +284,9 @@ function tripResults() {
   const c = tripCalc(), rows = [];
   const truckRoute = /truck/i.test(TR.provider || "");
   rows.push(["Road distance", `${nfmt(Math.round(TR.km))} km one way${TR.mins ? ` · about ${Math.floor(TR.mins / 60)} h ${Math.round(TR.mins % 60)} min ${truckRoute ? "driving (truck route)" : "by car (trucks are slower)"}` : ""}`]);
-  if (num(TR.toll)) rows.push(["Tolls per trip", fRand(num(TR.toll)) + (TR.tollAuto && TR.plazas.length ? ` (class ${TR.cls}${TR.ret === "Yes" ? ", both ways" : ""})` : "")]);
+  const gates = TR.plazas.filter(z => z.pick);
+  if (num(TR.toll)) rows.push(["Tolls per trip", fRand(num(TR.toll)) + (TR.tollAuto && gates.length ? ` · ${gates.length} gate${gates.length === 1 ? "" : "s"} (${gates.map(z => z.name).join(", ")}), class ${TR.cls}${TR.ret === "Yes" ? ", both ways" : ""}` : "")]);
+  else rows.push(["Tolls per trip", truckRoute && !TR.plazas.length ? "R 0 · no toll gates on this truck route" : TR.provider ? "not checked – type them in step 2" : "type them in step 2"]);
   rows.push(["Kilometres per trip", `${nfmt(Math.round(c.kmTrip))} km${TR.ret === "Yes" ? " (there and back)" : " (one way)"}`]);
   if (c.fuel != null) rows.push(["Diesel for the trip", `${fRand(c.fuel)} (${Math.round(c.kmTrip * num(TR.lp100) / 100)} litres)`]);
   if (c.byKm != null) {
@@ -342,8 +344,11 @@ function transportCalcHtml() {
   const credit = /geoapify/i.test(TR.provider || "") ? "Route: Powered by Geoapify · © OpenStreetMap contributors." : TR.provider ? "Route: © OpenStreetMap contributors (car route – add the Geoapify key in Settings for truck routes)." : "";
   return `<div class="card calcc trc">
     <div class="trtop" id="trTop">${tripTop()}</div>
+    <div class="acts0 trclr"><button type="button" data-trclear="1">${ic("undo")}Clear the form</button></div>
     ${step(1, "Route")}
-    ${tdeals.length ? `<div class="fld"><span>Fill in from a deal</span></div><div class="tools trdeals">${tdeals.map(d => `<button type="button" class="ib${TR.deal === d.id ? " on" : ""}" data-trdeal="${d.id}" aria-pressed="${TR.deal === d.id}">${ic("truck")}<span class="ibw">${esc(d.name)}</span></button>`).join("")}</div>` : ""}
+    ${tdeals.length ? (dOn && !TR.pick ? `<div class="acts0 trfrom"><span class="quiet">From the deal: ${esc(dOn.name)}</span><button type="button" data-trpick="1">Change</button></div>`
+      : TR.pick ? `<div class="fld"><span>Fill in from which deal?</span></div><div class="tools trdeals">${tdeals.map(d => `<button type="button" class="ib" data-trdeal="${d.id}">${ic("truck")}<span class="ibw">${esc(d.name)}</span></button>`).join("")}<button type="button" class="ib" data-trpick="0"><span class="ibw">Not from a deal</span></button></div>`
+      : `<div class="acts0 trfrom"><button type="button" data-trpick="1">${ic("truck")}Fill in from a deal</button></div>`) : ""}
     ${f("from", "From", "e.g. Middelburg", "text")}${f("to", "To", "e.g. City Deep, Johannesburg", "text")}<datalist id="trPlaces"></datalist>
     <button class="primary wide trfind" data-trgo="1"${TR.busy ? " disabled" : ""}>${ic("globe")}${TR.busy ? "Working it out…" : "Work it out"}</button>
     ${TR.err ? `<div class="trwarn"><i class="dot" style="background:var(--warn)"></i>${esc(TR.err)}</div>` : ""}
@@ -359,7 +364,9 @@ function transportCalcHtml() {
     <div class="calc">${f("rkm", "Rate per km (R)", "e.g. 28")}${f("toll", "Tolls per trip (R)", "e.g. 450")}</div>
     ${f("tpl", "Tons per load", "34")}
     <button type="button" class="trfold" data-tog="calc:diesel" data-dflt="${dieselOpen ? 1 : 0}" aria-expanded="${dieselOpen}"><span>Diesel check (optional)</span><span class="chev"></span></button>
-    ${dieselOpen ? `${fuelHtml()}<div class="calc">${f("lp100", "Litres per 100 km", "e.g. 45")}${f("diesel", "Diesel price (R/litre)", "e.g. 22.50")}</div>` : ""}
+    ${dieselOpen ? `${fuelHtml()}<div class="calc">${f("lp100", "Litres per 100 km", "e.g. 50")}${f("diesel", "Diesel price (R/litre)", "e.g. 22.50")}</div>
+      <div class="quiet">Litres per 100 km: ask the transporter – every fleet knows its own figure. Rough guide for a loaded 34 t side tipper or interlink: about 50 (that is 2 km a litre). Only km a litre known? 100 ÷ km a litre = litres per 100 km.</div>
+      ${num(TR.lp100) ? "" : `<div class="tchips"><button type="button" data-trlp="50">Use 50 (rough guide)</button></div>`}` : ""}
     ${step(3, "Client")}
     <div class="calc">${f("client", "Client per ton (R)", "e.g. 350")}${f("loads", "Loads a month", "e.g. 20")}</div>
     <div class="trs trs-plain"><span class="trs-t">How it adds up</span></div>
@@ -434,13 +441,16 @@ document.addEventListener("click", async e => {
   }
   const rt = e.target.closest("button[data-trret]");
   if (rt) { TR.ret = rt.dataset.trret; tollAutoFill(); render(); return; }
+  const tp = e.target.closest("button[data-trpick]");
+  if (tp) { TR.pick = tp.dataset.trpick === "1"; if (!TR.pick && tp.closest(".trdeals")) TR.deal = ""; render(); return; }
   const td = e.target.closest("button[data-trdeal]");
   if (td) {
-    if (TR.deal === td.dataset.trdeal) { TR.deal = ""; render(); return; }   // tap again = not linked to a deal
-    const d = dealById(td.dataset.trdeal); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
+    const d = dealById(td.dataset.trdeal), p = (d && d.params) || {}, route = String(p.route || "").split(/→|->| to /);
     if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
-    const p = (d && d.params) || {}; const cr = window.perTonRate ? perTonRate(p, num(TR.tpl) || 34) : ""; if (cr) TR.client = cr;
-    TR.deal = td.dataset.trdeal; tripClearRoute(); render(); return;
+    const cr = window.perTonRate ? perTonRate(p, num(TR.tpl) || 34) : ""; if (cr) TR.client = cr;
+    const ld = String(p.loads || "").match(/(\d+)\s*(?:loads?)?\s*(?:a|per|\/)\s*month/i); if (ld) TR.loads = ld[1];
+    TR.deal = td.dataset.trdeal; TR.pick = false; tripClearRoute();
+    if (TR.from && TR.to) tripFind(); else render(); return;
   }
   if (e.target.closest("button[data-trcopy]")) { try { await navigator.clipboard.writeText(tripText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }
   if (e.target.closest("button[data-trsave]")) {
@@ -566,3 +576,11 @@ async function drawTrip() {
   m.fitBounds(line.getBounds(), { padding: [20, 20] });
 }
 (window._after ||= []).push(() => { if (view === "calc" && calcTab === "transport") { loadFuel(); if (TR.geo) drawTrip(); } });
+// 28 Sep 2026 evening: Clear the form starts again; "Use 50" fills the rough litres figure.
+document.addEventListener("click", e => {
+  if (e.target.closest && e.target.closest("button[data-trclear]")) {
+    Object.assign(TR, { from: "", to: "", deal: "", pick: false, km: null, mins: null, geo: null, ret: "Yes", tpl: 34, rkm: "", toll: "", client: "", loads: "", lp100: "", diesel: "", cls: "4", plazas: [], tollAuto: true, provider: "", checkKm: null, wx: null, busy: false, err: "" });
+    toast("Form cleared."); render(); window.scrollTo(0, 0); return;
+  }
+  const lp = e.target.closest && e.target.closest("button[data-trlp]"); if (lp) { TR.lp100 = lp.dataset.trlp; render(); }
+});
