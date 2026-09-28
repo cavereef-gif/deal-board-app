@@ -49,17 +49,26 @@ function inSecContact(c) { return section === "All" || secsOfContact(c).includes
 // the main section of an item, for its colour (first match) – "" when it has none
 function secOfItem(it) { const s = secsOfItem(it); return s.length === 1 ? s[0] : ""; }
 
-// the switch
+// the switch (28 Sep 2026 evening, Chris: "find a better way to use the selection between chrome, manganese, transport. Also the
+// active, closed and all"). One quiet line in the same 40 px box: a drop-down for the section (its colour dot beside it) and, on
+// Deals, a drop-down for Active · Closed · All and the + Deal button. The phone's own list opens with the choices.
+const SEC_WORD = s => s === "All" ? "All sections" : s;
 function secBarHtml() {
   const list = ["All", ...sectionsList()];
   if (!list.includes(section)) section = "All";
-  return `<div class="secbar${list.length > 4 ? " many" : ""}" role="group" aria-label="Section">${list.map(s => `<button type="button" data-sec="${esc(s)}" class="${section === s ? "on" : ""}" aria-pressed="${section === s}" style="--sc:${secColor(s)}">${esc(s)}</button>`).join("")}</div>`;
+  const sec = `<label class="fpill fsec" style="--sc:${secColor(section)}"><i aria-hidden="true"></i><span>${esc(SEC_WORD(section))}</span><select data-secsel="1" aria-label="Section: ${esc(SEC_WORD(section))}">${list.map(s => `<option value="${esc(s)}"${section === s ? " selected" : ""}>${esc(SEC_WORD(s))}</option>`).join("")}</select></label>`;
+  let rest = "";
+  if (typeof view !== "undefined" && view === "deals" && typeof dealFilter !== "undefined") {
+    const F = [["Active", "Active deals"], ["Closed", "Closed deals"], ["All", "All deals"]];
+    rest = `<label class="fpill fst"><span>${esc(dealFilter === "All" ? "All" : dealFilter)}</span><select data-dfsel="1" aria-label="Show: ${esc(dealFilter)} deals">${F.map(([k, w]) => `<option value="${k}"${dealFilter === k ? " selected" : ""}>${w}</option>`).join("")}</select></label><button type="button" class="fadd" data-newdeal="1">${typeof newDealOpen !== "undefined" && newDealOpen ? "Close" : ic("plus") + "Deal"}</button>`;
+  }
+  return `<div class="secbar fl" role="group" aria-label="Show">${sec}${rest}</div>`;
 }
-document.addEventListener("click", e => {
-  const b = e.target.closest(".secbar button[data-sec]"); if (!b) return;
-  section = b.dataset.sec; try { localStorage.setItem("section", section); } catch (x) {}
-  if (typeof homeFilter !== "undefined") homeFilter = null;
-  render(); window.scrollTo(0, 0);
+window.setSection = function (v) { section = v; try { localStorage.setItem("section", section); } catch (x) {} if (typeof homeFilter !== "undefined") homeFilter = null; render(); window.scrollTo(0, 0); };
+document.addEventListener("change", e => {
+  const s = e.target.closest && e.target.closest("select[data-secsel]"); if (s) { setSection(s.value); return; }
+  const f = e.target.closest && e.target.closest("select[data-dfsel]");
+  if (f) { dealFilter = f.value; try { localStorage.setItem("dealFilter", dealFilter); } catch (x) {} render(); }
 });
 
 // ---------- one Section choice for a new deal (replaces the Type and Area lists) ----------
@@ -98,3 +107,6 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => { if (e.target.id && /SecName$/.test(e.target.id)) secPickSync(e.target.id.replace("SecName", "")); });
 // a new section needs a name before the deal can be saved
 function secPickReady(p) { secPickSync(p); if ($(p + "Area") && !$(p + "Area").value) { const i = $(p + "SecName"); if (i) i.focus(); return false; } return true; }
+// + Deal in the section line when the line sits in the header (Graphite and Velvet); on Ion it sits in the page and the
+// Deals click handler in index.html takes it
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#secSlot button[data-newdeal]"); if (!b) return; newDealOpen = !newDealOpen; render(); if (newDealOpen && $("ndName")) $("ndName").focus(); });

@@ -184,6 +184,7 @@ function tplSheetHtml() {
     ${missCo.length && (t.head || TPLS.key !== "kyc") ? `<div class="quiet tpln">Our company details are missing (${missCo.map(k => ({ legal_name: "name", reg_no: "registration number", address: "address" }[k])).join(", ")}) – Settings › Company details.</div>` : ""}
     ${TPLS.key === "imfpa" && !((leanP(d)._split) || []).length ? `<div class="quiet tpln">No commission split yet – the IMFPA lists Verve alone. Split it on Numbers › Private first if others share.</div>` : ""}
     <div class="quiet tpln">A generic draft for the parties to check${/ncnda|imfpa|spa/.test(TPLS.key) ? " – have an SA commercial attorney check this one once before first use" : ""}.</div>
+    <div class="acts0 trclr"><button type="button" data-tplclear="1">${ic("undo")}Clear the names</button></div>
     ${window.sigToggleHtml ? sigToggleHtml("tpl") : ""}
     <button type="button" class="primary wide" id="tplMake">${ic("file")}Make the PDF and save it to the deal</button>`;
 }
@@ -194,6 +195,7 @@ document.addEventListener("click", e => {
   const x = e.target.closest("button[data-tplx]");
   if (x && TPLS) { TPLS.f[x.dataset.tplx] = x.dataset.v; $("tplBody").innerHTML = tplSheetHtml(); return; }
   if (e.target.closest("#tplMake") && TPLS) tplMake();
+  if (e.target.closest("button[data-tplclear]") && TPLS) { const t = TPL[TPLS.key]; for (const [k] of t.parties) TPLS.f[k] = ""; $("tplBody").innerHTML = tplSheetHtml(); }
 });
 document.addEventListener("input", e => { const i = e.target.closest && e.target.closest("input[data-tplf]"); if (i && TPLS) TPLS.f[i.dataset.tplf] = i.value; });
 const tba = v => v && String(v).trim() ? String(v).trim() : "to be agreed";

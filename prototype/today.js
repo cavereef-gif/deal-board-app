@@ -303,11 +303,13 @@ function overviewHtml() {
       <div class="legend"><div class="lg"><i style="background:var(--ring1-bg)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
       <div class="lg"><i style="background:var(--ring2)"></i><div><b>Documents: ${reached} of ${L.length} in</b><span>NCNDA, LOI, SPA … on the live deals</span></div></div>
       <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${list.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
+    // this week, condensed to one line (28 Sep 2026 evening, Chris: "the 1 week task due in deals can be condensed")
     const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
     const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
     const byDay = {}; for (const it of list) { const k = dayDiff(dueDate(it)) < 0 ? td : saKey(dueDate(it)); (byDay[k] ||= []).push(it); }
-    h += `<div class="card week"><div class="wk-m">This week · tasks due each day</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), n = (byDay[k] || []).length;
-      return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="wn">${n ? n : ""}</div></div>`; }).join("")}</div></div>`;
+    const bits = days.map(d => { const k = d.toISOString().slice(0, 10), n = (byDay[k] || []).length; return n ? `${k === td ? "today" : WDAY[d.getUTCDay()]} ${n}` : ""; }).filter(Boolean);
+    const wkN = days.reduce((a, d) => a + (byDay[d.toISOString().slice(0, 10)] || []).length, 0);
+    h = h.replace(/<\/div><\/div><\/div>$/, `</div><div class="lg"><i style="background:var(--muted)"></i><div><b>This week: ${wkN} task${wkN === 1 ? "" : "s"} due</b><span>${bits.length ? esc(bits.join(" · ")) : "nothing due"}</span></div></div></div></div>`);
   }
   return h + `</section>`;
 }

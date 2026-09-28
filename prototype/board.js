@@ -30,7 +30,8 @@ function postHtml(p) {
     ${deal ? `<button class="plink" data-tgo="deal:${deal.id}">${ic("deals")}${esc(deal.name.length > 34 ? deal.name.slice(0, 32) + "…" : deal.name)}</button>` : ""}
     <div class="pm"><span class="sp">${esc(p.author)} · ${fmtWhen(p.created_at)}${p.done ? " · done" : ""}</span>
       <button class="pbtn" data-postact="${p.id}" data-v="${p.pinned ? "unpin" : "pin"}" aria-label="${p.pinned ? "Unpin" : "Pin to the top"}" title="${p.pinned ? "Unpin" : "Pin to the top"}">${ic("pin")}<span>${p.pinned ? "Unpin" : "Pin"}</span></button>
-      <button class="pbtn" data-postact="${p.id}" data-v="${p.done ? "open" : "done"}" aria-label="${p.done ? "Mark as open" : "Mark as done"}" title="${p.done ? "Mark as open" : "Mark as done"}">${ic(p.done ? "undo" : "check")}<span>${p.done ? "Reopen" : "Done"}</span></button></div></div>`;
+      <button class="pbtn" data-postact="${p.id}" data-v="${p.done ? "open" : "done"}" aria-label="${p.done ? "Mark as open" : "Mark as done"}" title="${p.done ? "Mark as open" : "Mark as done"}">${ic(p.done ? "undo" : "check")}<span>${p.done ? "Reopen" : "Done"}</span></button>
+      <button class="pbtn" data-postact="${p.id}" data-v="delete" aria-label="Remove this message" title="Remove">${ic("drop")}<span>${window._postRm === p.id ? "Sure?" : "Remove"}</span></button></div></div>`;
 }
 function boardHtml() {
   const P = (window._posts || []).filter(p => !window.inSecPost || inSecPost(p)).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -38,6 +39,8 @@ function boardHtml() {
   let h = portsCardHtml();
   if (pinned.length) h += `<div class="sech pinned-h"><h3>Pinned</h3></div><div class="feed">${pinned.map(postHtml).join("")}</div>`;
   h += `<div class="sech"><h3>Between Chris and Annemarie</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
+  // 28 Sep 2026 evening (Chris: "i cant clear the board"): clear every message except the pinned ones, after a second tap
+  if (P.length) h += `<div class="acts0 bclr"><button type="button" data-boardclear="1">${ic("drop")}${window._boardRm ? "Tap again – clear the board" : "Clear the board"}</button>${window._boardRm ? `<span class="quiet">Pinned messages stay.</span>` : ""}</div>`;
   if (!P.length) return h + `<div class="empty">${typeof section !== "undefined" && section !== "All" ? `No messages about ${esc(section)} yet. Pick All to see every message.` : "No messages yet. Write the first one below – you can attach photos or files, and log checks."}</div>`;
   let day = "", f = "";
   for (const p of P) { const d = fmtDay(p.created_at); if (d !== day) { f += `<div class="fday">${d}</div>`; day = d; } f += postHtml(p); }
@@ -79,7 +82,18 @@ $("cSend").onclick = async () => {
   window._boardScrolled = false; load();
 };
 $("list").addEventListener("click", async e => {
+  const bc = e.target.closest("button[data-boardclear]");
+  if (bc) {
+    if (!window._boardRm) { window._boardRm = true; render(); setTimeout(() => { if (window._boardRm) { window._boardRm = false; render(); } }, 6000); return; }
+    window._boardRm = false;
+    if (DEMO) { window._posts = (window._posts || []).filter(p => p.pinned); toast("Board cleared (demo)."); render(); return; }
+    bc.disabled = true; const { data: n, error } = await sb.rpc("clear_board", { p_keep_pinned: true });
+    if (error) { toast("Could not clear: " + error.message, 6000); bc.disabled = false; return; }
+    toast(`Board cleared – ${n} message${n === 1 ? "" : "s"} removed; pinned ones kept.`); load(); return;
+  }
   const b = e.target.closest("button[data-postact]"); if (!b) return;
+  if (b.dataset.v === "delete" && window._postRm !== b.dataset.postact) { window._postRm = b.dataset.postact; render(); setTimeout(() => { window._postRm = null; }, 6000); return; }
+  if (b.dataset.v === "delete") { window._postRm = null; if (DEMO) { window._posts = (window._posts || []).filter(x => x.id !== b.dataset.postact); render(); return; } }
   if (DEMO) { const p = (window._posts || []).find(x => x.id === b.dataset.postact); if (p) { if (b.dataset.v === "pin") p.pinned = true; if (b.dataset.v === "unpin") p.pinned = false; if (b.dataset.v === "done") p.done = true; if (b.dataset.v === "open") p.done = false; } render(); return; }
   b.disabled = true;
   const { error } = await sb.rpc("post_action", { p_id: b.dataset.postact, p_action: b.dataset.v });

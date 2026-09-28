@@ -227,3 +227,4 @@ html[data-palette="titanium"] .meets{background:var(--field);box-shadow:var(--so
 /* status lines inside Settings cards: a soft pressed-in strip, words left, value right */
 html[data-palette="titanium"] .setc .kv{align-items:center;margin-top:10px;padding:10px 14px;border:0;border-radius:12px;background:var(--field);box-shadow:var(--soft-in)}
 html[data-palette="titanium"] .setc .kv .k{flex:1}html[data-palette="titanium"] .setc .kv .v{flex:0 1 auto;text-align:right}
+html[data-palette="titanium"] .secbar.fl{padding:0;background:transparent;box-shadow:none;border:0}

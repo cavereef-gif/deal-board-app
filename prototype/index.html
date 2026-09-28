@@ -9,9 +9,9 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"||p==="twilight"){d.dataset.palette="titanium";d.dataset.ion=p==="twilight"?"twilight":"1"}else d.dataset.palette=p})()</script>
-<link rel="stylesheet" href="app.css?v=17.202609281506">
-<link rel="stylesheet" href="titanium.css?v=17.202609281506">
-<link rel="stylesheet" href="ion.css?v=17.202609281506">
+<link rel="stylesheet" href="app.css?v=17.202609281757">
+<link rel="stylesheet" href="titanium.css?v=17.202609281757">
+<link rel="stylesheet" href="ion.css?v=17.202609281757">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -232,7 +232,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609281506"></script>
+<script src="ui.js?v=17.202609281757"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -875,7 +875,8 @@ function dealPageHtml(d){
     h += rplain("history", `${hs.length}`) + (hs.slice(0, 40).map(histLine).join("") || `<div class="quiet">No changes yet.</div>`);
   }
   h += `</div>` + sheetClose();
-  h += `<div class="dfoot"><button class="primary wide" data-dstatus="${d.id}">${ic("send")}Send the status</button><div class="dfoot3">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}</div><label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label></div>`;
+  h += `<div class="dfoot"><button class="primary wide" data-dstatus="${d.id}">${ic("send")}Send the status</button><div class="dfoot3">${ib("bot", "bot", `data-botdeal="${d.id}"`, "Ask about this deal")}${ib("me", "me", `data-emaildeal="${d.id}"`, "Email me this deal")}${ib("chatin", "wa", `data-dchat="deal:${d.id}"`, "Add a WhatsApp chat")}</div><label class="fld"><span>Deal status</span><select data-dealstatus="${d.id}" aria-label="Deal status">${["Active", "On hold", "Won", "Lost"].map(s => `<option${d.status === s ? " selected" : ""}>${s}</option>`).join("")}</select></label>
+    <div class="acts0 drm"><button type="button" data-dealrm="${d.id}">${ic("drop")}${window._dealRm === d.id ? "Tap again – remove it for good" : "Remove this deal completely"}</button></div>${window._dealRm === d.id ? `<div class="quiet">Removes the deal, its steps, documents, tasks and files. Only the history line stays. For a deal that was only a test of the numbers.</div>` : ""}</div>`;
   return h;
 }
 const homeRowSafe = it => window.homeRow ? homeRow(it, true) : miniHtml(it);
@@ -906,7 +907,7 @@ function areaHtml(name, arr){
 function dealsViewHtml(){
   const all = window._deals || [];
   const shown = all.filter(d => (!window.inSecDeal || inSecDeal(d))).filter(d => dealFilter === "All" || (dealFilter === "Closed" ? (d.status === "Won" || d.status === "Lost") : (d.status === "Active" || d.status === "On hold")));
-  let h = `<div class="h2row"><div class="chips segbar" style="flex:1">${["Active", "Closed", "All"].map(c => `<button data-dealfilter="${c}" class="${dealFilter === c ? "on" : ""}">${c}</button>`).join("")}</div><button data-newdeal="1">${newDealOpen ? "Close" : ic("plus") + "Deal"}</button></div>`;
+  let h = "";   // Active · Closed · All and + Deal now sit in the section line at the top (sections.js secBarHtml)
   if (newDealOpen) h += `<div class="deal"><div class="sec-b" style="padding-top:12px"><label class="fld" style="margin-top:0"><span>Deal name</span><input id="ndName" placeholder="e.g. Manganese – Kalahari stockpile → Hill Minerals" maxlength="120"></label>
       ${secPickHtml("nd")}
       ${window.KIT ? `<label class="fld${(SEC_KIND[section] || "mineral") === "mineral" || section === "All" ? "" : " hidden"}" id="ndRouteBox"><span>Route – decides which steps go in the checklist</span><select id="ndRoute">${kitRouteOpts("local")}</select></label>` : ""}
@@ -1104,6 +1105,21 @@ $("list").addEventListener("click", async e => {
 $("list").addEventListener("click", async e => {
   const fb = e.target.closest("button[data-dealfilter]");
   if (fb) { dealFilter = fb.dataset.dealfilter; try { localStorage.setItem("dealFilter", dealFilter); } catch(e){} render(); return; }
+  const rm = e.target.closest("button[data-dealrm]");
+  if (rm) {
+    const id = rm.dataset.dealrm, d = dealById(id); if (!d) return;
+    if (window._dealRm !== id) { window._dealRm = id; render(); setTimeout(() => { if (window._dealRm === id) { window._dealRm = null; render(); } }, 6000); return; }
+    window._dealRm = null;
+    if (DEMO) { window._deals = window._deals.filter(x => x.id !== id); window._items = (window._items || []).filter(i => i.deal_id !== id); }
+    else {
+      rm.disabled = true;
+      const paths = attsFor("deal", id).map(a => a.path).filter(Boolean);
+      if (paths.length) { try { await sb.storage.from("files").remove(paths); } catch (x) {} }
+      const { error } = await sb.rpc("delete_deal", { p_id: id });
+      if (error) { rm.disabled = false; toast("Could not remove: " + error.message, 6000); return; }
+    }
+    toast(`Removed: ${d.name}`); dealPage = ""; try { localStorage.setItem("dealPage", ""); } catch (x) {} goView("deals"); if (!DEMO) load(); return;
+  }
   const nd = e.target.closest("button[data-newdeal]");
   if (nd) { newDealOpen = !newDealOpen; render(); if (newDealOpen && $("ndName")) $("ndName").focus(); return; }
   const cd = e.target.closest("button[data-createdeal]");
@@ -1442,26 +1458,26 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609281506"></script>
-<script src="directory2.js?v=17.202609281506"></script>
-<script src="today.js?v=17.202609281506"></script>
-<script src="task.js?v=17.202609281506"></script>
-<script src="kitdata.js?v=17.202609281506"></script>
-<script src="dealkit.js?v=17.202609281506"></script>
-<script src="board.js?v=17.202609281506"></script>
-<script src="calc.js?v=17.202609281506"></script>
-<script src="archive.js?v=17.202609281506"></script>
-<script src="extras.js?v=17.202609281506"></script>
-<script src="easy.js?v=17.202609281506"></script>
-<script src="lean.js?v=17.202609281506"></script>
-<script src="docs.js?v=17.202609281506"></script>
-<script src="office.js?v=17.202609281506"></script>
-<script src="google.js?v=17.202609281506"></script>
-<script src="push.js?v=17.202609281506"></script>
-<script src="reader.js?v=17.202609281506"></script>
-<script src="sections.js?v=17.202609281506"></script>
-<script src="bot.js?v=17.202609281506"></script>
-<script src="motion.js?v=17.202609281506"></script>
+<script src="directory.js?v=17.202609281757"></script>
+<script src="directory2.js?v=17.202609281757"></script>
+<script src="today.js?v=17.202609281757"></script>
+<script src="task.js?v=17.202609281757"></script>
+<script src="kitdata.js?v=17.202609281757"></script>
+<script src="dealkit.js?v=17.202609281757"></script>
+<script src="board.js?v=17.202609281757"></script>
+<script src="calc.js?v=17.202609281757"></script>
+<script src="archive.js?v=17.202609281757"></script>
+<script src="extras.js?v=17.202609281757"></script>
+<script src="easy.js?v=17.202609281757"></script>
+<script src="lean.js?v=17.202609281757"></script>
+<script src="docs.js?v=17.202609281757"></script>
+<script src="office.js?v=17.202609281757"></script>
+<script src="google.js?v=17.202609281757"></script>
+<script src="push.js?v=17.202609281757"></script>
+<script src="reader.js?v=17.202609281757"></script>
+<script src="sections.js?v=17.202609281757"></script>
+<script src="bot.js?v=17.202609281757"></script>
+<script src="motion.js?v=17.202609281757"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
