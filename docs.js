@@ -335,7 +335,7 @@ function statusModel(d, o) {
   for (const [k, q] of Object.entries(p._q || {})) { const t = leanDef(d.kind, k); if (!isUnset(p[k])) continue; waiting.push(`${t.l} – ${Q_WORDS[q.s] || q.s}${q.s !== "notyet" ? " (asked " + shortDate(q.on) + ", " + (names && q.who ? q.who : role(k)) + ")" : ""}`); }
   for (const x of DOCS[d.kind] || []) { const r = docRow(d.id, x.k); if (r && r.status === "requested") waiting.push(`${x.l} – requested ${shortDate(saDayKey(r.updated_at || Date.now()))}`); }
   const terms = mn ? [["Volume", T.volume], ["Grade", T.grade], ["Form", T.form], ["Delivery", T.basis], ["Asking price", T.asking], ["Agreed price", T.price], ["Payment", T.payment ? T.payment + (isLC(T.payment) ? " (only after proof of funds)" : "") : ""], ["VAT", T.vat]]
-    : [["Cargo", p.cargo], ["Route", p.route], ["Trucks", [p.trucks, p.truck_type].filter(x => !isUnset(x)).join(" × ")], ["Loads", p.loads], ["Rate", p.client_rate], ["Payment", p.payment], ["VAT", p.vat]];
+    : [["Cargo", p.cargo], ["Route", p.route], ["Trucks", [p.trucks, p.truck_type].filter(x => !isUnset(x)).join(" × ")], ["Loads", p.loads], ["Rate", [p.client_rate, !isUnset(p.client_rate) && window.rateBasis && rateBasis(p) !== "ton" ? "(" + basisWord(rateBasis(p)).toLowerCase() + ")" : ""].filter(Boolean).join(" ")], ["Payment", p.payment], ["VAT", p.vat]];
   if (mn && d.kind === "mineral") { const s = p._src; if (s) terms.unshift(["Sourced", s.s === "ok" ? "yes – confirmed" : s.s === "yes" ? "yes – being confirmed" : "not yet"]); }
   if (o.comm) terms.push([mn ? "Our commission" : "Our margin", isUnset(p.commission) ? "" : p.commission]);
   if (o.cuts) terms.push(["Other parties' cuts", isUnset(p.other_cuts || p.cuts) ? "" : (p.other_cuts || p.cuts)]);

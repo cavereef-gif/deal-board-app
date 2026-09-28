@@ -278,7 +278,7 @@ const TERMS = {
     ["client_rate", "Client rate", "e.g. R350/t"],
     ["haulier_rate", "Transporter rate", "e.g. R200/t"],
     ["cuts", "Other parties' cuts", "Who gets what per ton"],
-    ["commission", "Our margin", "Per ton"],
+    ["commission", "Our margin", "Per ton, or per load on a flat rate"],
     ["loads", "Loads", "Per day / week / month"],
     ["payment", "Payment terms", "e.g. 50% up front, 50% on delivery"],
     ["extras", "Extras / inclusions", "e.g. diesel"],
@@ -816,7 +816,8 @@ function dealTicketHtml(d, pg){
   const has = k => p[k] && !/^(not agreed|to discuss)$/i.test(p[k]);
   const pill = has("commission") ? `<span class="tpill">${tr ? "Margin" : "Commission"} agreed</span>` : `<span class="tpill late">${tr ? "Margin" : "Commission"} not agreed</span>`;
   const big = tr ? (p.client_rate || p.loads) : p.volume;
-  const kLabel = tr ? (p.client_rate ? "Client rate" : "Loads") : "Buyer wants";
+  const rb = tr && window.rateBasis ? rateBasis(p) : "ton";
+  const kLabel = tr ? (p.client_rate ? (rb === "load" ? "Flat rate a load" : rb === "job" ? "Flat rate · whole job" : "Client rate") : "Loads") : "Buyer wants";
   const src = mn && p._src ? (p._src.s === "ok" ? "sourced" : p._src.s === "yes" ? "sourced, to confirm" : "") : "";
   const line = (tr ? [p.cargo, p.route, ["trucks", "truck_type"].filter(has).map(k => p[k]).join(" × ")] : [p.commodity, has("grade") ? p.grade : "grade to confirm", has("basis") ? p.basis + (p.port ? " " + p.port : "") : "FOT or DAP to agree", src]).concat(bigNote(big) ? [bigNote(big)] : []).filter(Boolean).join(" · ");
   const u = (/dmtu/i.test(p.unit || "") ? "/dmtu" : /wmt/i.test(p.unit || "") ? "/WMT" : /dmt/i.test(p.unit || "") ? "/DMT" : "/t");

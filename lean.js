@@ -109,8 +109,9 @@ const LEAN_TERMS = {
       { k: "trucks", l: "Trucks", ph: "How many", q: 1, side: "client" },
       { k: "truck_type", l: "Truck type", sel: () => TRUCKS, q: 1, side: "client" },
       { k: "loads", l: "Loads", ph: "e.g. 20 a month", q: 1, side: "client" },
-      { k: "client_rate", l: "Client rate", ph: "e.g. R350/t", q: 1, side: "client" },
-      { k: "haulier_rate", l: "Transporter rate", ph: "e.g. R200/t", q: 1, side: "transporter" },
+      { k: "rate_basis", l: "Rate type", chips: ["Per ton", "Flat per load", "Flat – whole job"] },
+      { k: "client_rate", l: "Client rate", ph: "e.g. R350/t", phf: p => ({ load: "e.g. R12,000 a load", job: "e.g. R150,000 for the job" })[window.rateBasis ? rateBasis(p) : "ton"], q: 1, side: "client" },
+      { k: "haulier_rate", l: "Transporter rate", ph: "e.g. R200/t", phf: p => ({ load: "e.g. R8,500 a load", job: "e.g. R110,000 for the job" })[window.rateBasis ? rateBasis(p) : "ton"], q: 1, side: "transporter" },
       { k: "payment", l: "Payment terms", sel: () => PAY_TR, q: 1, side: "client" },
       { k: "vat", l: "VAT", chips: ["Included", "Excluded"], q: 1, side: "client" },
     ],
@@ -164,6 +165,7 @@ function qSelect(d, k, q, label) {
   return `<span class="qpill${cur ? " on q-" + cur : ""}">${esc(short)}<select class="qsel" data-qsel="${d.id}:${k}" aria-label="Where ${esc(label)} stands: ${esc(short)}">${opt("", "Not asked yet")}${opt("notyet", "Not yet – remind me today")}${opt("requested", "Requested – follow up in 2 work days")}${opt("awaiting", "Still awaiting – chase tomorrow")}</select></span>`;
 }
 function termRowHtml(d, t) {
+  if (t.phf) { const ph = t.phf(leanP(d)); if (ph) t = Object.assign({}, t, { ph }); }
   const p = leanP(d), v = p[t.k] || "", open = isUnset(v), priv = /^(target|limit)$/.test(t.k) || t.priv;
   const q = (p._q || {})[t.k];
   const state = priv ? "private" : !open ? "set" : q ? qState(q) : (v ? v.toLowerCase() : "not set");
@@ -418,22 +420,25 @@ window.nextCardHtml = function (d, pg) {
 // ---------- the commission split (private) ----------
 const splitDraft = {};
 const commBase = d => { const v = leanP(d).commission; return isUnset(v) ? 0 : (numIn(v) || 0); };
+// a transport deal on a flat rate splits a margin per load or for the whole job, not per ton
+const splitBasis = d => d.kind === "transport" && window.rateBasis ? rateBasis(leanP(d)) : "ton";
+const splitMoney = (d, base, pc, tpl) => { if (!base) return ""; const x = base * pc / 100, b = splitBasis(d); return b === "load" ? `${randR(x)}/load` : b === "job" ? `${randR(x)} for the job` : `${randR2(x)}/t · ${randR(x * tpl)}/load`; };
 function splitHtml(d) {
   const p = leanP(d), saved = Array.isArray(p._split) ? p._split : [], ed = splitDraft[d.id], rows = ed || saved;
   const base = commBase(d), tpl = +(ed ? ed.tpl : p._split_t) || 34, perT = d.kind === "transport" ? "margin" : "commission";
   const tot = rows.reduce((a, r) => a + (+r.p || 0), 0), ok = Math.abs(tot - 100) < 0.01;
-  const money = pc => base ? `${randR2(base * pc / 100)}/t · ${randR(base * pc / 100 * tpl)}/load` : "";
+  const money = pc => splitMoney(d, base, pc, tpl), bu = window.basisUnit ? basisUnit(splitBasis(d)) : " a ton";
   let h = `<div class="trow split" data-splitbox="${d.id}"><div class="k"><b>Commission split</b><span>${rows.length ? (ok ? "100%" : `${fN(tot, 2)}%`) : "not set"}</span></div>`;
   if (!ed) {
-    if (!saved.length) h += `<div class="tnote">Who gets what share of our ${perT}${base ? ` (${randR2(base)} a ton)` : ""}. Used for the statements and the IMFPA.</div><div class="acts0"><button type="button" data-split="${d.id}">${ic("plus")}Split the ${perT}</button></div>`;
+    if (!saved.length) h += `<div class="tnote">Who gets what share of our ${perT}${base ? ` (${randR2(base)}${bu})` : ""}. Used for the statements and the IMFPA.</div><div class="acts0"><button type="button" data-split="${d.id}">${ic("plus")}Split the ${perT}</button></div>`;
     else {
       h += `<div class="spl">${saved.map((r, i) => `<div class="spr"><span class="spn">${esc(r.n)}</span><span class="spp">${fN(+r.p, 2)}%</span><span class="spm">${esc(money(+r.p)) || "set our " + perT + " first"}</span>${base ? `<button type="button" class="tag l" data-splitst="${d.id}:${i}">Statement</button>` : ""}</div>`).join("")}</div>`;
-      h += `<div class="tnote">${base ? `On our ${perT} of ${randR2(base)} a ton · ${fN(tpl, 0)} t a load` : `Type our ${perT} above to see the rand`}</div><div class="acts0"><button type="button" data-split="${d.id}">${ic("edit")}Change the split</button></div>`;
+      h += `<div class="tnote">${base ? `On our ${perT} of ${randR2(base)}${bu}${splitBasis(d) === "ton" ? ` · ${fN(tpl, 0)} t a load` : ""}` : `Type our ${perT} above to see the rand`}</div><div class="acts0"><button type="button" data-split="${d.id}">${ic("edit")}Change the split</button></div>`;
     }
   } else {
     h += `<div class="spl edit">${ed.map((r, i) => `<div class="spe"><input data-spn="${i}" value="${esc(r.n)}" placeholder="Name" autocomplete="off" aria-label="Name ${i + 1}"><input data-spp="${i}" value="${esc(r.p)}" placeholder="%" inputmode="decimal" aria-label="Share ${i + 1} in %"><span class="spm">${esc(money(+r.p || 0))}</span>${ed.length > 1 ? `<button type="button" class="spx" data-sprm="${i}" aria-label="Remove">×</button>` : ""}</div>`).join("")}</div>
       <div class="spt${ok ? "" : " off"}">${ok ? "Adds up to 100%" : `Adds up to ${fN(tot, 2)}% – ${tot < 100 ? fN(100 - tot, 2) + "% still to place" : fN(tot - 100, 2) + "% too much"}`}</div>
-      <label class="fld"><span>Tons a load (for the per-load figure)</span><input data-sptpl="1" value="${esc(ed.tpl || 34)}" inputmode="decimal"></label>
+      ${splitBasis(d) === "ton" ? `<label class="fld"><span>Tons a load (for the per-load figure)</span><input data-sptpl="1" value="${esc(ed.tpl || 34)}" inputmode="decimal"></label>` : ""}
       <div class="acts0"><button type="button" data-spadd="${d.id}">${ic("plus")}Add a name</button><button type="button" class="primary" data-spsave="${d.id}">${ic("check")}Save split</button><button type="button" data-spcancel="${d.id}">Cancel</button></div>`;
   }
   return h + `</div>`;
@@ -442,7 +447,7 @@ window.splitHtml = splitHtml;
 function splitRefresh(dealId) {   // keep typing smooth: repaint the money, total and button without re-rendering the page
   const ed = splitDraft[dealId], d = dealById(dealId), box = document.querySelector(`[data-splitbox="${dealId}"]`); if (!ed || !d || !box) return;
   const base = commBase(d), tpl = +ed.tpl || 34, tot = ed.reduce((a, r) => a + (+r.p || 0), 0), ok = Math.abs(tot - 100) < 0.01;
-  box.querySelectorAll(".spe").forEach((row, i) => { const m = row.querySelector(".spm"); if (m) m.textContent = base && ed[i] ? `${randR2(base * (+ed[i].p || 0) / 100)}/t · ${randR(base * (+ed[i].p || 0) / 100 * tpl)}/load` : ""; });
+  box.querySelectorAll(".spe").forEach((row, i) => { const m = row.querySelector(".spm"); if (m) m.textContent = ed[i] ? splitMoney(d, base, +ed[i].p || 0, tpl) : ""; });
   const t = box.querySelector(".spt"); if (t) { t.textContent = ok ? "Adds up to 100%" : `Adds up to ${fN(tot, 2)}% – ${tot < 100 ? fN(100 - tot, 2) + "% still to place" : fN(tot - 100, 2) + "% too much"}`; t.classList.toggle("off", !ok); }
   const k = box.querySelector(".k span"); if (k) k.textContent = ok ? "100%" : `${fN(tot, 2)}%`;
 }
@@ -619,9 +624,9 @@ const STEP_WHY = {
   "Cargo and route": { what: "What is carried, from where to where, tons a load, loads a month, loading hours.", why: "The rate and the trucks depend on it.", who: "Client", done: "Written confirmation" },
   "Trucks lined up": { what: "A transporter with the right trucks (e.g. 34 t side tippers), how many and from when.", why: "No point quoting loads we cannot move.", who: "Transporter", done: "Written availability" },
   "Split agreed": { what: "Who gets what per ton, in writing: client rate, transporter rate, our margin.", why: "This is our income. Unclear splits end in arguments.", who: "Us, with the transporter", done: "Written split" },
-  "Client rate set": { what: "The rate per ton the client pays, with VAT stated.", why: "'R350 a ton' without VAT stated is 15% of doubt.", who: "Client", done: "Our quote accepted in writing" },
+  "Client rate set": { what: "What the client pays – per ton, a flat rate per load, or one amount for the whole job – with VAT stated.", why: "'R350 a ton' without VAT stated is 15% of doubt.", who: "Client", done: "Our quote accepted in writing" },
   "Payment terms": { what: "When the client pays, e.g. 7 days from the POD.", why: "Transporters want paying. The gap between them and the client is our cash risk.", who: "Client", done: "Written payment terms" },
-  "Transporter rate": { what: "What the truck costs per ton, and whether tolls and diesel are in it.", why: "Our margin is the client rate minus the transporter rate.", who: "Transporter", done: "Rate confirmation" },
+  "Transporter rate": { what: "What the truck costs (per ton or flat, the same way as the client rate), and whether tolls and diesel are in it.", why: "Our margin is the client rate minus the transporter rate.", who: "Transporter", done: "Rate confirmation" },
   "Insurance in": { what: "Goods-in-transit insurance certificate and the vehicle list.", why: "A lost load without insurance is our problem.", who: "Transporter", done: "Certificate in Docs" },
   "Contract signed": { what: "The transport agreement with the client, and with the transporter.", why: "Enforceable terms for rates, payment and liability.", who: "Client and transporter", done: "Signed agreement in Docs" },
   "Trial load done": { what: "The first load delivered, with its POD and weighbridge tickets.", why: "It proves the route, the trucks and the paperwork before the volume starts.", who: "Transporter", done: "POD and tickets in Docs" },
@@ -638,7 +643,7 @@ const DOC_WHY = {
   pof: { what: "Proof of funds: a bank letter or statement showing the buyer has the money for the first lot.", why: "No LC or escrow talk before this. It filters out time-wasters.", when: "Before the SPA and any payment instrument. From the buyer's bank." },
   kyc: { what: "KYC company sheet: registration, directors, address, VAT and bank details of each side (ours is made here).", why: "Know who you deal with; banks, lawyers and the SPA need it.", when: "Before the SPA. From both sides." },
   spa: { what: "Sale and purchase agreement: the contract with every term, and what happens when things go wrong.", why: "The only enforceable document. Everything else leads to it.", when: "After the checks, before payment. We draft it here; an attorney checks it once." },
-  quote: { what: "Our quote: rate per ton, VAT, what is included, with the client's acceptance.", why: "The rate is agreed in writing before the first truck moves.", when: "First. Made in Numbers › Quote PDF." },
+  quote: { what: "Our quote: the rate (per ton or flat), VAT, what is included, with the client's acceptance.", why: "The rate is agreed in writing before the first truck moves.", when: "First. Made in Numbers › Quote PDF." },
   contract: { what: "Transport contract: the agreement with the client (and the transporter) on rates, payment, liability, insurance.", why: "Enforceable terms.", when: "Before the loads start." },
   insurance: { what: "Insurance certificate: goods-in-transit cover and the vehicle list.", why: "A lost or damaged load is covered, not ours to pay.", when: "Before the first load. From the transporter." },
   tickets: { what: "Weighbridge tickets: the weight at loading and at delivery for each load.", why: "The invoice is per ton; the tickets prove the tons.", when: "Every load. From the transporter." },

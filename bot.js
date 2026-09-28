@@ -82,7 +82,7 @@ function botGo(go) {
     if (d.kind === "transport" && window._trip) {
       const route = ((d.params && d.params.route) || "").split(/→|->| to /), TRp = window._trip;
       if (route.length >= 2) { TRp.from = route[0].replace(/\(.*?\)/g, "").trim(); TRp.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
-      const cr = String((d.params || {}).client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TRp.client = cr[0];
+      const cr = window.perTonRate ? perTonRate(d.params || {}, +TRp.tpl || 34) : ""; if (cr) TRp.client = cr;
       TRp.deal = d.id; TRp.km = null; TRp.geo = null;
       try { localStorage.setItem("calcTab", "transport"); } catch (e) {} if (typeof calcTab !== "undefined") calcTab = "transport";
       goView("calc"); window.scrollTo(0, 0); return;
