@@ -3,7 +3,7 @@
 // weighbridge ticket and the POD (files on the load), invoiced and paid. Totals add up per deal.
 window.loadsLoad = function () {
   if (DEMO) { window._loads = window._loads || []; return; }
-  sb.from("loads").select("*").order("n").then(r => { window._loads = r.error ? null : (r.data || []); if (view === "deal") render(); });
+  sb.from("loads").select("*").order("n").then(r => { window._loads = r.error ? null : (r.data || []); if (r.error && !/does not exist|schema cache/i.test(r.error.message)) (window._loadErr ||= []).push("loads"); if (view === "deal") render(); });
 };
 const LD = { edit: null, f: null, rm: null };
 const loadsOf = id => (window._loads || []).filter(l => l.deal_id === id).sort((a, b) => a.n - b.n);

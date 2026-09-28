@@ -713,6 +713,7 @@ window.dealSummaryHtml = function (d, pg) {
   else if (pg.total) rows.push(["Next", "all steps done – mark the deal Won"]);
   const block = window.dealBlockers ? dealBlockers(d, pg) : [];
   if (L.needs === "pof" && !pofIn(d)) block.unshift("proof of funds not in");
+  if (window.expiringList) expiringList(d.id).forEach(x => block.push(`${x.label} ${x.st === "expired" ? "expired " : "runs out "}${shortDate(x.on)}`));
   rows.push(["Blocking", block.length ? block.join(" · ") : "nothing"]);
   const waits = (typeof itemsOf === "function" ? itemsOf(d.id) : []).filter(i => !i._me), late = waits.filter(i => i.due_on && dayDiff(dueDate(i)) < 0).length;
   rows.push(["Waiting on", waits.length ? `${waits[0].waiting_on} – ${waits[0].waiting_for}${waits.length > 1 ? ` (+${waits.length - 1} more)` : ""}${late ? ` · ${late} late` : ""}` : "nobody"]);
@@ -726,7 +727,7 @@ window.dealSummaryHtml = function (d, pg) {
   if (window.trustLine) { const t = trustLine(d); if (t) rows.push(["Checks", t]); }
   if (window.loadsLine) { const t = loadsLine(d); if (t) rows.push(["Loads", t]); }
   if (window.dealMismatches) { const mm = dealMismatches(d); if (mm.length) rows.push(["Mismatch", mm.length === 1 ? mm[0] : `${mm.length} figures disagree – see Numbers`]); }
-  return `<div class="tplfrom dsum">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
+  return `<div class="tplfrom done1">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };
 
 // ---------- hard stops (28 Sep 2026 night) ----------
@@ -773,14 +774,14 @@ window.trustFlags = d => { const f = trustOf(d).flags || {}; return FLAGS.filter
 window.trustLine = function (d) {
   if (d.kind !== "mineral") return "";
   const b = trustCount(d, "buyer"), s = trustCount(d, "seller"), fl = trustFlags(d).length;
-  return `buyer ${b.done} of ${b.all}${b.must ? " ✓" : ""} · stockpile ${s.done} of ${s.all}${s.must ? " ✓" : ""}${fl ? ` · ${fl} red flag${fl > 1 ? "s" : ""}` : ""}`;
+  return `buyer ${b.done}/${b.all}${b.must ? " ✓" : ""} · stockpile ${s.done}/${s.all}${s.must ? " ✓" : ""}${fl ? ` · ${fl} red flag${fl > 1 ? "s" : ""}` : ""}`;
 };
 window.trustHtml = function (d) {
   if (d.kind !== "mineral") return "";
   const t = trustOf(d), f = t.flags || {};
   const side = k => { const c = trustCount(d, k), v = t[k] || {};
     return `<div class="trow trust"><div class="k"><b>${TRUST[k].l}</b><span>${c.done} of ${c.all}${c.must ? " · must-haves done" : ""}</span></div><div class="tlist">${TRUST[k].items.map(([ik, l, must]) => `<button type="button" class="tck${v[ik] ? " on" : ""}" data-trust="${d.id}:${k}:${ik}" aria-pressed="${!!v[ik]}"><i aria-hidden="true">${v[ik] ? "✓" : ""}</i><span>${esc(l)}${must ? "" : " <small>(if you can)</small>"}${v[ik] ? `<small>${esc([v[ik].by, v[ik].on ? shortDate(v[ik].on) : ""].filter(Boolean).join(" · "))}</small>` : ""}</span></button>`).join("")}</div></div>`; };
-  return rplain("trust check", trustLine(d)) + side("buyer") + side("seller")
+  return side("buyer") + side("seller")
     + `<div class="trow trust flags"><div class="k"><b>Red flags</b><span>${trustFlags(d).length || "none"}</span></div><div class="tlist">${FLAGS.map(([k, l]) => `<button type="button" class="tck flag${f[k] ? " on" : ""}" data-trust="${d.id}:flags:${k}" aria-pressed="${!!f[k]}"><i aria-hidden="true">${f[k] ? "!" : ""}</i><span>${esc(l)}</span></button>`).join("")}</div><div class="tnote">Never pay a fee to "verify" a deal. Confirm any bank guarantee or SBLC with the issuing bank yourself before you rely on it.</div></div>`;
 };
 document.addEventListener("click", async e => {
@@ -808,7 +809,7 @@ document.addEventListener("click", async e => {
 // Transport: client rate less transporter rate less cuts, per ton or per load (flat rates too), on the loads a month.
 const perMonthOf = s => { const t = String(s || ""); const m = t.match(/(\d[\d ,.]*)\s*(?:k\s*)?t?\s*(?:a|per|\/)\s*month/i); if (m) { let v = parseFloat(m[1].replace(/[ ,]/g, "")); if (/k\s*t/i.test(t)) v *= 1000; return v; } const r = t.match(/(\d[\d ,]*)\s*[–-]\s*(\d[\d ,]*)/); return r ? parseFloat(r[1].replace(/[ ,]/g, "")) : (numIn(t) || 0); };
 const sumCuts = s => { const a = [...String(s || "").matchAll(/R\s?(\d+(?:[.,]\d+)?)/g)].map(m => +m[1].replace(",", ".")); return a.reduce((x, y) => x + y, 0); };
-const rMoney = v => (v < 0 ? "−" : "") + "R" + Math.round(Math.abs(v)).toLocaleString("en-ZA").replace(/[  ,]/g, " ");
+const rMoney = v => (v < 0 ? "−" : "") + "R" + Math.round(Math.abs(v)).toLocaleString("en-ZA").replace(/[  ,]/g, "\u00a0");
 function dealMoney(d) {
   const p = leanP(d), out = { rows: [], line: "" };
   if (d.kind === "mineral") {
@@ -836,7 +837,7 @@ window.dealMoney = dealMoney;
 window.dealMoneyLine = d => dealMoney(d).line;
 window.dealMoneyHtml = function (d) {
   const m = dealMoney(d); if (!m.rows.length) return "";
-  return rplain("money", "from the terms") + `<div class="tplfrom dsum">${m.rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
+  return rplain("money", "from the terms") + `<div class="tplfrom done1">${m.rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };
 
 // ---------- mismatch check (28 Sep 2026 night) ----------
@@ -872,3 +873,15 @@ document.addEventListener("click", e => {
   const d = dealById(b.dataset.mmbot); if (!d || typeof askBot !== "function") return;
   askBot(`Mismatch check for the deal "${d.name}": compare every figure saved on it – the terms, the notes, the WhatsApp chats and the documents that were read (LOI, ICPO, FCO, SPA, quotes, assays) – and list only the ones that disagree (price, grade, quantity, delivery basis and place, payment, VAT, names), saying where each figure comes from. If nothing disagrees, say so in one line.`, "ask", d.id);
 });
+
+// ---------- rules that change (28 Sep 2026 night) ----------
+// Legal and tax positions are never shown as permanent facts: each says when it was checked, where, and to recheck.
+window.REG_CHECK = {
+  "9.4": { on: "2026-09-28", src: "chrome ore export control was proposed in Notice 6712 of 2025 (comments were due 31 Oct 2025); no final notice was found in a search on this date", url: "https://www.gov.za/sites/default/files/gcis_document/202510/53477gon6712.pdf" },
+  "6.5": { on: "2026-09-28", src: "chrome ore export measures proposed in Notice 6712 of 2025; not final when searched on this date", url: "https://itac.org.za/government-initiates-control-measures-for-chrome-ore-exports-to-revitalise-local-industry/" },
+};
+window.regCheckHtml = function (s) {
+  const r = s && s.code && window.REG_CHECK[s.code]; if (!r) return "";
+  const age = Math.round((Date.now() - new Date(r.on + "T12:00:00").getTime()) / 864e5);
+  return `<div class="tnote reg">Rule last checked ${esc(shortDate(r.on))}${age > 30 ? ` (${age} days ago – recheck now)` : ""}: ${esc(r.src)}. Recheck before shipping. <a href="${esc(r.url)}" target="_blank" rel="noopener">Open the source</a></div>`;
+};

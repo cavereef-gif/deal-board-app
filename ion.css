@@ -750,9 +750,9 @@ html[data-ion][data-palette] .secbar.fl>button.fadd:after{display:none}
 html[data-ion][data-palette] .icard.wo{background:#CBD5DE;background-color:#CBD5DE}
 html[data-ion="twilight"][data-palette] .icard.wo{background:#CFE0E6;background-color:#CFE0E6}
 /* 28 Sep 2026 night: the deal on one screen */
-html[data-ion][data-palette] .tplfrom.dsum{margin:8px 0 10px}
-html[data-ion][data-palette] .tplfrom.dsum .kv .k{flex:0 0 96px;color:var(--muted)}
-html[data-ion][data-palette] .tplfrom.dsum .kv .v{text-align:left}
+html[data-ion][data-palette] .tplfrom.done1{margin:8px 0 10px}
+html[data-ion][data-palette] .tplfrom.done1 .kv .k{flex:0 0 96px;color:var(--muted)}
+html[data-ion][data-palette] .tplfrom.done1 .kv .v{text-align:left}
 /* 28 Sep 2026 night: trust check – one row per check, a tick box on the left; red flags use a coral box */
 html[data-ion][data-palette] .trow.trust .tlist{display:flex;flex-direction:column;gap:4px}
 html[data-ion][data-palette] .trow.trust .tck{display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;height:auto;padding:8px 10px;border:0;border-radius:10px;background:var(--ccard2);color:var(--ctext);font:400 15px/20px var(--font);text-align:left;box-shadow:none;justify-content:flex-start}
@@ -762,3 +762,10 @@ html[data-ion][data-palette] .trow.trust .tck.flag.on i{background:var(--coral);
 html[data-ion][data-palette] .trow.trust .tck span{min-width:0}
 html[data-ion][data-palette] .trow.trust .tck small{display:block;font:400 14px/18px var(--mono);color:var(--cmuted)}
 html[data-ion][data-palette] .tnote.gate{margin:8px 0 4px}
+/* 28 Sep 2026 night: + menu – four everyday choices, the rest folded */
+html[data-ion][data-palette] .addgrid.addmain{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-ion][data-palette] .addmore{margin-top:10px}
+html[data-ion][data-palette] .addmore>summary{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;background:var(--g2);color:var(--text);font:400 16px/1 var(--font);list-style:none;cursor:pointer}
+html[data-ion][data-palette] .addmore>summary::-webkit-details-marker{display:none}
+html[data-ion][data-palette] .addmore>summary:after{content:"▾";color:var(--muted)}
+html[data-ion][data-palette] .addmore .addgrid{margin-top:8px}

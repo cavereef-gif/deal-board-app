@@ -81,21 +81,24 @@
 <input type="file" id="cFileInput" class="hidden">
 <div id="addSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Add">
   <div class="sheet-b">
-    <div class="sheet-h"><span>add · most used first</span><button id="addClose" type="button">Close</button></div>
+    <div class="sheet-h"><span>add</span><button id="addClose" type="button">Close</button></div>
+    <div class="addgrid addmain">
+      <button type="button" data-add="task" class="t-me hi"><span class="qi" data-ico="checkbox"></span>Task</button>
+      <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>Deal</button>
+      <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>Person</button>
+      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Document or photo</button>
+    </div>
+    <details class="addmore"><summary>More ways to add</summary>
     <div class="addgrid">
-      <button type="button" data-add="task" class="t-me hi"><span class="qi" data-ico="checkbox"></span>New task</button>
-      <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
-      <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
       <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
+      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>WhatsApp quote</button>
+      <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
+      <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
       <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
-      <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
-      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Read photo or PDF</button>
-      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>WhatsApp quote</button>
       <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Calculators</button>
       <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search archive</button>
-      <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
-    </div>
+    </div></details>
     <div class="mfoot">tap outside to close</div>
   </div>
 </div>
@@ -457,6 +460,8 @@ async function load(){
     window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || []; window._drafts = r9.data || [];
     window._posts = (r10 && r10.data) || []; window._done = (r11 && r11.data) || [];
     window._docs = (r12 && !r12.error && r12.data) || [];
+    // 28 Sep 2026 night: say so when part of the data did not load, instead of quietly showing it empty
+    window._loadErr = [[r2, "areas"], [r3, "contacts"], [r4, "notes"], [r5, "files"], [r6, "deals"], [r7, "deal steps"], [r8, "history"], [r10, "board"], [r11, "done tasks"], [r12, "documents"]].filter(([r]) => r && r.error).map(([, n]) => n);
     window._urls = window._urls || {};
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
@@ -702,7 +707,7 @@ function stepHtml(s, isNext, o){
   const sub = s.status === "na" ? (/^skipped/i.test(s.evidence || "") ? "skipped – " + String(s.evidence).replace(/^skipped:?\s*/i, "").slice(0, 28) : "not needed") : s.status !== "open" ? [s.done_by, s.done_at ? dm(s.done_at) : ""].filter(Boolean).join(" · ") : plan;
   let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}${late ? " late" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : late ? "late" : isNext ? "next" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : late ? " late" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span></button></div>`;
   const why = window.stepWhyHtml ? stepWhyHtml(s) : "";   // the plain-words explainer replaces the kit's own note on a short-procedure step
-  if (open) h += `<div class="stepp step-p">${why}${!why && s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail && !why ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${!why && (s.who || s.closes_with) ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label>${(() => { const d0 = dealById(s.deal_id), miss = d0 && window.stepGateMissing && s.status === "open" ? stepGateMissing(d0, s.id) : []; return miss.length ? `<div class="tnote gate">Not yet – first: ${esc(miss.join(", "))}. Tick those, mark them Not needed, or skip this one with a reason.</div>` : ""; })()}<div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button><button data-setstep="${s.id}" data-v="skip">Skip – with a reason</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
+  if (open) h += `<div class="stepp step-p">${window.regCheckHtml ? regCheckHtml(s) : ""}${why}${!why && s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail && !why ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${!why && (s.who || s.closes_with) ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label>${(() => { const d0 = dealById(s.deal_id), miss = d0 && window.stepGateMissing && s.status === "open" ? stepGateMissing(d0, s.id) : []; return miss.length ? `<div class="tnote gate">Not yet – first: ${esc(miss.join(", "))}. Tick those, mark them Not needed, or skip this one with a reason.</div>` : ""; })()}<div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button><button data-setstep="${s.id}" data-v="skip">Skip – with a reason</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
   return h;
 }
 // The procedure rail: every stage down one groove. An open stage is a block with its steps as cards and its name to the
@@ -859,7 +864,7 @@ function dealPageHtml(d){
     // the next step first, with the buttons that move it (28 Sep: "step up the workflow")
     if (window.dealSummaryHtml) h += dealSummaryHtml(d, pg);   // the deal on one screen (28 Sep night)
     if (window.nextCardHtml) h += nextCardHtml(d, pg);
-    if (window.trustHtml && d.kind === "mineral") { const tk = `trust:${d.id}`, done = window.trustLine && /buyer [^·]*✓ · stockpile [^·]*✓/.test(trustLine(d)), to = isOpen(tk, !done); h += `<button type="button" class="tmore" data-tog="${tk}" data-dflt="${done ? 0 : 1}" aria-expanded="${to}"><span>Trust check – ${esc(trustLine(d))}</span><span class="chev"></span></button>${to ? trustHtml(d) : ""}`; }
+    if (window.trustHtml && d.kind === "mineral") { const tk = `trust:${d.id}`, done = window.trustLine && /buyer [^·]*✓ · stockpile [^·]*✓/.test(trustLine(d)), to = isOpen(tk, !done); h += `<button type="button" class="tmore" data-tog="${tk}" data-dflt="${done ? 0 : 1}" aria-expanded="${to}"><span>Trust check · ${esc(trustLine(d))}</span><span class="chev"></span></button>${to ? trustHtml(d) : ""}`; }
     const all = window.leanAll ? leanAll(d.id) : true, kit = window.kitSecHtml && (d.kit || all) ? kitSecHtml(d) : "";
     h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");
     if (window.loadsHtml && (d.kind === "mineral" || d.kind === "transport")) h += loadsHtml(d);
@@ -1010,6 +1015,7 @@ function render(){
   const si = window._sheetItem && items.find(i => i.id === window._sheetItem);
   if (window._sheetItem && !si) window._sheetItem = null;
   if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our job" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
+  if ((window._loadErr || []).length && ["worklist", "deals", "deal"].includes(view)) html = `<div class="warn"><i class="dot d-stale"></i><div>Some of your data did not load: ${esc(window._loadErr.join(", "))}. Check the signal and tap More › Settings › Refresh, or reopen the app. What you see may be missing those parts.</div></div>` + html;
   $("list").innerHTML = html;
   placeSecBar();
   (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });

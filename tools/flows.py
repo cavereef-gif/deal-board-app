@@ -205,12 +205,12 @@ async def main():
             sd=await ev("({ pts: document.querySelectorAll('.step-p .sd .easy li, .step-p .sd .easy .ez-p, .step-p .why .whyl').length, focus: document.activeElement && document.activeElement.tagName })")
             check("Step details read as points (What · Why · Who · Done when since 28 Sep); opening a step does not focus a text box", sd['pts']>=1 and sd['focus'] not in ("INPUT","TEXTAREA"), str(sd))
             # 16 voice note
-            await tap("#plusTab"); await tap("button[data-add=voice]")
+            await tap("#plusTab"); await ev("document.querySelector('#addSheet .addmore').open=true"); await tap("button[data-add=voice]")
             vn=await ev("({ open: !document.getElementById('vnSheet').classList.contains('hidden'), speak: !!document.querySelector('#vnSheet .bigmic'), rec: !!document.getElementById('vnRecBtn') })")
             await pg.fill("#vnText", "Call the mill about Tuesday"); await tap("#vnSave")
             vc=await ev("document.getElementById('vnSheet').classList.contains('hidden')")
             check("+ › Voice note: Speak, type, Save closes the sheet", vn['open'] and vn['speak'] and vn['rec'] and vc, str(vn))
-            await tap("#plusTab"); await tap("button[data-add=voice]"); await pg.go_back(); await W()
+            await tap("#plusTab"); await ev("document.querySelector('#addSheet .addmore').open=true"); await tap("button[data-add=voice]"); await pg.go_back(); await W()
             check("Back closes the voice-note sheet", await ev("document.getElementById('vnSheet').classList.contains('hidden')"))
             # 17 Speak buttons beside the text boxes
             await ev("openTaskSheet()"); await W()
@@ -228,7 +228,7 @@ async def main():
             # ---- step 2 (v17): the reader – WhatsApp quote, photo or PDF, voice note (demo answers; the real reader needs a login) ----
             await ev("document.getElementById('ckSheet').classList.add('hidden'); goView('worklist')"); await W()
             n0=await ev("window._items.length")
-            await tap("#plusTab"); await tap("button[data-add=quote]")
+            await tap("#plusTab"); await ev("document.querySelector('#addSheet .addmore').open=true"); await tap("button[data-add=quote]")
             await pg.fill("#rdText", "Hi Chris, chrome conc 40-42% 5000t/month R2400/t FOT plant Rustenburg. Trucks from Monday.")
             await tap("#rdGo"); await W(700)
             rv=await ev("({ open: !document.getElementById('rvSheet').classList.contains('hidden'), card: !!document.querySelector('#rvBody .rvq'), missing: document.querySelectorAll('#rvBody .rvmiss li').length, ticked: document.querySelectorAll('#rvBody [data-rv^=\"task:\"]:checked').length })")
@@ -237,7 +237,7 @@ async def main():
             check("Decode a WhatsApp quote: tidy card, what is missing, tasks ticked, Save adds them", rv['open'] and rv['card'] and rv['missing']>=3 and rv['ticked']==2 and n1==n0+2 and closed, f"{rv} items {n0}->{n1}")
             # 27 Sep 2026: a messy WhatsApp with several loads – one card per load, what is missing, "Make it a deal" makes the deal and one ask-back task on it
             d0=await ev("window._deals.length"); n0=await ev("window._items.length")
-            await tap("#plusTab"); await tap("button[data-add=quote]")
+            await tap("#plusTab"); await ev("document.querySelector('#addSheet .addmore').open=true"); await tap("button[data-add=quote]")
             await pg.fill("#rdText", "*LOADS AVAILABLE* 1) Rustenburg - RBay 10 x sidies R385/t chrome 2) Coal WTB to Maputo R620 per ton.... R600 if 34t payload. Need 15 trucks asap!! Lee 082 555 0199")
             await tap("#rdGo"); await W(700)
             ml=await ev("({ cards: document.querySelectorAll('#rvBody .rvload').length, ask: document.querySelectorAll('#rvBody .rvl-ask li').length, flags: document.querySelectorAll('#rvBody .rvflag').length, ticked: document.querySelectorAll('#rvBody [data-rv^=\"load:\"]:checked').length, sw: document.documentElement.scrollWidth })")
@@ -453,7 +453,7 @@ async def main():
             check("Routes show the toll gates in the working (names and class)", "Tolls per trip" in tl and "gate" in tl, tl)
             # B1/B2 (28 Sep night): the deal on one screen, trust check ticks its step, hard stop on the SPA, skip with a reason
             await ev("openDealPage('dm1'); setDealTab('dm1','steps'); goView('deal')"); await W(500)
-            sm=await ev("(() => { const t=document.querySelector('.dsum'); return t ? [...t.querySelectorAll('.k')].map(k=>k.textContent).join(',') : '' })()")
+            sm=await ev("(() => { const t=document.querySelector('.done1'); return t ? [...t.querySelectorAll('.k')].map(k=>k.textContent).join(',') : '' })()")
             check("The deal on one screen: Next · Blocking · Waiting on · Terms · Documents · Checks", all(x in sm for x in ["Next","Blocking","Waiting on","Terms","Documents","Checks"]), sm)
             for k in ["cipc","bank","who"]:
                 await tap(f"button[data-trust='dm1:buyer:{k}']")
@@ -480,12 +480,21 @@ async def main():
             await ev("setDealTab('dm1','steps'); render()"); await W()
             await tap("button[data-ldnew=dm1]"); await pg.fill("[data-ldf=truck_reg]", "nd 123-456"); await pg.fill("[data-ldf=t_loaded]", "34.2"); await pg.fill("[data-ldf=t_delivered]", "34.0"); await pg.fill("[data-ldf=moisture]", "5"); await tap("button[data-ldsave]")
             await tap("button[data-ldnew=dm1]"); await pg.fill("[data-ldf=t_loaded]", "33.8"); await tap("button[data-ldchip=paid]"); await tap("button[data-ldsave]")
-            ld=await ev("(() => { const t=loadTotals('dm1'), L=loadsOf('dm1'); return { n: t.n, tl: Math.round(t.tl*10)/10, td: t.td, short: t.short, reg: L[0].truck_reg, nums: L.map(l=>l.n).join(','), paid: t.paid, sum: [...document.querySelectorAll('.dsum .kv')].map(k=>k.innerText).filter(x=>/^Loads/.test(x)).join('') }; })()")
+            ld=await ev("(() => { const t=loadTotals('dm1'), L=loadsOf('dm1'); return { n: t.n, tl: Math.round(t.tl*10)/10, td: t.td, short: t.short, reg: L[0].truck_reg, nums: L.map(l=>l.n).join(','), paid: t.paid, sum: [...document.querySelectorAll('.done1 .kv')].map(k=>k.innerText).filter(x=>/^Loads/.test(x)).join('') }; })()")
             check("Load register: loads numbered 1, 2 …, tons loaded and delivered add up, shown on the deal summary", ld['n']==2 and ld['tl']==68.0 and ld['reg']=="ND 123-456" and ld['nums']=="1,2" and ld['paid']==1 and "2 loads" in ld['sum'], str(ld))
             # B5: the deal's money and the mismatch check
             mo=await ev("""(() => { const d=dealById('dm1'); d.params=Object.assign({}, d.params, {asking_price:'R2,300', price:'R2,250', unit:'per t', commission:'R40 per t', other_cuts:'Mandate R10', volume:'20,000 t per month'}); render();
               return { line: dealMoneyLine(d), mm: dealMismatches(d) }; })()""")
-            check("Deal money: our cut less others on the monthly volume; mismatch: buyer's price below the seller's asking", "R30 per t to us" in mo['line'] and "R600 000 a month" in mo['line'] and any("below the seller" in x for x in mo['mm']), str(mo))
+            check("Deal money: our cut less others on the monthly volume; mismatch: buyer's price below the seller's asking", "R30 per t to us" in mo['line'] and "R600\u00a0000 a month" in mo['line'] and any("below the seller" in x for x in mo['mm']), str(mo))
+            # B6: + menu, expiry dates, rules with a checked date, data-load warning
+            pm=await ev("[...document.querySelectorAll('#addSheet .addmain button')].map(b=>b.textContent.trim()).join(',')")
+            check("+ menu: Task · Deal · Person · Document or photo first; the rest under More ways to add", pm=="Task,Deal,Person,Document or photo" and await ev("!!document.querySelector('#addSheet details.addmore [data-add=voice]')"), pm)
+            ex=await ev("""(() => { const r=(window._docs||[]).find(x=>x.deal_id==='dm1') || (window._docs.push({deal_id:'dm1',doc:'fco',status:'received',updated_at:new Date().toISOString()}), window._docs[window._docs.length-1]); r.expires_on=saDayPlus(-1); render(); return { list: expiringList('dm1').map(x=>x.label+' '+x.st).join(','), block: dealBlockers(dealById('dm1'), dealProgress('dm1')).length >= 0, sum: document.querySelector('.done1') ? document.querySelector('.done1').innerText : '' }; })()""")
+            check("Expiry: a paper past its Valid-until date is listed as expired and shows on the deal", "expired" in ex['list'], str(ex))
+            rg=await ev("regCheckHtml({code:'9.4'})")
+            check("Legal rules say when they were checked and link the source", "last checked" in rg and "gov.za" in rg, rg[:120])
+            await ev("window._loadErr=['documents']; goView('deals')"); await W(); lw=await ev("document.querySelector('#list .warn') ? document.querySelector('#list .warn').innerText : ''"); await ev("window._loadErr=[]; render()")
+            check("Data-load warning: when part of the data fails, the page says which part", "did not load: documents" in lw, lw[:80])
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

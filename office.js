@@ -144,13 +144,15 @@ window.filesHtml = function () {
   if (FILES.t === "company") {
     h += rplain("our company papers", `${comp.length}`);
     h += rfoot("keep the papers buyers and sellers ask for in the KYC here, so they are one tap away");
-    h += `<div class="files">${comp.map(a => `<div class="file">${ic("clip")}<span class="fn">${fileLink(a)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} · ${esc(fDay(a.created_at))}</span></div>`).join("") || `<div class="quiet">None yet.</div>`}
+    h += `<div class="files">${comp.map(a => `<div class="file">${ic("clip")}<span class="fn">${fileLink(a)}</span><span class="fm">${fmtSize(a.size)} · ${esc(firstName(a.uploaded_by))} · ${esc(fDay(a.created_at))}</span></div><label class="fld dexp"><span>Valid until${window.expState && expState(a.expires_on) === "expired" ? " – expired" : ""}</span><input type="date" data-attexp="${a.id}" value="${esc(a.expires_on || "")}"></label>`).join("") || `<div class="quiet">None yet.</div>`}
       <div class="acts0"><button type="button" data-attach="company:papers">${ic("clip")}Add a company paper</button></div></div>`;
     h += `<div class="lbl">Usually asked for</div><div class="tplfrom cpl">${COMPANY_PAPERS.map(p => { const has = comp.some(a => new RegExp(p.split(/[ (]/)[0].slice(0, 5), "i").test(a.name)); return `<div class="kv"><span class="k">${esc(p)}</span><span class="v">${has ? "in" : "–"}</span></div>`; }).join("")}</div>`;
     return h;
   }
   // what is still to come: documents asked for and not in yet
   const wait = rows.filter(r => r.st === "requested" && pick(r));
+  const exp = window.expiringList ? expiringList().filter(x => !FILES.deal || (x.d && x.d.id === FILES.deal)) : [];
+  if (exp.length) h += rplain("running out", `${exp.length}`) + `<div class="fwait">${exp.map(x => `<button type="button" class="fw"${x.d ? ` data-fopen="${x.d.id}"` : ` data-fft="company"`}><b>${esc(x.label)} ${x.st === "expired" ? "expired" : "runs out"} ${esc(shortDate(x.on))}</b><span>${esc(x.d ? x.d.name : "our company papers")}</span></button>`).join("")}</div>`;
   const noNda = (window._deals || []).filter(d => d.status !== "Won" && d.status !== "Lost" && (window.DOCS && (DOCS[d.kind] || []).some(x => x.k === "ncnda")) && (!FILES.deal || d.id === FILES.deal) && !(window._docs || []).some(z => z.deal_id === d.id && z.doc === "ncnda" && (z.status === "signed" || z.status === "na")));
   if (wait.length || ((FILES.t === "all" || FILES.t === "ncnda") && noNda.length)) {
     h += rplain("still to come", `${wait.length + ((FILES.t === "all" || FILES.t === "ncnda") ? noNda.length : 0)}`);
@@ -189,7 +191,7 @@ window.signupsHtml = function () {
   if (SU.edit === "new") h += suFormHtml();
   else h += `<div class="acts0"><button type="button" class="primary" data-sunew="">${ic("plus")}Add a sign-up</button>${list.some(p => /tradekey/i.test(p.name)) ? "" : `<button type="button" data-sunew="Tradekey">${ic("plus")}Add Tradekey</button>`}</div>`;
   const soon = list.filter(p => p.renews_on && p.status !== "Cancelled" && dayDiff(new Date(p.renews_on + "T12:00:00")) <= 14);
-  if (soon.length) h += `<div class="warn"><i class="dot d-due"></i><div>Renewing soon: ${soon.map(p => `${esc(p.name)} (${esc(shortDate(p.renews_on))})`).join(", ")}</div></div>`;
+  if (soon.length) h += `<div class="warn"><i class="dot d-stale"></i><div>Renewing soon: ${soon.map(p => `${esc(p.name)} (${esc(shortDate(p.renews_on))})`).join(", ")}</div></div>`;
   for (const p of list) {
     if (SU.edit === p.id) { h += suFormHtml(); continue; }
     const bits = [p.login && "login " + p.login, p.joined_on && "joined " + shortDate(p.joined_on), p.renews_on && "renews " + shortDate(p.renews_on), p.plan === "Paid" ? (p.cost ? "paid · " + p.cost : "paid") : "free", p.owner && p.owner !== "Both" ? p.owner + "'s" : ""].filter(Boolean);
@@ -259,4 +261,11 @@ document.addEventListener("click", async e => {
     if (isNew && row.renews_on && f.remind) await suRemind(row);
     SU.edit = null; SU.f = null; toast(DEMO ? "Demo mode – kept until you reload." : "Saved."); render();
   }
+});
+
+document.addEventListener("change", async e => {
+  const i = e.target.closest && e.target.closest("input[data-attexp]"); if (!i) return;
+  const a = (window._atts || []).find(x => String(x.id) === i.dataset.attexp); if (!a) return;
+  if (!DEMO) { const { error } = await sb.from("attachments").update({ expires_on: i.value || null }).eq("id", a.id); if (error) { toast(/expires_on/.test(error.message) ? "Database change 016 is needed for expiry dates." : "Could not save: " + error.message, 6000); return; } }
+  a.expires_on = i.value || null; toast(i.value ? "Valid until " + shortDate(i.value) + "." : "Date cleared."); render();
 });
