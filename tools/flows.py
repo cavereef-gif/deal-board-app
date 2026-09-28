@@ -408,6 +408,28 @@ async def main():
             await tap("#plusTab"); await tap("button[data-add=task]"); await pg.fill("#tsWhat", "Visit the plant together"); await tap("[data-towner=Both]"); await tap("#tsAdd")
             bo=await ev("(()=>{ const it=window._items.find(i=>i.waiting_for==='Visit the plant together'); const on = w => homeGroups(window._items, w).list.includes(it); return { owner: it&&it.owner, chris: on('Chris'), am: on('Annemarie') } })()")
             check("Both: a task for Both is on Chris's list and on Annemarie's", bo['owner']=="Both" and bo['chris'] and bo['am'], str(bo))
+            # 28 Sep 2026 (afternoon): flat rate, sign-ups, documents in one place, signature
+            fr=await ev("""(()=>{ const d=dealById('dm2'); d.params=Object.assign({}, d.params, {rate_basis:'Flat per load', client_rate:'R12,000 a load', haulier_rate:'R8,500 a load', loads:'10 a month'}); delete window._calc.dm2;
+              const rows=calcCompute(calcState('dm2', d, 'transport')).map(r=>r.k+'='+r.v); openDocSheet('quote',{basis:basisWord(rateBasis(d.params)), rate:'12000', loads:'10'});
+              const q=[...document.querySelectorAll('#docBody .cres .kv')].map(x=>x.innerText); document.getElementById('docSheet').classList.add('hidden');
+              d.params.rate_basis='Flat – whole job'; d.params.client_rate='R150,000'; d.params.haulier_rate='R110,000'; delete window._calc.dm2;
+              const job=calcCompute(calcState('dm2', d, 'transport')).map(r=>r.k+'='+r.v); return { rows, q, job, pt: perTonRate({client_rate:'R12,000 a load'}, 34) }; })()""")
+            check("Flat rate: per load and whole job flow through the calculator, the quote and the route calculator", any("Margin per load=R 3,500" in r for r in fr['rows']) and any("Our share per month=R 35,000" in r for r in fr['rows']) and any("Flat rate per load" in r for r in fr['q']) and any("Margin on the job=R 40,000" in r for r in fr['job']) and fr['pt']=="352.94", str(fr))
+            await ev("goView('signups')"); await W()
+            await tap("button[data-sunew=Tradekey]"); await pg.fill("[data-suf=login]", "me@example.com"); await tap("button[data-susave]")
+            su=await ev("(()=>{ const p=(window._platforms||[]).find(x=>x.name==='Tradekey'); return { ok: !!p, url: p&&p.url, login: p&&p.login, shown: !!document.querySelector('.surow') && document.body.innerText.includes('Tradekey') }; })()")
+            await tap("button[data-sunew]"); await pg.fill("[data-suf=name]", "Test site"); await pg.fill("[data-suf=notes]", "password: abc"); await tap("button[data-susave]")
+            pw=await ev("!(window._platforms||[]).some(x=>x.name==='Test site')"); await tap("button[data-sucancel]")
+            check("Sign-ups: Tradekey recorded with its link and login name; a password in the notes is refused", su['ok'] and su['url']=="https://www.tradekey.com" and su['login']=="me@example.com" and su['shown'] and pw, f"{su} refused {pw}")
+            await ev("(()=>{ window._docs=(window._docs||[]).concat([{deal_id:'dm1', doc:'ncnda', status:'signed', updated_at:new Date().toISOString()}]); goView('files'); })()"); await W()
+            fl=await ev("(()=>{ const t=document.body.innerText; return { nda: !!document.querySelector('[data-fft=ncnda]'), row: [...document.querySelectorAll('.frow .fk b')].some(b=>b.textContent==='NCNDA'), company: !!document.querySelector('[data-fft=company]') }; })()")
+            await tap("button[data-fft=company]"); up=await ev("!!document.querySelector('button[data-attach=\"company:papers\"]')")
+            check("Documents: every deal's papers in one place (NCNDA filter, rows per deal) and a place for our company papers", fl['nda'] and fl['row'] and fl['company'] and up, f"{fl} upload {up}")
+            await ev("(()=>{ window._sigs = { Chris: { person:'Chris', full_name:'Chris Example', title:'Director', png:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AVN//2Q==' } }; me='Chris'; openDocSheet('quote',{to:'X', rate:'400'}); })()"); await W()
+            sg=await ev("""(async()=>{ const t=!!document.querySelector('#docBody button[data-sigon=doc]'); const off=sigToUse('doc'); document.querySelector('#docBody button[data-sigon=doc]').click(); const on=sigToUse('doc');
+              const b=quotePdf({sig:on, number:'Q', from:'', to:'X', meta:[], job:[], rows:[['r','R 1',1]], incl:[], excl:[], terms:[], notes:''}); const s=await b.text(); document.getElementById('docSheet').classList.add('hidden'); window._sigOn={};
+              return { t, off: !!off, on: !!on, img: s.includes('/Subtype /Image') && s.includes('/Im1 Do') }; })()""")
+            check("Signature: 'Sign it as Chris' is off until tapped; when on, the drawn signature is placed in the PDF", sg['t'] and not sg['off'] and sg['on'] and sg['img'], str(sg))
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

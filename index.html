@@ -203,6 +203,8 @@
     <div class="sheet-h"><span>more</span><button id="menuClose" type="button">Close</button></div>
     <div class="menu">
       <button class="mi" type="button" data-mview="archive" data-ico="archive"><span class="mt">Archive<small>Have we used them before?</small></span></button>
+      <button class="mi" type="button" data-mview="files" data-ico="file"><span class="mt">Documents<small>Every deal's NCNDAs, contracts and papers</small></span></button>
+      <button class="mi" type="button" data-mview="signups" data-ico="globe"><span class="mt">Sign-ups<small>Tradekey and other sites we joined</small></span></button>
       <button class="mi" type="button" data-mview="phonebook" data-ico="phone"><span class="mt">Phone book<small>Everyone, even with no number yet</small></span></button>
       <button class="mi" type="button" data-mview="calc" data-ico="calc"><span class="mt">Calculators<small>Transport, chrome, everyday</small></span></button>
       <button class="mi" type="button" data-mview="chat" data-ico="chatin"><span class="mt">Import a WhatsApp chat<small>Pick whose chat it is</small></span></button>
@@ -324,7 +326,7 @@ let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(
 setTheme(saved);
 $("themeBtn").onclick = () => setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 fillIcons();
-const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings", phonebook: "Phone book" };
+const PAGE_TITLES = { worklist: "Today", leads: "People", deals: "Deals", people: "People", bot: "Ask", board: "Notice board", archive: "Archive", calc: "Calculators", guides: "Guides", settings: "Settings", phonebook: "Phone book", files: "Documents", signups: "Sign-ups" };
 function goView(v){ if (v !== view) navPush(); view = v; try{ localStorage.setItem("view", view) }catch(e){} render(); window.scrollTo(0, 0); }
 window.goView = goView;
 function openMenu(){ $("menuFoot").textContent = (me ? "signed in as " + me.toLowerCase() + " · " : "") + "app v" + APP_VERSION + " · tap outside to close"; $("menuSheet").classList.remove("hidden"); }
@@ -434,7 +436,7 @@ async function load(){
   checkVersion();
   let items;
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
-  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); if (window.officeLoad) officeLoad(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
@@ -461,6 +463,7 @@ async function load(){
     sb.rpc("service_key_status").then(r => { window._mapKeyStatus = r.data || {}; if (view === "settings") render(); });
     // our company details for quotes (database change 009); the app keeps working without it
     sb.from("company_profile").select("*").eq("id", 1).maybeSingle().then(r => { window._company = r.error ? null : (r.data || {}); if (view === "settings") render(); });
+    if (window.officeLoad) officeLoad();   // signatures and sign-ups (database change 012)
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
       return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
       const b = r && r.data && r.data[0];
@@ -620,7 +623,7 @@ function settingsHtml(){
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${companyHtml()}${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
+    ${companyHtml()}${window.sigSettingsHtml ? sigSettingsHtml() : ""}${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
 // Our company details (27 Sep 2026): printed at the top of every quote and statement. Stored in the database (change 009).
 const CO_F = [["legal_name", "Registered name", "e.g. Verve South Africa (Pty) Ltd"], ["trading_as", "Trading as", "optional"], ["reg_no", "Company registration number (CIPC)", "e.g. 2020/123456/07"],
@@ -983,6 +986,10 @@ function render(){
     html = window.boardHtml ? boardHtml() : "";
   } else if (view === "archive") {
     html = window.archiveHtml ? archiveHtml() : "";
+  } else if (view === "files") {
+    html = window.filesHtml ? filesHtml() : "";
+  } else if (view === "signups") {
+    html = window.signupsHtml ? signupsHtml() : "";
   } else if (view === "calc") {
     html = window.calcPageHtml ? calcPageHtml() : "";
   } else if (view === "bot") {
@@ -1448,6 +1455,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="easy.js?v=17"></script>
 <script src="lean.js?v=17"></script>
 <script src="docs.js?v=17"></script>
+<script src="office.js?v=17"></script>
 <script src="google.js?v=17"></script>
 <script src="push.js?v=17"></script>
 <script src="reader.js?v=17"></script>

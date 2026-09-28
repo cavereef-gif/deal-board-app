@@ -22,8 +22,20 @@ function pdfWrap(s, size, maxW) {
   }
   return out;
 }
+// a JPEG (data URL) for makePdf: the bytes as a binary string and the size read from the JPEG's own header
+function jpegFrom(url) {
+  const m = String(url || "").match(/^data:image\/jpe?g;base64,(.+)$/); if (!m) return null;
+  const b = atob(m[1]); let i = 2;
+  while (i < b.length) {
+    if (b.charCodeAt(i) !== 0xFF) return null;
+    const mk = b.charCodeAt(i + 1), len = b.charCodeAt(i + 2) * 256 + b.charCodeAt(i + 3);
+    if (mk >= 0xC0 && mk <= 0xC3) return { bin: b, h: b.charCodeAt(i + 5) * 256 + b.charCodeAt(i + 6), w: b.charCodeAt(i + 7) * 256 + b.charCodeAt(i + 8) };
+    i += 2 + len;
+  }
+  return null;
+}
 function makePdf(draw) {
-  const pages = [];
+  const pages = [], imgs = [];
   let ops = [], y = 800;
   const P = {
     get y() { return y; }, set y(v) { y = v; },
@@ -32,15 +44,18 @@ function makePdf(draw) {
     line(x1, y1, x2, y2) { ops.push(`0.80 0.82 0.85 RG 0.6 w ${x1} ${y1.toFixed(1)} m ${x2} ${y2.toFixed(1)} l S`); },
     box(x, yy, w, h) { ops.push(`0.94 0.95 0.96 rg ${x} ${yy.toFixed(1)} ${w} ${h.toFixed(1)} re f`); },
     need(h) { if (y - h < 40) { pages.push(ops.join("\n")); ops = []; y = 800; } },
+    // 28 Sep 2026: a signature (JPEG) placed at x, y (bottom left), w × h points
+    image(x, yy, w, h, url) { const j = jpegFrom(url); if (!j) return false; imgs.push(j); ops.push(`q ${w.toFixed(1)} 0 0 ${h.toFixed(1)} ${x.toFixed(1)} ${yy.toFixed(1)} cm /Im${imgs.length} Do Q`); return true; },
   };
   draw(P);
   pages.push(ops.join("\n"));
   const objs = [], add = s => { objs.push(s); return objs.length; };
   const cat = add(""), pagesId = add(""), f1 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"), f2 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
-  const kids = [];
+  const kids = [], imIds = imgs.map(j => add(`<< /Type /XObject /Subtype /Image /Width ${j.w} /Height ${j.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${j.bin.length} >>\nstream\n${j.bin}\nendstream`));
+  const xo = imIds.length ? ` /XObject << ${imIds.map((id, i) => `/Im${i + 1} ${id} 0 R`).join(" ")} >>` : "";
   for (const c of pages) {
     const cs = add(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
-    kids.push(add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> /Contents ${cs} 0 R >>`));
+    kids.push(add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >>${xo} >> /Contents ${cs} 0 R >>`));
   }
   objs[cat - 1] = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
   objs[pagesId - 1] = `<< /Type /Pages /Kids [${kids.map(k => k + " 0 R").join(" ")}] /Count ${kids.length} >>`;
@@ -52,6 +67,16 @@ function makePdf(draw) {
   const bytes = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 255;
   return new Blob([bytes], { type: "application/pdf" });
 }
+// our signature on a document (28 Sep 2026): the drawn signature over a line, the name and title under it, and the date
+function sigBlock(P, L, sig) {
+  P.need(84); P.y -= 4;
+  const base = P.y - 46;
+  P.image(L, base + 1, 138, 46, sig.png);
+  P.line(L, base, L + 176, base); P.text(L, base - 12, [sig.full_name || sig.person, sig.title].filter(Boolean).join(", "), 9.5);
+  P.text(L + 196, base + 3, longDay(saDayPlus(0)), 10); P.line(L + 192, base, L + 320, base); P.text(L + 196, base - 12, "Date", 8.5, false, true);
+  P.y = base - 30;
+}
+window.sigBlock = sigBlock;
 // one layout for both documents: title and our name, number and dates on the right, "To", a table, notes, a footer
 function docPdf(d) {
   return makePdf(P => {
@@ -71,6 +96,7 @@ function docPdf(d) {
       P.y -= lines.length * 15 + 4; P.line(L - 6, P.y, R + 6, P.y); P.y -= 14;
     }
     if (d.notes) { P.y -= 8; P.need(40); P.text(L, P.y, "Notes", 10, true); P.y -= 15; for (const l of pdfWrap(d.notes, 10.5, R - L)) { P.need(16); P.text(L, P.y, l, 10.5); P.y -= 14; } }
+    if (d.sig) { P.y -= 10; P.need(100); P.text(L, P.y, "Signed", 10, true); P.y -= 6; sigBlock(P, L, d.sig); }
     P.y -= 18; P.need(20); P.text(L, P.y, d.footer || "", 9, false, true);
   });
 }
@@ -115,6 +141,7 @@ function quotePdf(d) {
     const list = (t, arr) => { if (!arr.length) return; P.y -= 4; section(t); for (const a of arr) { const lines = pdfWrap(a, 9.5, W - 14); P.need(lines.length * 12 + 2); P.text(L, P.y, "•", 9.5); lines.forEach((l, i) => P.text(L + 12, P.y - i * 12, l, 9.5)); P.y -= lines.length * 12 + 2; } };
     list("Included", d.incl); list("Not included (charged separately if they apply)", d.excl); list("Terms", d.terms);
     if (d.notes) { P.y -= 6; section("Notes"); for (const l of pdfWrap(d.notes, 10, W)) { P.need(14); P.text(L, P.y, l, 10); P.y -= 13; } }
+    if (d.sig) { P.y -= 6; P.need(110); section("For " + ((window._company && coOn() && window._company.legal_name) || d.from || "us")); sigBlock(P, L, d.sig); }
     P.y -= 6; P.need(76); section("Acceptance – we accept this quotation and its terms");
     P.y -= 18;
     const ln = (x, w, lab) => { P.line(x, P.y, x + w, P.y); P.text(x, P.y - 11, lab, 8.5, false, true); };
@@ -204,6 +231,7 @@ function docSheetHtml() {
       docField("notes", "Payment details and notes", "e.g. Pay by EFT, reference as above. Bank details as on our invoice.", "area"))
     + `<div class="lbl">On the document</div><div class="cres">${r.rows.filter(x => x[1]).map(([k, v, b]) => `<div class="kv${b ? " big" : ""}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`
     + `<div class="quiet">${q ? "Only the client's price goes on the quote – never our costs, the transporter's rate or our margin." : "Check the tons and rate against the weighbridge and the signed commission agreement."}</div>`
+    + (window.sigToggleHtml ? sigToggleHtml("doc") : "")
     + `<button class="primary wide" data-docmake="1"${r.ok ? "" : " disabled"}>${ic("file")}Make the PDF and share it</button>`;
 }
 const QUOTE_INC = [["diesel", "Diesel"], ["tolls", "Tolls"], ["driver", "Driver"], ["tracking", "Tracking"], ["git", "Goods-in-transit cover"]];
@@ -237,9 +265,9 @@ async function docMake() {
       "Subject to truck availability on the day of loading, and to safe, legal loading within the vehicle's permitted mass.",
       "Claims for loss or damage must reach us in writing within 7 days of delivery, noted on the delivery note.",
       `This quote is valid for ${num(f.valid) || 7} days. Prices are in South African rand.`];
-    blob = quotePdf({ number, from: f.from || me || "", to: f.to || "", attn: f.attn || "", meta, job, rows: r.rows, incl, excl, terms, notes: f.notes || "",
+    blob = quotePdf({ sig: window.sigToUse ? sigToUse("doc") : null, number, from: f.from || me || "", to: f.to || "", attn: f.attn || "", meta, job, rows: r.rows, incl, excl, terms, notes: f.notes || "",
       footer: coOn() ? [window._company.legal_name, window._company.reg_no && "Reg. no. " + window._company.reg_no, window._company.vat_no && "VAT no. " + window._company.vat_no].filter(Boolean).join("  ·  ") : "Prices in South African rand." });
-  } else blob = docPdf({ title: "Commission statement", number, from: f.from || me || "", to: f.to || "", meta, rows: r.rows, notes: f.notes || "",
+  } else blob = docPdf({ sig: window.sigToUse ? sigToUse("doc") : null, title: "Commission statement", number, from: f.from || me || "", to: f.to || "", meta, rows: r.rows, notes: f.notes || "",
     footer: "This statement is for the commission agreed in writing for the deal above. Banking details are on our tax invoice." });
   const name = (q ? "Quote " : "Commission statement ") + (f.to || "").replace(/[^\w\- ]+/g, "").trim().slice(0, 40) + " " + number + ".pdf";
   const how = await shareFile(blob, name.replace(/\s+/g, " "), q ? "Transport quote" : "Commission statement");
