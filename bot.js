@@ -3,8 +3,8 @@
 // Chris's rule (26 Sep): opening, finding and showing happen at once; every change is prepared as a card and waits for one tap
 // ("Do it"). The bot never ticks, confirms, completes or deletes on its own, never sends messages, never shares the private numbers.
 //
-// 1) Quick commands, worked out in the app itself (free, instant, no Claude call): "open the deal with Pat on chrome",
-//    "show only transport", "what's overdue", "open the maize numbers", "find Sunny Farms", "open the guide on escrow".
+// 1) Quick commands, worked out in the app itself (free, instant, no Claude call): "open the deal with [a seller] on chrome",
+//    "show only transport", "what's overdue", "open the [cargo] numbers", "find [a name]", "open the guide on escrow".
 // 2) Everything else goes to the bot (Claude Haiku, the `ask` function). With app:2 it may answer with app actions:
 //    open / show / calculator happen at once; change arrives as a "Do it" card.
 
@@ -26,7 +26,7 @@ function qcScore(tokens, hay) { const ws = qcWords(hay).map(w => w.replace(/'s$/
 function qcCandidates(q, tokens) {
   const want = /\bdeal\b/.test(q) ? "deal" : /\b(contact|number|phone|person|buyer|supplier|seller)\b/.test(q) ? "person" : /\b(guide|kit|playbook|how|explain|rule|script)\b/.test(q) ? "guide" : /\b(file|pdf|photo|document|doc|icpo|loi|fco|spa|ncnda)\b/.test(q) ? "file" : /\b(task|waiting|wait)\b/.test(q) ? "item" : "";
   const c = [], add = (type, go, name, hay, bonus) => { const s = qcScore(tokens, hay); if (s) c.push({ type, go, name, score: s + (bonus || 0) + (type === want || (want === "person" && (type === "lead" || type === "contact")) ? 0.5 : 0) }); };
-  for (const d of window._deals || []) add("deal", "deal:" + d.id, d.name, [d.name, d.area, d.kind === "transport" ? "transport" : "", Object.values(d.params || {}).join(" "), d.contacts].join(" "), d.status === "Active" ? 0.2 : 0);
+  for (const d of window._deals || []) add("deal", "deal:" + d.id, d.name, [d.name, d.area, d.kind === "transport" ? "transport" : "", Object.entries(d.params || {}).filter(([k, v]) => !/^_/.test(k) && typeof v !== "object").map(([, v]) => v).join(" "), d.contacts].join(" "), d.status === "Active" ? 0.2 : 0);
   for (const l of window._leads || []) add("lead", "lead:" + l.id, l.name, [l.name, l.person, l.country].join(" "));
   for (const p of window._lpeople || []) { const l = (window._leads || []).find(x => x.id === p.lead_id); if (l) add("lead", "lead:" + l.id, `${p.name} (${l.name})`, p.name); }
   for (const ct of window._contacts || []) add("contact", "contact:" + ct.id, ct.name, [ct.name, ct.company, ct.role].join(" "));
@@ -133,7 +133,7 @@ async function runAct(a) {
   switch (a.change) {
     case "due": { const d = /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ""; return itemAct("due", d || null); }
     case "priority": return itemAct("priority", /urgent|high|^1$/i.test(v) ? 1 : /low|^3$/i.test(v) ? 3 : 2);
-    case "owner": { const o = /anne/i.test(v) ? "Annemarie" : "Chris"; return itemAct("assign", o); }
+    case "owner": { const o = /both|us\b/i.test(v) ? "Both" : /anne/i.test(v) ? "Annemarie" : "Chris"; return itemAct("assign", o); }
     case "chased": return itemAct("chased", null);
     case "done": return itemAct("done", null);
     case "drop_item": return itemAct("drop", null);
@@ -224,15 +224,32 @@ window.botQuick = function (question) {
 };
 
 // ---------- the info notes on the Ask page: what you can ask (tap one to put it in the box) ----------
-const BOT_HELP = [
-  ["Find and open – straight away", ["Open the deal with Pat on chrome", "Show only transport", "What's overdue?", "Open the maize numbers", "Find Sunny Farms", "Open the guide on escrow"]],
-  ["Add – you tap Save", ["Remind me to call Sam on Tuesday", "Waiting on Lee for the VAT answer", "New chrome deal: Pat's second stockpile", "Note on the maize deal: R350 is excluding VAT", "Post on the board: trucks booked for Monday"]],
-  ["Change – you tap Do it", ["No reply from Kim, follow up Tuesday", "Move the permit check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", "Tick the NCNDA step on the Pat deal", "The client rate is now R520 a ton"]],
-  ["Write and work out", ["WhatsApp to Sam about the VAT answer", "Chase prep for Lee", "What's left on the Pat deal before the ICPO?", "What do we make on 30 loads Bethal to Durban at R26 a km?", "Anything risky about this seller?", "Explain FOT and FCA in plain words"]],
-];
+// Built from the real deals, people and tasks each time the page is drawn (28 Sep 2026: "only the real deal stuff" – no
+// made-up names written into the public code). Where there is nothing to name yet, the example stays general.
+function botExamples() {
+  const live = (window._deals || []).filter(d => d.status === "Active" || d.status === "On hold");
+  const minD = live.find(d => d.kind === "mineral") || null, trD = live.find(d => d.kind === "transport") || null;
+  const STOP = /^(the|a|an|and|deal|deals|stockpile|stockpiles|chrome|manganese|transport|haulage|ore|lumpy|rom|fines|concentrate|from|to|for|with|of|on|new|second|mine)$/i;
+  const handle = d => { if (!d) return ""; const mid = (String(d.name).split(/\s[–-]\s/)[1] || d.name).split(/\s*(?:→|->|\/)\s*/)[0]; return (mid.match(/[A-Za-z][A-Za-z'’]+/g) || []).find(w => w.length > 2 && !STOP.test(w)) || ""; };
+  const first = s => (String(s || "").split(/[\s,(]/).filter(Boolean)[0] || "");
+  const mh = handle(minD), mc = ((minD && minD.params && minD.params.commodity) || (minD && minD.area) || "chrome").toLowerCase();
+  const cargo = trD ? ((trD.params && trD.params.cargo) || handle(trD) || "transport").toLowerCase() : "transport";
+  const people = [...new Set((window._items || []).filter(i => !i._me && i.waiting_on && !/^(me|both)$/i.test(i.waiting_on)).map(i => first(i.waiting_on)).filter(n => n.length > 1))];
+  const contacts = (window._contacts || []).map(c => first(c.name)).filter(n => n.length > 1 && !people.includes(n));
+  const p1 = people[0] || contacts[0] || "", p2 = people[1] || contacts[0] || p1, p3 = people[2] || contacts[1] || p2;
+  const task = (window._items || []).find(i => i.state !== "Proposed" && i.waiting_for && i.waiting_for.length < 40);
+  const route = trD && trD.params && trD.params.route ? String(trD.params.route).replace(/\s*\(.*?\)/g, "").replace(/\s*(→|->)\s*/, " to ") : "";
+  const dealWord = mh ? `the ${mh} deal` : `the ${mc} deal`;
+  return [
+    ["Find and open – straight away", [mh ? `Open the deal with ${mh} on ${mc}` : `Open the ${mc} deal`, "Show only transport", "What's overdue?", `Open the ${cargo} numbers`, p1 ? `Find ${p1}` : "Find the transporter", "Open the guide on escrow"]],
+    ["Add – you tap Save", [p1 ? `Remind me to call ${p1} on Tuesday` : "Remind me to call the buyer on Tuesday", p2 ? `Waiting on ${p2} for the VAT answer` : "Waiting on the client for the VAT answer", mh ? `New ${mc} deal: ${mh}'s second stockpile` : `New ${mc} deal: next stockpile`, `Note on the ${cargo} deal: the rate is excluding VAT`, "Post on the board: trucks booked for Monday"]],
+    ["Change – you tap Do it", [p3 ? `No reply from ${p3}, follow up Tuesday` : "No reply from the seller, follow up Tuesday", task ? `Move "${task.waiting_for}" to Monday` : "Move the permit check to Monday", "Make the VAT question urgent", "Give the CIPC task to Annemarie", `Tick the NCNDA step on ${dealWord}`, "The client rate is now R520 a ton"]],
+    ["Write and work out", [p1 ? `WhatsApp to ${p1} about the VAT answer` : "WhatsApp to the client about the VAT answer", p2 ? `Chase prep for ${p2}` : "Chase prep for everyone we wait on", `What's left on ${dealWord} before the ICPO?`, route ? `What do we make on 30 loads ${route} at R26 a km?` : "What do we make on 30 loads at R26 a km?", "Anything risky about this seller?", "Explain FOT and FCA in plain words"]],
+  ];
+}
 window.botHelpHtml = function (dflt) {
   const k = "bot:help", o = isOpen(k, !!dflt);   // open while the chat is empty, folded once you have asked something
-  return `<div class="bothelp"><button class="bh-h" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${o}">${ic("sparkle")}<span>What you can ask</span><span class="chev"></span></button>${o ? `<div class="bh-b">${BOT_HELP.map(([t, ex]) => `<div class="bh-t">${esc(t)}</div><div class="bh-ex">${ex.map(x => `<button type="button" data-botex="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
+  return `<div class="bothelp"><button class="bh-h" data-tog="${k}" data-dflt="${dflt ? 1 : 0}" aria-expanded="${o}">${ic("sparkle")}<span>What you can ask</span><span class="chev"></span></button>${o ? `<div class="bh-b">${botExamples().map(([t, ex]) => `<div class="bh-t">${esc(t)}</div><div class="bh-ex">${ex.map(x => `<button type="button" data-botex="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
     <div class="bh-n">Never on its own: ticking, confirming, completing or deleting; sending messages; showing the private target or walk-away numbers; spending money.</div></div>` : ""}</div>`;
 };
 

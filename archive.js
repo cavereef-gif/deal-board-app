@@ -9,7 +9,7 @@ function aHit(icon, tone, go, t1, t2) { const tag = go ? "button" : "div";   // 
 function findAll(q, opts) {
   opts = opts || {}; const t = normName(q); if (t.length < 3) return null;
   const has = s => normName(s).includes(t);
-  const dealText = d => [d.name, d.summary, d.key_facts, d.contacts, d.stage, ...Object.values(d.params || {})].join(" ");
+  const dealText = d => [d.name, d.summary, d.key_facts, d.contacts, d.stage, ...Object.entries(d.params || {}).filter(([k, v]) => !/^_/.test(k) && typeof v !== "object").map(([, v]) => v)].join(" ");
   return {
     deals: (window._deals || []).filter(d => has(dealText(d))),
     open: (window._items || []).filter(i => i.id !== opts.item && (has(i.waiting_on) || has(i.waiting_for) || has(i.blocks) || has(i.next_action))),

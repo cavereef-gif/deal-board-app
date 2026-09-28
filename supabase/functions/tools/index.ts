@@ -1,4 +1,4 @@
-// Record copy of the Supabase edge function `tools` (26 Sep 2026: + phone reminders; the border sentence built from the figures). Deployed from the Claude project, never from this repo.
+// Record copy of the Supabase edge function `tools` (28 Sep 2026: + weekly market prices from the public SMM reviews; tasks for "Both" count in the 07:00 note). Deployed from the Claude project, never from this repo.
 // Deal Board free services (Chris, 26 Sep 2026: "i want all the free api"): everything here costs R0 except a few cents of
 // Claude when the monthly diesel statement is read. Nothing here changes a deal or a task: prices arrive as "suggested" and a
 // person accepts them with one tap; routes and places are remembered so the same question never costs twice.
@@ -11,6 +11,8 @@
 //   weather    – rain and wind for the next three days at the ports and route ends (MET Norway)
 //   push_*     – phone reminders (web push, free): push_key (the public key; the key pair is made here once and kept in
 //                Vault), push_test (a test note to your own phones), push_daily (07:00 weekdays: late / due today / suggested)
+//   market     – chrome and manganese ore prices (weekly, Mondays): the newest free SMM reviews, the price sentences read by
+//                Claude, every figure checked against the sentence it came from; they arrive as "suggested"
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { unzipSync } from "npm:fflate@0.8.2";
@@ -320,6 +322,124 @@ async function borders(admin: any, claudeKey: string, force = false) {
   return { note: saved, checked: true };
 }
 
+// ---------------- market prices (weekly) ----------------
+// SMM (Shanghai Metals Market, news.metal.com) publishes free reviews that print the week's South African chrome and
+// manganese ore prices – CIF China offers in US$ a ton and China port spot prices in yuan a dry ton unit. Its robots.txt
+// allows reading them. We take the newest reviews, keep only the sentences with a price in them, and ask Claude for the
+// figures. A figure is kept only if it is printed in the sentence it came from, and the sentence is in the article. The
+// prices arrive as "suggested" (Chris, 28 Sep 2026: the free route, one tap to confirm; the paid SMM feed is not approved).
+const SMM = "https://news.metal.com";
+const MKT_GRADES = ["40–42% concentrate", "42–44% concentrate", "44–46% concentrate", "38–40% ROM", "40–42% lumpy", "36–37% semi-carbonate", "37% semi-carbonate lumpy", "44% high grade", "32–34% low grade"];
+const MKT_BASIS = ["CIF China", "China port spot"];
+const htmlText = (h: string) => h.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]+>/g, " ")
+  .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/[ \t\r]+/g, " ").replace(/\n\s*\n+/g, "\n").trim();
+async function fxZar(cur: string) {
+  try { const r = await getJSON(`https://api.frankfurter.app/latest?from=${cur}&to=ZAR`, {}, 8000); const v = r.ok && r.body && r.body.rates && r.body.rates.ZAR; return typeof v === "number" ? v : null; } catch { return null; }
+}
+async function market(admin: any, claudeKey: string, force = false) {
+  const today = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
+  const latest = async () => (await admin.from("market_prices").select("*").neq("status", "dropped").order("effective", { ascending: false }).limit(20)).data || [];
+  const { data: last } = await admin.from("weekly_notes").select("*").eq("kind", "market").order("week_ending", { ascending: false }).limit(1).maybeSingle();
+  if (last && !force && Date.now() - new Date(last.created_at).getTime() < 3 * 86400e3) return { checked: false, added: 0, prices: await latest() };
+  if (!claudeKey) return { checked: true, added: 0, note: "The bot key is needed to read the price reports." };
+  // 1. the newest reviews: this month's and last month's article lists (sitemaps), the minor-metals page as a fallback
+  const ym = (d: Date) => d.toISOString().slice(0, 7).replace("-", "");
+  const now = new Date(), prev = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 15)), since = new Date(Date.now() - 21 * 864e5).toISOString().slice(0, 10);
+  const cand: { url: string; at: string; kind: string; score: number }[] = [];
+  const rate = (slug: string) => (/review|analysis/.test(slug) ? 2 : 0) + (/price/.test(slug) ? 1 : 0) + (/weekly|daily/.test(slug) ? 1 : 0);
+  const kindOf = (slug: string) => /manganese-ore|mn-ore|manganese-ore-weekly/.test(slug) || (/manganese/.test(slug) && !/silico|electrolytic|sulfate|sulphate|emm|battery/.test(slug)) ? "Manganese" : /chrom/.test(slug) ? "Chrome" : "";
+  for (const m of [ym(now), ym(prev)]) {
+    const r = await fetch(`${SMM}/sitemap/sitemap-newscontent-${m}.xml`, { headers: { "User-Agent": UA } }).catch(() => null);
+    if (!r || !r.ok) continue;
+    const xml = await r.text();
+    for (const blk of xml.matchAll(/<url>([\s\S]*?)<\/url>/g)) {   // each entry: the address, links to the translations, then the date
+      const loc = (blk[1].match(/<loc>\s*(https:\/\/news\.metal\.com\/newscontent\/[^<\s]+)\s*<\/loc>/) || [])[1]; if (!loc) continue;
+      const at = ((blk[1].match(/<lastmod>\s*([^<\s]+)\s*<\/lastmod>/) || [])[1] || "").slice(0, 10);
+      let slug = loc.toLowerCase(); try { slug = decodeURIComponent(loc).toLowerCase(); } catch { /* keep the raw address */ }
+      const kind = kindOf(slug);
+      if (kind && at && at >= since) cand.push({ url: loc, at, kind, score: rate(slug) });
+    }
+  }
+  if (!cand.length) {
+    const r = await fetch(`${SMM}/minor-metals/other-minor-metals`, { headers: { "User-Agent": UA } }).catch(() => null);
+    const html = r && r.ok ? await r.text() : "";
+    for (const x of html.matchAll(/href="((?:https:\/\/news\.metal\.com)?\/newscontent\/[^"]+)"/g)) {
+      const u = x[1].startsWith("http") ? x[1] : SMM + x[1]; let slug = u.toLowerCase(); try { slug = decodeURIComponent(u).toLowerCase(); } catch { /* keep */ }
+      const kind = kindOf(slug);
+      if (kind && !cand.some((c) => c.url === u)) cand.push({ url: u, at: "", kind, score: rate(slug) });
+    }
+  }
+  // newest first (reviews before news items on the same day); up to 8 read per ore, stopping once two carry a price
+  const pick = (k: string) => cand.filter((c) => c.kind === k).sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : b.score - a.score)).slice(0, 8);
+  const chosen = [...pick("Chrome"), ...pick("Manganese")];
+  if (!chosen.length) { await admin.from("weekly_notes").upsert({ kind: "market", week_ending: today, summary: "No SMM chrome or manganese review found this week.", data: { urls: [] }, source_url: SMM }, { onConflict: "kind,week_ending" }); return { checked: true, added: 0, note: "No new chrome or manganese review this week.", prices: await latest() }; }
+  // 2. keep only the sentences with a price
+  const docs: { url: string; at: string; text: string; lines: string[] }[] = [], got: Record<string, number> = {};
+  for (const c of chosen) {
+    if ((got[c.kind] || 0) >= 2) continue;
+    const r = await fetch(c.url, { headers: { "User-Agent": UA } }).catch(() => null); if (!r || !r.ok) continue;
+    const html = await r.text(), text = htmlText(html);
+    const at = c.at || ((html.match(/"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})/) || [])[1]) || today;
+    // a price is a number next to a currency, or a number "per ton / per dry ton unit" – tonnage figures alone do not count
+    const PRICE = /(\$\s?\d|\d[\d.,]*\s?(usd|us\$|yuan|rmb|cny)\b|\b(usd|us\$|yuan|rmb|cny)\s?\d|\d\s*\/\s*(mt|t|dmtu|mtu)\b)/i;
+    const lines = text.split(/(?<=[.;!?])\s+|\n/).map((l) => l.trim()).filter((l) => l.length > 20 && l.length < 600 && PRICE.test(l) && /(south africa|s\.\s?africa|\bsa\b|samancor|south32|assmang|ug2)/i.test(l));
+    if (lines.length) { docs.push({ url: c.url, at, text, lines: lines.slice(0, 12) }); got[c.kind] = (got[c.kind] || 0) + 1; }
+  }
+  if (!docs.length) { await admin.from("weekly_notes").upsert({ kind: "market", week_ending: today, summary: "The newest SMM reviews print no South African ore price this week.", data: { urls: chosen.map((c) => c.url) }, source_url: SMM }, { onConflict: "kind,week_ending" }); return { checked: true, added: 0, note: "The newest reviews print no South African ore price this week.", prices: await latest() }; }
+  // 3. Claude reads the figures out of the sentences
+  const content = docs.map((d, i) => `=== Review ${i + 1} (${d.at}) ===\n` + d.lines.join("\n").slice(0, 2500)).join("\n\n");   // each review gets its share
+  const tool = { name: "prices", description: "Report South African chrome ore and manganese ore prices printed in the sentences.", input_schema: { type: "object", properties: {
+    prices: { type: "array", maxItems: 12, items: { type: "object", properties: {
+      review: { type: "integer", description: "The review number the sentence is in" },
+      commodity: { type: "string", enum: ["Chrome", "Manganese"] },
+      grade: { type: "string", enum: MKT_GRADES },
+      basis: { type: "string", enum: MKT_BASIS, description: "CIF China for offers/quotes to China (usually US$ a ton); China port spot for port prices (Tianjin, Qinzhou, north or south China ports; usually yuan a dry ton unit)" },
+      low: { type: "number" }, high: { type: ["number", "null"] },
+      currency: { type: "string", enum: ["USD", "CNY"] }, unit: { type: "string", enum: ["t", "dmtu"] },
+      quote: { type: "string", description: "The sentence the price is in, copied exactly" } }, required: ["review", "commodity", "grade", "basis", "low", "currency", "unit", "quote"] } } },
+    required: ["prices"] } };
+  const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1500, tools: [tool], tool_choice: { type: "tool", name: "prices" },
+      messages: [{ role: "user", content: [{ type: "text", text: content }, { type: "text", text: "These sentences are from Shanghai Metals Market (SMM) ore market reviews. List the prices of SOUTH AFRICAN chrome ore and SOUTH AFRICAN manganese ore only – skip Turkish, Zimbabwean, Gabonese, Australian, Brazilian, Ghanaian and other origins, and skip ferrochrome and other alloy prices. Pick the closest grade from the list; 'fines' concentrate counts as concentrate. Copy the sentence exactly into quote. Only figures printed in that sentence; a range gives low and high. If there is no South African ore price, return an empty list." }] }] }) });
+  const out = await res.json();
+  const v = ((out.content || []).find((c: any) => c.type === "tool_use") || {}).input;
+  const rows: any[] = [], fx: Record<string, number | null> = {};
+  const nsp = (s: string) => String(s || "").replace(/\s+/g, " ").trim(), canon = (s: string) => String(s || "").toLowerCase().replace(/[^a-z0-9.]+/g, " ").trim();
+  const printed = (n: number, q: string) => { const t = q.replace(/[,\s](?=\d{3}\b)/g, ""); return [String(n), n.toFixed(1), n.toFixed(2)].some((x) => t.includes(x)); };
+  const sane = (r: any) => r.currency === "USD" ? (r.unit === "t" ? r.low >= 100 && r.low <= 900 : r.low >= 1 && r.low <= 20) : (r.low >= 10 && r.low <= 150);
+  // why a figure was left out – kept with the weekly note so a quiet week can be told apart from a fault
+  const why = { listed: 0, noReview: 0, requoted: 0, notInArticle: 0, notPrinted: 0, notSaOrOdd: 0 };
+  for (const p of (v && Array.isArray(v.prices) ? v.prices : [])) {
+    why.listed++;
+    const d = docs[(p.review || 1) - 1]; if (!d) { why.noReview++; continue; }
+    let q = nsp(p.quote);
+    if (!q || !canon(d.text).includes(canon(q))) {   // not copied exactly: use the article's own sentence that prints these figures
+      const own = typeof p.low === "number" ? d.lines.find((l) => printed(p.low, l) && (p.high == null || printed(p.high, l))) : "";
+      if (own) { q = nsp(own); why.requoted++; } else { why.notInArticle++; continue; }   // the sentence must be in the article
+    }
+    if (!printed(p.low, q) || (p.high != null && !printed(p.high, q))) { why.notPrinted++; continue; }         // and the figures in the sentence
+    if (!sane(p) || !/south africa|s\.\s?africa|\bsa\b|samancor|south32|assmang|ug2/i.test(q)) { why.notSaOrOdd++; continue; }
+    if (!(p.currency in fx)) fx[p.currency] = await fxZar(p.currency);
+    const dash = (x: string) => String(x || "").replace(/[\u2012-\u2015-]/g, "-").toLowerCase();
+    const grade = MKT_GRADES.find((g) => dash(g) === dash(p.grade)) || String(p.grade || "");   // one spelling per grade
+    rows.push({ commodity: p.commodity, grade, basis: p.basis, price_low: p.low, price_high: p.high != null ? p.high : p.low, currency: p.currency, unit: p.unit,
+      effective: d.at, source: "SMM", source_url: d.url, quote: q.slice(0, 500), fx_zar: fx[p.currency], status: "suggested" });
+  }
+  const newest: Record<string, any> = {};
+  for (const r of rows) { const k = `${r.commodity}|${r.grade}|${r.basis}`; if (!newest[k] || newest[k].effective < r.effective) newest[k] = r; }
+  let added = 0;
+  for (const r of Object.values(newest)) {
+    const { data: had } = await admin.from("market_prices").select("id").eq("commodity", r.commodity).eq("grade", r.grade).eq("basis", r.basis).neq("status", "dropped").gte("effective", r.effective).limit(1);
+    if (had && had.length) continue;   // we already have this price or a newer one
+    const { error } = await admin.from("market_prices").insert(r); if (!error) added++;
+    // an older suggestion for the same ore, grade and basis is replaced by this one
+    if (!error) await admin.from("market_prices").update({ status: "dropped" }).eq("commodity", r.commodity).eq("grade", r.grade).eq("basis", r.basis).eq("status", "suggested").lt("effective", r.effective);
+  }
+  const claude = out && out.error ? String(out.error.message || out.error.type || "error").slice(0, 160) : String((out && out.stop_reason) || "");
+  await admin.from("weekly_notes").upsert({ kind: "market", week_ending: today, summary: `${added} new price${added === 1 ? "" : "s"} from ${docs.length} SMM review${docs.length === 1 ? "" : "s"}`, data: { urls: docs.map((d) => d.url), read: rows.length, why, claude }, source_url: SMM }, { onConflict: "kind,week_ending" });
+  return { checked: true, added, read: rows.length, why, claude, lines: docs.map((d) => d.lines.length), reviews: docs.map((d) => d.url), prices: await latest() };
+}
+
 // ---------------- holidays and weather ----------------
 async function holidays() {
   const y = new Date().getUTCFullYear(), out: any[] = [];
@@ -391,7 +511,7 @@ async function pushDaily(admin: any) {
   const out: any = {};
   for (const o of owners || []) {
     const name = o.display_name as string;
-    const mine = (items || []).filter((i: any) => (i.owner || "Chris") === name && i.state !== "Proposed");
+    const mine = (items || []).filter((i: any) => ((i.owner || "Chris") === name || i.owner === "Both") && i.state !== "Proposed");   // a task for Both reminds both
     const due = (i: any) => i.due_on || new Date(new Date(i.last_chased || i.created_at).getTime() + (i.nudge_after_days || 3) * 864e5 + 2 * 3600e3).toISOString().slice(0, 10);
     const late = mine.filter((i: any) => due(i) < today).length, now = mine.filter((i: any) => due(i) === today).length;
     const urgent = mine.filter((i: any) => i.priority === 1 && due(i) <= today).length;
@@ -416,7 +536,7 @@ Deno.serve(async (req: Request) => {
     let actor = "";
     if (cron) {
       const { data: t } = await admin.rpc("get_tools_cron_token");
-      if (!t || t !== cron || !["route", "places", "diesel", "borders", "holidays", "weather", "status", "push_daily"].includes(action)) return json({ error: "Not allowed" }, 403);
+      if (!t || t !== cron || !["route", "places", "diesel", "borders", "market", "holidays", "weather", "status", "push_daily"].includes(action)) return json({ error: "Not allowed" }, 403);
       actor = "timer";
     } else {
       const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") || "" } } });
@@ -439,6 +559,11 @@ Deno.serve(async (req: Request) => {
       let claudeKey = Deno.env.get("ANTHROPIC_API_KEY") || "";
       if (!claudeKey) { const { data: k } = await admin.rpc("get_bot_key"); claudeKey = (k as string) || ""; }
       return json({ ok: true, ...(await borders(admin, claudeKey, !!body.force)) });
+    }
+    if (action === "market") {
+      let claudeKey = Deno.env.get("ANTHROPIC_API_KEY") || "";
+      if (!claudeKey) { const { data: k } = await admin.rpc("get_bot_key"); claudeKey = (k as string) || ""; }
+      return json({ ok: true, ...(await market(admin, claudeKey, !!body.force && actor !== "timer")) });
     }
     if (action === "holidays") return json({ ok: true, ...(await holidays()) });
     if (action === "weather") return json({ ok: true, ...(await weather(admin, body.points || [])) });

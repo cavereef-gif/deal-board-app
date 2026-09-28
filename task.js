@@ -18,6 +18,7 @@ function tsParse(text) {
       const n = w.slice(1).replace(/[.,;:]$/, "");
       if (/^(chris|me)$/i.test(n)) { out.owner = "Chris"; out.toks.push(["who", "Chris"]); }
       else if (/^(annemarie|am|anne)$/i.test(n)) { out.owner = "Annemarie"; out.toks.push(["who", "Annemarie"]); }
+      else if (/^(both|us|we)$/i.test(n)) { out.owner = "Both"; out.toks.push(["who", "Both of us"]); }
       else { out.from = n.charAt(0).toUpperCase() + n.slice(1); out.toks.push(["from", "Waiting on " + out.from]); }
       continue;
     }
@@ -119,7 +120,7 @@ $("tsAdd").onclick = async () => {
   if (error && /p_due|function/i.test(error.message)) { const b2 = { ...body }; delete b2.p_due; ({ error } = await sb.rpc("add_item", b2)); if (!error && due) toast("Saved without the due date (the database is not updated yet)."); }
   $("tsAdd").disabled = false;
   if (error) { $("tsMsg").textContent = "Could not save: " + error.message; return; }
-  closeTaskSheet(); toast(`Added for ${tsOwner}.`); load();
+  closeTaskSheet(); toast(tsOwner === "Both" ? "Added for both of you." : `Added for ${tsOwner}.`); load();
 };
 
 // ---------- "Due" on a task (in the task sheet) ----------

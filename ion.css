@@ -375,11 +375,12 @@ html[data-ion][data-palette] .tpill{display:inline-flex;align-items:center;flex:
 html[data-ion][data-palette] .tpill.late{background:var(--coral-1)}
 html[data-ion][data-palette] .tk-big{font:400 22px/26px var(--font);margin:8px 0 4px}
 html[data-ion][data-palette] .tk-big.quiet{font:400 16px/20px var(--font);color:var(--cmuted)}
-html[data-ion][data-palette] .od{display:flex;align-items:center;flex-wrap:wrap;gap:4px;height:32px;margin:8px 0 6px}
+html[data-ion][data-palette] .od{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;height:32px;margin:8px 0 6px;overflow:hidden}
+html[data-ion][data-palette] .od>i,html[data-ion][data-palette] .od>.gap,html[data-ion][data-palette] .od>.dash,html[data-ion][data-palette] .od>em.pre{flex:none}
 html[data-ion][data-palette] .od i{display:inline-flex;align-items:center;justify-content:center;width:26px;height:32px;border-radius:6px;background:var(--ccard2);color:var(--ctext);font:400 24px/1 var(--font);letter-spacing:-.02em;font-style:normal}
 html[data-ion][data-palette] .od .gap{width:2px}
 html[data-ion][data-palette] .od .dash{width:8px;text-align:center;font:400 14px/1 var(--font);color:var(--cmuted);margin:0}
-html[data-ion][data-palette] .od em{font:400 14px/20px var(--font);font-style:normal;color:var(--cmuted);margin-left:4px}
+html[data-ion][data-palette] .od em{flex:0 1 auto;min-width:0;font:400 14px/20px var(--font);font-style:normal;color:var(--cmuted);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .od em.pre{margin:0 4px 0 0}
 html[data-ion][data-palette] .tk-l{font:400 14px/18px var(--font);color:var(--cmuted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .tear{position:relative;height:0;border-top:1px dashed rgba(26,27,30,.35);margin:0 14px}
@@ -409,6 +410,81 @@ html[data-ion][data-palette] .tchips button.warn{background:var(--coral-1);color
 html[data-ion][data-palette] .tin{width:100%;height:40px;min-height:40px;border-radius:10px;background:var(--ccard2);box-shadow:none;border:0;padding:0 10px;font:400 16px var(--font);color:var(--ctext)}
 html[data-ion][data-palette] .tin:focus{box-shadow:0 0 0 2px var(--ion)}
 html[data-ion][data-palette] .tin.private{background:var(--cfield)}
+/* the lean deal form (28 Sep 2026): drop-downs are 40 px fields like the typed ones; FOT or DAP is one switch; a question's
+   status chips sit under its field while it is open; notes are plain 14 px lines */
+html[data-ion][data-palette] select.tsel{width:100%;height:40px;min-height:40px;padding:0 30px 0 10px;border:0;border-radius:10px;background:var(--ccard2) var(--chev) right 8px center/16px no-repeat;box-shadow:none;-webkit-appearance:none;appearance:none;font:400 16px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] select.tsel:focus{box-shadow:0 0 0 2px var(--ion)}
+html[data-ion][data-palette] .tpair{display:flex;gap:6px;align-items:center}
+html[data-ion][data-palette] .tpair>.tin,html[data-ion][data-palette] .tpair>select.tsel:not(.tunit){flex:1 1 auto;min-width:0}
+html[data-ion][data-palette] .tpair>select.tunit{flex:none;width:112px}
+html[data-ion][data-palette] .tpair>.fld{flex:1 1 0;min-width:0;margin-top:0}
+html[data-ion][data-palette] :is(#_,.trow .teither){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:40px;margin:0;padding:3px;gap:0;border-radius:10px;background:var(--ccard2);border:0}
+html[data-ion][data-palette] :is(#_,.trow .teither>button){height:34px;min-height:34px;border-radius:7px;background:transparent;color:var(--ctext);font:400 16px/1 var(--font);padding:0}
+html[data-ion][data-palette] :is(#_,.trow .teither>button.on){background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .teither>select.segsel{height:34px;min-height:34px;margin:0;padding:0 22px 0 8px;border:0;border-radius:7px;background:transparent var(--chev) right 4px center/14px no-repeat;box-shadow:none;-webkit-appearance:none;appearance:none;font:400 14px var(--font);color:var(--ctext);text-align:center}
+html[data-ion][data-palette] .teither>select.segsel.on{background-color:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .tchips.tq,html[data-ion][data-palette] .tchips.tsame,html[data-ion][data-palette] .tchips.dfile{margin-top:6px}
+html[data-ion][data-palette] .tchips.tq button.on{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .tchips.tq button.on[data-v="awaiting"]{background:var(--coral-1);color:var(--ctext)}
+html[data-ion][data-palette] .tchips button.go,html[data-ion][data-palette] .tchips.tsame button{background:var(--ion);color:var(--ctext)}
+html[data-ion][data-palette] .tchips button:disabled{opacity:1}
+html[data-ion][data-palette] .tnote{margin-top:6px;font:400 14px/18px var(--font);color:var(--cmuted)}
+/* where an open question stands: a small pill drop-down in the row's corner */
+html[data-ion][data-palette] .trow .k select.qsel{flex:none;height:28px;min-height:28px;max-width:62%;margin:-4px 0;padding:0 24px 0 10px;border:0;border-radius:999px;background:var(--ccard2) var(--chev) right 6px center/14px no-repeat;box-shadow:none;-webkit-appearance:none;appearance:none;font:400 14px var(--mono);color:var(--ctext);text-overflow:ellipsis}
+html[data-ion][data-palette] .trow .k select.qsel.q-notyet,html[data-ion][data-palette] .trow .k select.qsel.q-requested{background-color:var(--cfield)}
+html[data-ion][data-palette] .trow .k select.qsel.q-awaiting{background-color:var(--coral-1)}
+html[data-ion][data-palette] .trow .k select.qsel:focus{box-shadow:0 0 0 2px var(--ion)}
+html[data-ion][data-palette] .trow .k b small{display:block;font:400 14px/18px var(--font);color:var(--cmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] :is(#_,.tmore){display:flex;align-items:center;gap:8px;width:100%;height:40px;min-height:40px;margin:0 0 8px;padding:0 12px;border-radius:10px;background:var(--g1b);border:1px solid var(--edge);box-shadow:none;color:var(--muted);font:400 14px/1 var(--font);text-align:left;justify-content:flex-start}
+html[data-ion][data-palette] .tmore>span:first-child{flex:1;min-width:0;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .tmore .m{font:400 14px var(--mono);color:var(--muted)}
+html[data-ion][data-palette] .tmore .chev{flex:none;width:16px;height:16px;background:var(--chev) center/16px no-repeat;transition:transform .15s}
+html[data-ion][data-palette] .tmore[aria-expanded="true"] .chev{transform:rotate(180deg)}
+/* commission split */
+html[data-ion][data-palette] .spl{display:flex;flex-direction:column;gap:6px}
+html[data-ion][data-palette] .spr{display:flex;align-items:center;gap:8px;min-height:32px;font:400 16px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .spr .spn{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .spr .spp{flex:none;font-family:var(--mono);font-size:14px}
+html[data-ion][data-palette] .spr .spm,html[data-ion][data-palette] .spe .spm{flex:none;font:400 14px/18px var(--mono);color:var(--cmuted);white-space:nowrap}
+html[data-ion][data-palette] .spe{display:grid;grid-template-columns:minmax(0,1fr) 64px auto 28px;gap:6px;align-items:center}
+html[data-ion][data-palette] .spe input{height:40px;min-height:40px;border:0;border-radius:10px;background:var(--ccard2);box-shadow:none;padding:0 10px;font:400 16px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .spe input:focus{box-shadow:0 0 0 2px var(--ion)}
+html[data-ion][data-palette] :is(#_,.spe .spx){width:28px;height:28px;min-height:28px;padding:0;border:0;border-radius:50%;background:var(--ccard2);color:var(--ctext);font:400 16px/1 var(--font)}
+html[data-ion][data-palette] .spt{display:flex;align-items:center;gap:8px;margin-top:6px;font:400 14px/18px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .spt:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ion)}
+html[data-ion][data-palette] .spt.off:before{background:var(--coral)}
+/* documents */
+html[data-ion][data-palette] .docrow.in .k b:before{content:"";display:inline-block;width:8px;height:8px;margin:0 8px 2px 0;border-radius:50%;background:var(--ion)}
+html[data-ion][data-palette] .docrow.na{opacity:.8}
+html[data-ion][data-palette] .dfile{align-items:center}
+html[data-ion][data-palette] .dfile .dfn{display:inline-flex;align-items:center;gap:6px;flex:1 1 100%;min-width:0;font:400 14px/20px var(--font);color:var(--ctext);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .dfile .dfn a{color:var(--ctext);text-decoration:underline;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .dfile button svg.i{width:14px;height:14px;color:var(--ctext);margin-right:4px}
+/* the next step on top of Steps */
+html[data-ion][data-palette] .nextcard{margin:0 0 8px}
+html[data-ion][data-palette] .nextcard .acts0{display:flex;flex-wrap:wrap;gap:6px}
+html[data-ion][data-palette] :is(#_,.nextcard .acts0>button){flex:1 1 auto;width:auto;min-width:0;white-space:nowrap}
+html[data-ion][data-palette] .acts0.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+html[data-ion][data-palette] .acts0.two>button{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the deal's foot: Send the status, then three equal buttons, then the status */
+html[data-ion][data-palette] .dfoot{display:block}
+html[data-ion][data-palette] .dfoot>button.primary.wide{width:100%}
+html[data-ion][data-palette] .dfoot3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:6px}
+html[data-ion][data-palette] :is(#_,.dfoot3>.ib){width:100%;min-width:0;height:40px;min-height:40px;padding:0 6px;justify-content:center}
+html[data-ion][data-palette] .tmeter .tag{flex:none}
+/* market price and the deals list groups */
+html[data-ion][data-palette] .mkt .icard.mk{cursor:default}
+html[data-ion][data-palette] .mkt .icard.mk .tag+.tag{margin-left:-3px}
+html[data-ion][data-palette] .mkacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+html[data-ion][data-palette] .mkform{margin-top:8px}
+html[data-ion][data-palette] .mkform .seg2{margin:0 0 2px}
+html[data-ion][data-palette] .dgrp .rplain{margin-top:12px}
+/* the status sheet */
+html[data-ion][data-palette] .stprev{margin:0;max-height:260px;overflow:auto;padding:10px 12px;border-radius:12px;background:var(--ccard);box-shadow:var(--card-shadow);color:var(--ctext);font:400 14px/20px var(--font);white-space:pre-wrap;word-break:break-word}
+html[data-ion][data-palette] .stacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+html[data-ion][data-palette] :is(#_,.stacts>button){height:48px;min-height:48px;border-radius:10px;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .tick.off span{color:var(--muted)}
+html[data-ion][data-palette] .tick small{display:block;font-size:14px;color:var(--muted)}
 html[data-ion][data-palette] .kv{padding:6px 0;font-size:14px}
 html[data-ion][data-palette] .about{font-size:16px;line-height:22px}
 

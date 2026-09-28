@@ -1320,3 +1320,23 @@ button:active:not(:disabled),.btnlink:active,[role=button]:active{transform:scal
 .calcacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
 .mi .mt{flex:1;min-width:0;text-align:left}.mi .mt small{display:block;font-size:14px;color:var(--muted)}
 .mfoot{margin-top:8px;text-align:center;font-size:14px;color:var(--muted)}
+/* lean deal (28 Sep 2026) – plain base for Graphite and Velvet; Ion Rail styles these in ion.css */
+select.tsel{width:100%;min-height:var(--ctl);border-radius:var(--r-ctl)}
+.tpair{display:flex;gap:6px;align-items:center}.tpair>.tin,.tpair>select.tsel:not(.tunit){flex:1 1 auto;min-width:0}.tpair>select.tunit{flex:none;width:112px}.tpair>.fld{flex:1 1 0;min-width:0;margin-top:0}
+.teither{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.teither>select.segsel{min-height:34px;border-radius:7px;text-align:center}
+.tchips.tq,.tchips.tsame,.tchips.dfile{margin-top:6px}.tnote{margin-top:6px;font-size:14px;color:var(--muted)}
+.trow .k b small{display:block;font-size:14px;font-weight:400;color:var(--muted)}
+.tmore{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--ctl);margin:0 0 8px;padding:0 12px;border-radius:var(--r-ctl);text-align:left}.tmore>span:first-child{flex:1}.tmore .m{font-size:14px;color:var(--muted)}
+.spl{display:flex;flex-direction:column;gap:6px}.spr{display:flex;align-items:center;gap:8px;min-height:32px}.spr .spn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.spr .spm,.spe .spm{font-size:14px;color:var(--muted);white-space:nowrap}
+.spe{display:grid;grid-template-columns:minmax(0,1fr) 64px auto 28px;gap:6px;align-items:center}.spe .spx{width:28px;height:28px;min-height:28px;padding:0;border-radius:50%}
+.spt{margin-top:6px;font-size:14px}.spt.off:before{content:"● ";color:var(--bad)}
+.dfile{align-items:center}.dfile .dfn{flex:1 1 100%;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts0.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.dfoot3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;grid-column:1 / -1}.dfoot>button.primary.wide{grid-column:1 / -1}
+.mkacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.stprev{margin:0;max-height:260px;overflow:auto;padding:10px 12px;border-radius:12px;background:var(--card2);white-space:pre-wrap;word-break:break-word;font:400 14px/20px var(--font)}
+.stacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.stacts>button{min-height:48px}
+.tick small{display:block;font-size:14px;color:var(--muted)}.tick.off span{color:var(--muted)}
+.od{flex-wrap:nowrap;overflow:hidden}.od>i,.od>.gap,.od>.dash{flex:none}.od em{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .k select.qsel{min-height:28px;height:28px;padding:0 8px;border-radius:999px;font-size:14px;max-width:62%}
+.nextcard .acts0{display:flex;flex-wrap:wrap;gap:6px}.nextcard .acts0>button{flex:1 1 auto;width:auto}

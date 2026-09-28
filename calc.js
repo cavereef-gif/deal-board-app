@@ -19,9 +19,9 @@ function calcState(key, d, kind) {
   const p = (d && d.params) || {};
   const st = kind === "transport"
     ? { _kind: kind, rate: numIn(p.client_rate), vatin: /incl/i.test(p.vat || "") ? "Yes" : /excl/i.test(p.vat || "") ? "No" : "Not agreed", haul: numIn(p.haulier_rate), cuts: sumR(p.cuts || p.other_cuts), tpl: 34, loads: perMonth(p.loads), share: 100 }
-    : { _kind: kind, wmt: numIn(p.volume), moist: "", price: numIn(p.price), cur: /\$|usd/i.test(p.price || "") ? "US$" : "R", fx: "", comm: /not agreed/i.test(p.commission || "") ? "" : numIn(p.commission), cuts: sumR(p.other_cuts), share: 100, vat: "No" };
+    : { _kind: kind, wmt: numIn(p.volume), moist: "", price: numIn(p.price || p.asking_price), cur: /\$|usd/i.test(p.price || p.asking_price || "") ? "US$" : "R", fx: "", comm: /not agreed/i.test(p.commission || "") ? "" : numIn(p.commission), cuts: sumR(p.other_cuts), share: 100, vat: "No" };
   st._src = kind === "transport" ? [p.client_rate && "Client rate: " + p.client_rate, p.vat && "VAT: " + p.vat, p.haulier_rate && "Transporter: " + p.haulier_rate, (p.cuts || p.other_cuts) && "Cuts: " + (p.cuts || p.other_cuts), p.loads && "Loads: " + p.loads].filter(Boolean)
-    : [p.volume && "Volume: " + p.volume, p.price && "Price: " + p.price, p.commission && "Commission: " + p.commission, p.other_cuts && "Cuts: " + p.other_cuts].filter(Boolean);
+    : [p.volume && "Volume: " + p.volume, p.price ? "Agreed price: " + p.price : p.asking_price && "Asking price: " + p.asking_price, p.commission && "Commission: " + p.commission, p.other_cuts && "Cuts: " + p.other_cuts].filter(Boolean);
   return (window._calc[key] = st);
 }
 // rows: { k (label), v (figure), s (small line), g (group), out (the answer), ask (a figure still missing) }

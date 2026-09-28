@@ -115,7 +115,7 @@ function icardRow(o) {
 window.stRow = stRow; window.plateHtml = plateHtml; window.meterHtml = meterHtml; window.sheetOpen = sheetOpen; window.sheetClose = sheetClose; window.railOpen = railOpen; window.railClose = railClose; window.rplain = rplain; window.rfoot = rfoot; window.icardRow = icardRow;
 // Groups for Home. Suggestions stay apart (a person accepts them first). Buyer-search follow-ups join the day they are due.
 function homeGroups(items, target) {
-  const own = x => target === "All" || (x.owner || "Chris") === target;
+  const own = x => target === "All" || (x.owner || "Chris") === target || x.owner === "Both";   // a task for Both is on both lists
   const mine = items.filter(own).filter(i => !window.inSecItem || inSecItem(i));
   const sugg = mine.filter(i => i.state === "Proposed").sort(byPrioThenAge);
   const fu = (window._ltasks || []).filter(t => window.isFollowUp && isFollowUp(t) && own(t) && (!window.inSecLTask || inSecLTask(t)))
@@ -292,14 +292,16 @@ function overviewHtml() {
   const { list, g } = homeGroups(window._items || [], target);
   const ld = liveDeals().filter(d => !window.inSecDeal || inSecDeal(d)), td = saKey(Date.now());
   const st = ld.reduce((a, d) => { const pg = dealProgress(d.id); a[0] += pg.done; a[1] += pg.total; return a; }, [0, 0]);
-  const L = (window._leads || []).filter(l => !window.inSecLead || inSecLead(l)), reached = L.filter(l => ["contacted", "replied", "qualified", "deal"].includes(l.status)).length;
-  const doneWk = (window._done || []).filter(i => (target === "All" || (i.owner || "Chris") === target) && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
+  // documents in across the live deals (28 Sep: the Deals tab shows deal things only – the buyer list is on People)
+  const dk = ld.flatMap(d => ((window.DOCS && DOCS[d.kind]) || []).map(x => (window._docs || []).find(r => r.deal_id === d.id && r.doc === x.k))).filter(r => !r || r.status !== "na");
+  const L = dk, reached = dk.filter(r => r && (r.status === "received" || r.status === "signed")).length;
+  const doneWk = (window._done || []).filter(i => (target === "All" || (i.owner || "Chris") === target || i.owner === "Both") && Date.now() - new Date(i.updated_at).getTime() < 7 * 864e5).length;
   const oOpen = isOpen("home:overview", true);
   let h = `<section class="hgrp ov"><button class="hg-h" data-tog="home:overview" data-dflt="1" aria-expanded="${oOpen}"><span class="hg-t">Overview</span><span class="chev"></span></button>`;
   if (oOpen) {
     h += `<div class="card prog">${ringsSvg([st[1] ? st[0] / st[1] : 0, L.length ? reached / L.length : 0, list.length ? (list.length - g.overdue.length) / list.length : 0])}
       <div class="legend"><div class="lg"><i style="background:var(--ring1-bg)"></i><div><b>Deal steps: ${st[0]} of ${st[1]} done</b><span>all live deals together</span></div></div>
-      <div class="lg"><i style="background:var(--ring2)"></i><div><b>Buyer list: ${reached} of ${L.length} contacted</b></div></div>
+      <div class="lg"><i style="background:var(--ring2)"></i><div><b>Documents: ${reached} of ${L.length} in</b><span>NCNDA, LOI, SPA … on the live deals</span></div></div>
       <div class="lg"><i style="background:var(--ring3)"></i><div><b>Tasks: ${g.overdue.length} overdue of ${list.length}</b><span>${doneWk} done in the last 7 days</span></div></div></div></div>`;
     const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
     const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
@@ -342,7 +344,7 @@ window.todayHtml = todayHtml;
 function briefAsText() {
   const br = parseBrief(window._brief);
   const target = who || me || "Chris";
-  const items = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === target);
+  const items = (window._items || []).filter(i => who === "All" || (i.owner || "Chris") === target || i.owner === "Both");
   const lines = [];
   if (br && br.summary) lines.push(br.summary, "");
   const ord = (br && br.chase_order) || [];
@@ -372,7 +374,7 @@ function goTo(ref) {
   if (type === "deal") {
     const d = dealById(id); if (!d) { toast("That deal is not on the board."); return; }
     navPush(); view = "deal"; openDealPage(id); try { localStorage.setItem("view", view); } catch (e) {}
-    if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { if (window.setDealTab) setDealTab(id, "steps"); openKeys.delete(`-stage:${id}:${st.stage}`); openKeys.add(`+stage:${id}:${st.stage}`); openStep = st.id; } }
+    if (extra) { const st = (window._steps || []).find(s => s.id === extra); if (st) { const sg = window.leanStageOf ? leanStageOf(id, st.id) : st.stage; if (window.setDealTab) setDealTab(id, "steps"); openKeys.delete(`-stage:${id}:${sg}`); openKeys.add(`+stage:${id}:${sg}`); openStep = st.id; } }
     saveOpen(); render(); if (extra) scrollTo(`[data-step="${extra}"]`); else window.scrollTo(0, 0); return;
   }
   if (type === "lead") {

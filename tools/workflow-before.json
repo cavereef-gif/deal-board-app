@@ -1,0 +1,126 @@
+{
+ "label": "before",
+ "jobs": {
+  "J1": {
+   "name": "Start a mineral deal",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "the deal is not created in demo (Demo mode — nothing saved)"
+  },
+  "J2": {
+   "name": "Fill the 9 key terms of a mineral deal (incl. asking and agreed price, FOT or DAP)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "cannot set: asking price (form rows 25, height 4157px)"
+  },
+  "J3": {
+   "name": "Mark a question Requested (auto follow-up), then Still awaiting",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no button[data-q='dm1:grade'][data-v='requested']"
+  },
+  "J4": {
+   "name": "Sourced – yes, Annemarie to confirm (task for Annemarie)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no button[data-src='dm1'][data-v='yes']"
+  },
+  "J5": {
+   "name": "Give a task to Both – it shows on both lists",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no [data-towner=Both]"
+  },
+  "J6": {
+   "name": "Tick the next procedure step (and count the steps)",
+   "ok": true,
+   "taps": 2,
+   "typed": 0,
+   "info": {
+    "mineral_steps": 39,
+    "mineral_stages": 12,
+    "transport_steps": 5,
+    "transport_stages": 2,
+    "ticked": "NCNDA signed with each side before names are shared"
+   }
+  },
+  "J7": {
+   "name": "Send the deal status as a PDF and a WhatsApp copy (no target or limit)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no button[data-dstatus='dm1']"
+  },
+  "J8": {
+   "name": "Documents: NCNDA requested (auto follow-up), then signed (follow-up closes)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no [data-dtab='dm1:docs']"
+  },
+  "J9": {
+   "name": "Add a signed contract (file) to the deal – taps to the file picker",
+   "ok": true,
+   "taps": 2,
+   "typed": 0,
+   "info": {
+    "way": "button[data-attach^='deal:']"
+   }
+  },
+  "J10": {
+   "name": "Split the commission 40/40/20 (checked to 100%, Rand per ton and per load)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no button[data-split='dm1']"
+  },
+  "J11": {
+   "name": "See the chrome and manganese market price",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no market price on Deals"
+  },
+  "J12": {
+   "name": "Make an NCNDA from the template (names punched in, PDF saved to the deal)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "no [data-dtab='dm1:docs']"
+  },
+  "J13": {
+   "name": "Make the transport quote PDF",
+   "ok": true,
+   "taps": 3,
+   "typed": 0,
+   "info": {}
+  },
+  "J14": {
+   "name": "Deal ticket: a long volume does not print over the terms line",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "words overlap: {\"over\": true, \"odH\": 31, \"lineTop\": 285, \"odBottom\": 279, \"emLines\": 2}"
+  },
+  "J15": {
+   "name": "Deals tab shows only deals (no Buyer search / Verve admin)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "Deals tab shows: Verve admin"
+  },
+  "J16": {
+   "name": "Ask page examples are built from the real deals (no made-up names in the code)",
+   "ok": false,
+   "taps": null,
+   "typed": null,
+   "info": "examples are fixed text, not built from the deals"
+  }
+ },
+ "errors": []
+}
