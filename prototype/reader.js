@@ -101,7 +101,7 @@ async function runReader(req, msgEl, onDone, ctx) {
 window.runReader = runReader;
 
 // ---------- the review sheet: every line ticked or not, words can be fixed ----------
-const rvWho = o => ["Chris", "Annemarie"].map(n => `<option${o === n ? " selected" : ""}>${n}</option>`).join("");
+const rvWho = o => ["Chris", "Annemarie", "Both"].map(n => `<option${o === n ? " selected" : ""}>${n}</option>`).join("");
 function quoteText(q) {
   const L = [];
   const add = (k, v) => { if (v && String(v).trim()) L.push(`${k}: ${v}`); };
@@ -185,9 +185,11 @@ window.openReview = openReview;
 // text boxes grow to show all their words (no cut-off lines)
 function rvFit(root) { (root || $("rvBody")).querySelectorAll("textarea.rv-ta").forEach(t => { t.style.height = "auto"; t.style.height = Math.max(44, t.scrollHeight + 3) + "px"; }); }
 function rvTargetName(t) { const [type, id] = t.split(":"); return type === "deal" ? "the deal " + ((dealById(id) || {}).name || "") : ((window._contacts || []).find(c => c.id === id) || {}).name || "the contact"; }
+// a price read from an offer or a chat is the asking price until it is agreed (28 Sep 2026: asking and agreed are apart)
+const rvKey = k => k === "price" ? "asking_price" : k;
 function rvTermsHtml(dealId) {
   const d = dealById(dealId), p = (d && d.params) || {}, TM = (rdResult && rdResult.terms) || [];
-  return TM.map((t, i) => { const now = p[t.key], same = now && String(now).trim() === String(t.value).trim();
+  return TM.map((t, i) => { const now = p[rvKey(t.key)], same = now && String(now).trim() === String(t.value).trim();
     return `<div class="rvrow"><label class="rvtick"><input type="checkbox" data-rv="term:${i}"${!d || same || now ? "" : " checked"} aria-label="Save this term"><span class="bx" aria-hidden="true"></span></label><span class="rv-b"><span class="rv-k">${esc(t.label || t.key)}</span>
       <textarea class="rv-in rv-ta" rows="1" data-rvf="term:${i}:value" aria-label="${esc(t.label || t.key)}">${esc(t.value)}</textarea>
       <span class="rv-s">${d ? (same ? "Already the same on the deal" : now ? "On the deal now: " + esc(now) + " – tick to replace" : "Not set on the deal yet") : "Pick a deal above to save terms"}${t.evidence ? " · “" + esc(t.evidence) + "”" : ""}</span></span></div>`; }).join("");
@@ -262,7 +264,7 @@ async function rvSave() {
     const route = v("from") || v("to") ? `${v("from") || "?"} → ${v("to") || "?"}` : "";
     const rate = [v("rate"), v("unit")].filter(Boolean).join(" "), vat = /incl/i.test(v("vat")) ? "Included" : /excl/i.test(v("vat")) ? "Excluded" : "";
     const extras = [v("extras"), v("start") ? "Starts: " + v("start") : ""].filter(Boolean).join("; ");
-    const P = ore ? { commodity: v("commodity"), volume: v("volume"), price: rate, port: v("from"), vat } : { cargo: v("commodity"), route, trucks: v("trucks"), client_rate: rate, loads: v("volume"), payment: v("payment"), extras, vat };
+    const P = ore ? { commodity: v("commodity"), volume: v("volume"), asking_price: rate, port: v("from"), vat } : { cargo: v("commodity"), route, trucks: v("trucks"), client_rate: rate, loads: v("volume"), payment: v("payment"), extras, vat };
     Object.keys(P).forEach(k => { if (!P[k]) delete P[k]; });
     const contact = v("contact"), who = contact.replace(/\+?\d[\d\s()-]{6,}\d/g, "").replace(/[\s,;:–-]+$/, "").trim();
     const facts = [`From ${src}, ${dayName(Date.now())}${l.words ? ": “" + l.words + "”" : ""}`, ore && v("payment") ? "Payment: " + v("payment") : "", ore && v("trucks") ? "Trucks: " + v("trucks") : "", ore && extras ? extras : "", contact ? "Contact: " + contact : "", (l.flags || []).length ? "Watch: " + l.flags.join("; ") : ""].filter(Boolean).join("\n");
@@ -313,7 +315,7 @@ async function rvSave() {
   const tdeal = $("rvTermDeal") ? $("rvTermDeal").value : "", d = dealById(tdeal);
   if (d) {
     const params = { ...(d.params || {}) }; let n = 0;
-    (r.terms || []).forEach((t, i) => { if (rvOn(`term:${i}`) && rvVal(`term:${i}:value`) && t.key !== "target" && t.key !== "limit") { params[t.key] = rvVal(`term:${i}:value`); n++; } });
+    (r.terms || []).forEach((t, i) => { if (rvOn(`term:${i}`) && rvVal(`term:${i}:value`) && t.key !== "target" && t.key !== "limit") { params[rvKey(t.key)] = rvVal(`term:${i}:value`); n++; } });
     if (n) { if (DEMO) { d.params = params; done.terms = n; } else { const { error } = await sb.rpc("save_deal", { p_id: d.id, p_params: params }); if (error) errs.push("Terms: " + error.message); else done.terms = n; } }
   }
   // keep the photo or PDF: on the chosen deal or contact, or on the notice board with the summary
