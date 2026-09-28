@@ -58,6 +58,18 @@ task_action "followup" (change 002, applied 26 Sep 2026 as migration v17_task_fo
 Edge function: `ask` (v10 since 26 Sep 2026, verify_jwt on, Claude Haiku). v10 adds the app_action tool for the v17 app (it sends app:2): open / show / calculator happen at once in the app; every change comes back as a "Do it" card and is saved only when a person taps it (the private target and walk-away numbers are refused). Apps that do not send app:2 (live v14, preview v16) get exactly the v9 tools. propose_item can take a due date. Source copy: supabase/functions/ask/index.ts (record only – deploying needs Supabase access).
 Edge function: `read` (v2 since 27 Sep 2026 – messy WhatsApps come back as one entry per load, with what is missing and warning signs; no placeholder names; v1 26 Sep 2026; verify_jwt on, owners only). Sonnet for photos/PDFs (Haiku fallback), Haiku for quotes and voice notes. Returns suggestions and saves nothing; the app saves only what a person ticks. Names only in – never terms, target or limit. Source copy: supabase/functions/read/index.ts and prompt.ts (the instructions and answer form).
 
+### Company details (27 Sep 2026, docs/db/009)
+- company_profile: one row with our own company details for the letterhead (edited in Settings › Company details, partners only). Bank account numbers are never stored.
+
+### Lean deals (28 Sep 2026, docs/db/010 and 011 – applied from the Claude project)
+- deal_docs: id, deal_id, doc (minerals: ncnda, imfpa, loi, icpo, fco, poo, assay, pof, kyc, spa · transport: quote, contract, insurance, tickets, pod, invoices), status (draft / requested / received / signed / na), item_id (the follow-up task while requested), att_id (the file), note, updated_by, updated_at, created_at. One row per deal and document.
+- deal_steps gains owner and due_on (who and by when on a step).
+- market_prices: commodity (Chrome / Manganese), grade, basis (CIF China, China port spot, FOT South Africa …), price_low, price_high, currency (USD / ZAR / CNY), unit (t / dmtu), effective, source, source_url, quote (the sentence it came from), fx_zar (rand rate on the day), status (suggested / accepted / dropped), decided_by, decided_at.
+- Functions: set_deal_doc(p_deal, p_doc, p_status, p_note, p_item, p_att) – an empty status removes the row · plan_step(p_id, p_owner, p_due) · market_price_set(p_commodity, p_grade, p_basis, p_low, p_high, p_currency, p_unit, p_effective, p_note) – a typed price counts at once · market_price_decide(p_id, p_status). All check is_owner() and write to events.
+- Deal params keys that start with "_" belong to the app, not to the terms: _q (where each question stands: {s: notyet / requested / awaiting, on, id of the follow-up task, who}), _src (Sourced: notyet / yes / ok, on, by), _split (commission split [{n, p}]), _split_t (tons a load for the per-load figure). Emails, search and the bot leave them out.
+- Server function `tools` action "market" (v16): reads the newest free SMM chrome and manganese reviews, keeps only lines with a South African price, Claude Haiku reads the figures, and a figure is kept only if it is printed in a line of the article that names South Africa (and the named grade); arrives as suggested. The weekly note (weekly_notes kind "market") keeps why any figure was left out.
+- Timer deal-board-market (pg_cron, change 011): Mondays 04:40 UTC = 06:40 in South Africa.
+
 ## Current source of the two task functions (for change 001)
 ```sql
 create or replace function public.add_item(p_project text, p_waiting_on text, p_waiting_for text, p_blocks text, p_next text, p_priority integer default 2, p_owner text default 'Chris', p_deal uuid default null)
@@ -115,3 +127,4 @@ batch1_items_events · batch2_owner_access · batch2_add_item · harden_search_p
 
 ## Applied since the handover
 - v17_due_dates (26 Sep 2026): items.due_on; add_item gains p_due (optional); item_action gains 'due' (p_value = YYYY-MM-DD or empty). Same as docs/db/001-due-dates.sql.
+- 010_lean_deals (28 Sep 2026): documents per deal, who and by when on a step, market prices – docs/db/010-lean-deals.sql. Timer deal-board-market (28 Sep 2026) – docs/db/011-market-timer.sql.

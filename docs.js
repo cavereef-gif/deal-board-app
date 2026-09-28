@@ -18,7 +18,7 @@ const DOCS = {
     { k: "poo", l: "Proof of ownership", sub: "the seller owns the material", kind: "get", side: "seller" },
     { k: "assay", l: "Assay", sub: "lab certificate", kind: "get", side: "seller" },
     { k: "pof", l: "Proof of funds", sub: "buyer's bank letter – before any LC", kind: "get", side: "buyer" },
-    { k: "kyc", l: "KYC", sub: "company papers · ours is made here", kind: "get", side: "both", tpl: 1 },
+    { k: "kyc", l: "KYC", sub: "company papers, both sides", kind: "get", side: "both", tpl: 1 },
   ],
   transport: [
     { k: "quote", l: "Accepted quote", sub: "the client signs our quote", kind: "sign", side: "client", make: "quote" },
@@ -140,12 +140,12 @@ window.loadDocs = loadDocs;
 
 // ---------- templates that fill themselves ----------
 const TPL = {
-  ncnda: { l: "NCNDA", title: "Non-circumvention, non-disclosure and working agreement", head: true, parties: [["a", "First party (seller side)", "seller"], ["b", "Second party (buyer side)", "buyer"]], extra: [["years", "How many years it holds", ["2", "3", "5"], "5"]] },
-  imfpa: { l: "IMFPA", title: "Irrevocable master fee protection agreement", head: true, parties: [["payer", "Paying party (pays the commission)", "seller"], ["other", "Other principal", "buyer"]], extra: [["days", "Paid within (banking days after each lot is paid)", ["3", "5", "7"], "5"]] },
-  loi: { l: "LOI", title: "Letter of intent to purchase", parties: [["buyer", "Buyer (issues the letter)", "buyer"], ["seller", "Seller (addressed to)", "seller"]], extra: [["valid", "Valid for (days)", ["7", "14", "30"], "14"]] },
-  icpo: { l: "ICPO", title: "Irrevocable corporate purchase order", parties: [["buyer", "Buyer (issues the order)", "buyer"], ["seller", "Seller (addressed to)", "seller"]], extra: [["valid", "Valid for (banking days)", ["5", "10", "15"], "10"]] },
-  fco: { l: "FCO", title: "Full corporate offer", parties: [["seller", "Seller (makes the offer)", "seller"], ["buyer", "Buyer (addressed to)", "buyer"]], extra: [["valid", "Valid for (days)", ["5", "7", "14"], "7"]] },
-  spa: { l: "SPA", title: "Sale and purchase agreement", parties: [["seller", "Seller", "seller"], ["buyer", "Buyer", "buyer"]], extra: [["months", "Contract length (months)", ["1", "3", "6", "12"], "12"]] },
+  ncnda: { l: "NCNDA", title: "Non-circumvention, non-disclosure and working agreement", head: true, parties: [["a", "First party (seller side)", "seller"], ["b", "Second party (buyer side)", "buyer"]], extra: [["years", "How long it holds", ["2", "3", "5"], "5", "years"]] },
+  imfpa: { l: "IMFPA", title: "Irrevocable master fee protection agreement", head: true, parties: [["payer", "Paying party (pays the commission)", "seller"], ["other", "Other principal", "buyer"]], extra: [["days", "Paid within (banking days after each lot is paid)", ["3", "5", "7"], "5", "days"]] },
+  loi: { l: "LOI", title: "Letter of intent to purchase", parties: [["buyer", "Buyer (issues the letter)", "buyer"], ["seller", "Seller (addressed to)", "seller"]], extra: [["valid", "Valid for", ["7", "14", "30"], "14", "days"]] },
+  icpo: { l: "ICPO", title: "Irrevocable corporate purchase order", parties: [["buyer", "Buyer (issues the order)", "buyer"], ["seller", "Seller (addressed to)", "seller"]], extra: [["valid", "Valid for (banking days)", ["5", "10", "15"], "10", "days"]] },
+  fco: { l: "FCO", title: "Full corporate offer", parties: [["seller", "Seller (makes the offer)", "seller"], ["buyer", "Buyer (addressed to)", "buyer"]], extra: [["valid", "Valid for", ["5", "7", "14"], "7", "days"]] },
+  spa: { l: "SPA", title: "Sale and purchase agreement", parties: [["seller", "Seller", "seller"], ["buyer", "Buyer", "buyer"]], extra: [["months", "Contract length", ["1", "3", "6", "12"], "12", "months"]] },
   kyc: { l: "KYC", title: "Company information sheet (KYC)", head: true, parties: [["directors", "Directors (full names)", ""], ["contact", "Contact person and role", ""]], extra: [["business", "What we do", null, "Broking of chrome and manganese ore, and road freight"]] },
 };
 let TPLS = null;   // { dealId, key, f: {…} } while the sheet is open
@@ -178,11 +178,11 @@ function tplSheetHtml() {
   const box = (k, label, ph) => `<label class="fld"><span>${esc(label)}</span><input data-tplf="${k}" value="${esc(f[k] || "")}" placeholder="${esc(ph || "Company name – and who signs")}" autocomplete="off"></label>`;
   return `<div class="quiet" style="margin:0 0 6px">Type the names; the rest comes from the deal${t.head ? " and our company details" : ""}. Anything not agreed yet prints as "to be agreed".</div>
     ${t.parties.map(([k, label]) => box(k, label, TPLS.key === "kyc" ? "" : undefined)).join("")}
-    ${(t.extra || []).map(([k, label, opts]) => opts ? `<div class="fld"><span>${esc(label)}</span></div><div class="seg2" role="group">${opts.map(o => `<button type="button" data-tplx="${k}" data-v="${o}" class="${f[k] === o ? "on" : ""}">${o}</button>`).join("")}</div>` : box(k, label, "")).join("")}
-    <div class="lbl">From the ${TPLS.key === "kyc" ? "company details" : "deal"}</div><div class="cres">${fromDeal.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v || "to be agreed")}</span></div>`).join("")}</div>
-    ${missCo.length && (t.head || TPLS.key !== "kyc") ? `<div class="tnote">Our company details are missing (${missCo.map(k => ({ legal_name: "name", reg_no: "registration number", address: "address" }[k])).join(", ")}) – Settings › Company details.</div>` : ""}
-    ${TPLS.key === "imfpa" && !((leanP(d)._split) || []).length ? `<div class="tnote">No commission split yet – the IMFPA lists Verve alone. Split it on Numbers › Private first if others share.</div>` : ""}
-    <div class="tnote">A generic draft for the parties to check${/ncnda|imfpa|spa/.test(TPLS.key) ? " – have an SA commercial attorney check this one once before first use" : ""}.</div>
+    ${(t.extra || []).map(([k, label, opts, , unit]) => opts ? `<div class="fld"><span>${esc(label)}</span></div><div class="seg2" role="group" aria-label="${esc(label)}">${opts.map(o => `<button type="button" data-tplx="${k}" data-v="${o}" class="${f[k] === o ? "on" : ""}">${o}${unit ? " " + esc(o === "1" ? unit.replace(/s$/, "") : unit) : ""}</button>`).join("")}</div>` : box(k, label, "")).join("")}
+    <div class="lbl">From the ${TPLS.key === "kyc" ? "company details" : "deal"}</div><div class="tplfrom">${fromDeal.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v || "to be agreed")}</span></div>`).join("")}</div>
+    ${missCo.length && (t.head || TPLS.key !== "kyc") ? `<div class="quiet tpln">Our company details are missing (${missCo.map(k => ({ legal_name: "name", reg_no: "registration number", address: "address" }[k])).join(", ")}) – Settings › Company details.</div>` : ""}
+    ${TPLS.key === "imfpa" && !((leanP(d)._split) || []).length ? `<div class="quiet tpln">No commission split yet – the IMFPA lists Verve alone. Split it on Numbers › Private first if others share.</div>` : ""}
+    <div class="quiet tpln">A generic draft for the parties to check${/ncnda|imfpa|spa/.test(TPLS.key) ? " – have an SA commercial attorney check this one once before first use" : ""}.</div>
     <button type="button" class="primary wide" id="tplMake">${ic("file")}Make the PDF and save it to the deal</button>`;
 }
 document.addEventListener("click", e => {

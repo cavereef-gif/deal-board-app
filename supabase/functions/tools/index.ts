@@ -329,8 +329,9 @@ async function borders(admin: any, claudeKey: string, force = false) {
 // figures. A figure is kept only if it is printed in the sentence it came from, and the sentence is in the article. The
 // prices arrive as "suggested" (Chris, 28 Sep 2026: the free route, one tap to confirm; the paid SMM feed is not approved).
 const SMM = "https://news.metal.com";
-const MKT_GRADES = ["40–42% concentrate", "42–44% concentrate", "44–46% concentrate", "38–40% ROM", "40–42% lumpy", "36–37% semi-carbonate", "37% semi-carbonate lumpy", "44% high grade", "32–34% low grade"];
+const MKT_GRADES = ["40–42% concentrate", "42–44% concentrate", "44–46% concentrate", "38–40% ROM", "40–42% lumpy", "36–37% semi-carbonate", "37% semi-carbonate lumpy", "medium-iron", "high-iron", "44% high grade", "32–34% low grade"];
 const MKT_BASIS = ["CIF China", "China port spot"];
+const MKT_SA = /(south africa|s\.\s?africa|\bsa\b|samancor|south32|assmang|ug2)/i;
 const htmlText = (h: string) => h.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]+>/g, " ")
   .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/[ \t\r]+/g, " ").replace(/\n\s*\n+/g, "\n").trim();
 async function fxZar(cur: string) {
@@ -382,7 +383,18 @@ async function market(admin: any, claudeKey: string, force = false) {
     const at = c.at || ((html.match(/"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})/) || [])[1]) || today;
     // a price is a number next to a currency, or a number "per ton / per dry ton unit" – tonnage figures alone do not count
     const PRICE = /(\$\s?\d|\d[\d.,]*\s?(usd|us\$|yuan|rmb|cny)\b|\b(usd|us\$|yuan|rmb|cny)\s?\d|\d\s*\/\s*(mt|t|dmtu|mtu)\b)/i;
-    const lines = text.split(/(?<=[.;!?])\s+|\n/).map((l) => l.trim()).filter((l) => l.length > 20 && l.length < 600 && PRICE.test(l) && /(south africa|s\.\s?africa|\bsa\b|samancor|south32|assmang|ug2)/i.test(l));
+    // one line per price: sentences split at ";" – a port heading ("Tianjin Port") or label ("North China ports:") stays
+    // with each part, so the port is never lost
+    const lines: string[] = []; let carry = "";
+    for (const s0 of text.split(/(?<=[.!?])\s+|\n/)) {
+      const s = s0.trim(); if (!s) continue;
+      if (/^[A-Z][A-Za-z .-]{2,40}\bports?:?$/i.test(s)) { carry = s.replace(/:$/, ""); continue; }
+      const lab = (s.match(/^([A-Z][A-Za-z .-]{2,40}?\bports?)\s*:\s*/i) || [])[1] || carry; carry = "";   // a heading covers the next sentence only
+      for (const part of s.split(/(?<=;)\s+/)) {
+        const p = part.trim(), l = (lab && !p.toLowerCase().startsWith(lab.toLowerCase()) ? lab + ": " : "") + p;
+        if (l.length > 20 && l.length < 600 && PRICE.test(l) && MKT_SA.test(l)) lines.push(l);
+      }
+    }
     if (lines.length) { docs.push({ url: c.url, at, text, lines: lines.slice(0, 12) }); got[c.kind] = (got[c.kind] || 0) + 1; }
   }
   if (!docs.length) { await admin.from("weekly_notes").upsert({ kind: "market", week_ending: today, summary: "The newest SMM reviews print no South African ore price this week.", data: { urls: chosen.map((c) => c.url) }, source_url: SMM }, { onConflict: "kind,week_ending" }); return { checked: true, added: 0, note: "The newest reviews print no South African ore price this week.", prices: await latest() }; }
@@ -400,7 +412,7 @@ async function market(admin: any, claudeKey: string, force = false) {
     required: ["prices"] } };
   const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1500, tools: [tool], tool_choice: { type: "tool", name: "prices" },
-      messages: [{ role: "user", content: [{ type: "text", text: content }, { type: "text", text: "These sentences are from Shanghai Metals Market (SMM) ore market reviews. List the prices of SOUTH AFRICAN chrome ore and SOUTH AFRICAN manganese ore only – skip Turkish, Zimbabwean, Gabonese, Australian, Brazilian, Ghanaian and other origins, and skip ferrochrome and other alloy prices. Pick the closest grade from the list; 'fines' concentrate counts as concentrate. Copy the sentence exactly into quote. Only figures printed in that sentence; a range gives low and high. If there is no South African ore price, return an empty list." }] }] }) });
+      messages: [{ role: "user", content: [{ type: "text", text: content }, { type: "text", text: "These sentences are from Shanghai Metals Market (SMM) ore market reviews. List the prices of SOUTH AFRICAN chrome ore and SOUTH AFRICAN manganese ore only – skip Turkish, Zimbabwean, Gabonese, Australian, Brazilian, Ghanaian and other origins, and skip ferrochrome and other alloy prices. Pick the closest grade from the list; 'fines' concentrate counts as concentrate; South African semi-carbonate is '36–37% semi-carbonate'; South African high-iron and medium-iron are their own grades. Each line holds one price; the words before a colon name the port. When the same grade is priced at north China ports (Tianjin) and south China ports (Qinzhou), list the north China one. Copy the line exactly into quote. Only figures printed in that line; a range gives low and high. If there is no South African ore price, return an empty list." }] }] }) });
   const out = await res.json();
   const v = ((out.content || []).find((c: any) => c.type === "tool_use") || {}).input;
   const rows: any[] = [], fx: Record<string, number | null> = {};
@@ -408,25 +420,30 @@ async function market(admin: any, claudeKey: string, force = false) {
   const printed = (n: number, q: string) => { const t = q.replace(/[,\s](?=\d{3}\b)/g, ""); return [String(n), n.toFixed(1), n.toFixed(2)].some((x) => t.includes(x)); };
   const sane = (r: any) => r.currency === "USD" ? (r.unit === "t" ? r.low >= 100 && r.low <= 900 : r.low >= 1 && r.low <= 20) : (r.low >= 10 && r.low <= 150);
   // why a figure was left out – kept with the weekly note so a quiet week can be told apart from a fault
-  const why = { listed: 0, noReview: 0, requoted: 0, notInArticle: 0, notPrinted: 0, notSaOrOdd: 0 };
-  for (const p of (v && Array.isArray(v.prices) ? v.prices : [])) {
+  const why = { listed: 0, asText: 0, noReview: 0, requoted: 0, notInArticle: 0, notPrinted: 0, notSaOrOdd: 0 };
+  let list: any = v && v.prices;
+  if (typeof list === "string") { try { list = JSON.parse(list); why.asText = 1; } catch { list = []; } }   // the list sometimes arrives as text
+  for (const p of (Array.isArray(list) ? list : [])) {
     why.listed++;
     const d = docs[(p.review || 1) - 1]; if (!d) { why.noReview++; continue; }
     let q = nsp(p.quote);
-    if (!q || !canon(d.text).includes(canon(q))) {   // not copied exactly: use the article's own sentence that prints these figures
+    const inText = (x: string) => canon(d.text).includes(canon(x)) || d.lines.some((l) => canon(l).includes(canon(x)));   // the article, or one of its lines
+    if (!q || !inText(q)) {   // not copied exactly: use the article's own line that prints these figures
       const own = typeof p.low === "number" ? d.lines.find((l) => printed(p.low, l) && (p.high == null || printed(p.high, l))) : "";
       if (own) { q = nsp(own); why.requoted++; } else { why.notInArticle++; continue; }   // the sentence must be in the article
     }
     if (!printed(p.low, q) || (p.high != null && !printed(p.high, q))) { why.notPrinted++; continue; }         // and the figures in the sentence
-    if (!sane(p) || !/south africa|s\.\s?africa|\bsa\b|samancor|south32|assmang|ug2/i.test(q)) { why.notSaOrOdd++; continue; }
-    if (!(p.currency in fx)) fx[p.currency] = await fxZar(p.currency);
+    if (!sane(p) || !MKT_SA.test(q)) { why.notSaOrOdd++; continue; }
     const dash = (x: string) => String(x || "").replace(/[\u2012-\u2015-]/g, "-").toLowerCase();
     const grade = MKT_GRADES.find((g) => dash(g) === dash(p.grade)) || String(p.grade || "");   // one spelling per grade
+    const gw = (grade.match(/semi-carbonate|high-iron|medium-iron/) || [])[0];
+    if (gw && !dash(q).includes(gw)) { why.notSaOrOdd++; continue; }   // a named grade must be the one in the line
+    if (!(p.currency in fx)) fx[p.currency] = await fxZar(p.currency);
     rows.push({ commodity: p.commodity, grade, basis: p.basis, price_low: p.low, price_high: p.high != null ? p.high : p.low, currency: p.currency, unit: p.unit,
       effective: d.at, source: "SMM", source_url: d.url, quote: q.slice(0, 500), fx_zar: fx[p.currency], status: "suggested" });
   }
-  const newest: Record<string, any> = {};
-  for (const r of rows) { const k = `${r.commodity}|${r.grade}|${r.basis}`; if (!newest[k] || newest[k].effective < r.effective) newest[k] = r; }
+  const newest: Record<string, any> = {}, north = (r: any) => (/north|tianjin/i.test(r.quote) ? 1 : 0);   // north China ports are the usual reference
+  for (const r of rows) { const k = `${r.commodity}|${r.grade}|${r.basis}`, o = newest[k]; if (!o || o.effective < r.effective || (o.effective === r.effective && north(r) > north(o))) newest[k] = r; }
   let added = 0;
   for (const r of Object.values(newest)) {
     const { data: had } = await admin.from("market_prices").select("id").eq("commodity", r.commodity).eq("grade", r.grade).eq("basis", r.basis).neq("status", "dropped").gte("effective", r.effective).limit(1);

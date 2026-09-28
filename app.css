@@ -1338,5 +1338,14 @@ select.tsel{width:100%;min-height:var(--ctl);border-radius:var(--r-ctl)}
 .stacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.stacts>button{min-height:48px}
 .tick small{display:block;font-size:14px;color:var(--muted)}.tick.off span{color:var(--muted)}
 .od{flex-wrap:nowrap;overflow:hidden}.od>i,.od>.gap,.od>.dash{flex:none}.od em{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trow .k select.qsel{min-height:28px;height:28px;padding:0 8px;border-radius:999px;font-size:14px;max-width:62%}
+.trow .k .qpill{position:relative;flex:none;display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:var(--card2);font-size:14px;white-space:nowrap}
+.trow .k .qpill select.qsel{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;opacity:0;font-size:16px}
+.mkrow{margin:0 0 8px;padding:10px 12px;border-radius:14px;background:var(--card2)}
+.mkrow .mkp{margin-top:4px;font-variant-numeric:tabular-nums}.mkrow .mkp small{margin-left:8px;font-size:14px;color:var(--muted)}
+.mkrow .mks{margin-top:2px;font-size:14px;color:var(--muted)}
+.mkacts2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
 .nextcard .acts0{display:flex;flex-wrap:wrap;gap:6px}.nextcard .acts0>button{flex:1 1 auto;width:auto}
+/* template sheet (28 Sep 2026): what comes from the deal, and the notes */
+.tplfrom{margin:0 0 8px;border-radius:14px;background:var(--card2);padding:4px 14px}
+.tplfrom .kv .v{text-align:right}
+.tpln{margin:6px 0 10px}

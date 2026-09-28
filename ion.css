@@ -69,7 +69,8 @@ html[data-ion][data-palette] #botBtn svg.i{color:var(--ion)}
 html[data-ion][data-palette] body.hasplate .brand h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 html[data-ion][data-palette] .secslot{margin-top:8px}
 html[data-ion][data-palette] .secpin{position:-webkit-sticky;position:sticky;top:var(--hdrh,56px);z-index:6;margin:0 -8px 8px;padding:0 8px;background:transparent}
-html[data-ion][data-palette] .secbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;height:40px;margin:0;padding:3px;border-radius:12px;background:var(--g1b);border:1px solid var(--edge);box-shadow:none}
+html[data-ion][data-palette] .secbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(max-content,1fr);overflow-x:auto;scrollbar-width:none;gap:0;height:40px;margin:0;padding:3px;border-radius:12px;background:var(--g1b);border:1px solid var(--edge);box-shadow:none}
+html[data-ion][data-palette] .secbar::-webkit-scrollbar{display:none}
 html[data-ion][data-palette] :is(#_,.secbar>button){display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:0;height:34px;padding:0 3px;border-radius:9px;background:transparent;box-shadow:none;color:var(--muted);font:400 14px/1 var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .secbar>button:after{position:static;order:-1;width:7px;height:7px;border-radius:50%;opacity:1;background:var(--sc);flex:none}
 html[data-ion][data-palette] .secbar>button[data-sec="All"]:after{background:var(--muted)}
@@ -235,7 +236,7 @@ html[data-ion][data-palette] .irow .scont>.acc{position:absolute;right:11px;top:
 html[data-ion][data-palette] .irow .hr-main .hr-tx{order:1}
 
 /* ================= reading surfaces: tokens switch inside ================= */
-html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.bub.u,.ask,.sbar,.dtile,.fcard,.bothelp,form.panel,.qteaser,.cnote,.step,.sec,.kitban,.hist,.trr,.meets,.draft,.sugg,.warn,.seen,.lf,.qcard,.gcard,.ticket,.trow,.mrow,.tile,.icard,.stepp,.trtoll,.trfuel){
+html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.bub.u,.ask,.sbar,.dtile,.fcard,.bothelp,form.panel,.qteaser,.cnote,.step,.sec,.kitban,.hist,.trr,.meets,.draft,.sugg,.warn,.seen,.lf,.qcard,.gcard,.ticket,.trow,.mkrow,.mrow,.tile,.icard,.stepp,.trtoll,.trfuel){
   --text:var(--ctext); --muted:var(--cmuted); --ivory:var(--ctext); --surface:var(--ccard); --card:var(--ccard); --card2:var(--ccard2); --row:var(--ccard);
   --raise:var(--ccard2); --raise-2:#E9EAEF; --field:var(--cfield); --well:var(--cfield); --line:var(--cline); --line2:var(--cline2);
   --btn:var(--ccard2); --seg-on:var(--ink); --glass-soft:var(--ccard2); --glass-soft-edge:inset 0 0 0 1px rgba(0,0,0,.06);
@@ -243,10 +244,10 @@ html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.ne
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23474956' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --c-wa:#474956; --c-mail:#474956; --c-call:#474956; --c-me:#474956; --c-bot:#2A9BCF; --c-note:#474956; --c-file:#474956; --c-link:#474956; --c-mute:#474956;
   color:var(--ctext)}
-html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.ask,.sbar,.dtile,.fcard:not(.hot),.bothelp,form.panel,.qteaser,.cnote,.hist,.sugg,.warn,.seen,.trow,.stepp){background:var(--ccard);background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--card-shadow);border:0}
+html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.ask,.sbar,.dtile,.fcard:not(.hot),.bothelp,form.panel,.qteaser,.cnote,.hist,.sugg,.warn,.seen,.trow,.mkrow,.stepp){background:var(--ccard);background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--card-shadow);border:0}
 html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.pinfo,.tsec,.bothelp,.qteaser,.cnote,.meets){border-radius:14px}
 html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.pinfo,.tsec,.bothelp,.cnote,.post){margin-bottom:8px}
-html[data-ion][data-palette] :is(.bl-main,.trow,.stepp,.hist,.sugg,.warn,.seen){border-radius:12px}
+html[data-ion][data-palette] :is(.bl-main,.trow,.mkrow,.stepp,.hist,.sugg,.warn,.seen){border-radius:12px}
 /* a one-of-several switch inside a card: light track, charcoal chosen segment */
 html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on,.chips:not(.segbar) button.on){background:var(--ink);background-color:var(--ink);color:#D4D5DD;box-shadow:none}
 html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on) span{color:#D4D5DD}
@@ -266,6 +267,7 @@ html[data-ion][data-palette] button.primary svg.i{color:var(--ctext)}
 html[data-ion][data-palette] button.primary.wide,html[data-ion][data-palette] .wide.primary{height:48px;min-height:48px;border-radius:10px;font-size:16px}
 html[data-ion][data-palette] :is(input,select,textarea){min-height:40px;border-radius:10px;background:var(--field);box-shadow:var(--soft-in);border-color:transparent;color:var(--text)}
 html[data-ion][data-palette] :is(input,select,textarea):focus{box-shadow:var(--soft-in),0 0 0 2px var(--ion)}
+html[data-ion][data-palette] input[type=checkbox]{min-height:0;box-shadow:none}
 html[data-ion][data-palette] ::placeholder{color:var(--muted);opacity:.85}
 html[data-ion][data-palette] .fld{margin-top:8px}
 html[data-ion][data-palette] .fld>span{font-size:14px;color:var(--muted)}
@@ -382,7 +384,7 @@ html[data-ion][data-palette] .od .gap{width:2px}
 html[data-ion][data-palette] .od .dash{width:8px;text-align:center;font:400 14px/1 var(--font);color:var(--cmuted);margin:0}
 html[data-ion][data-palette] .od em{flex:0 1 auto;min-width:0;font:400 14px/20px var(--font);font-style:normal;color:var(--cmuted);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .od em.pre{margin:0 4px 0 0}
-html[data-ion][data-palette] .tk-l{font:400 14px/18px var(--font);color:var(--cmuted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ion][data-palette] .tk-l{font:400 14px/18px var(--font);color:var(--cmuted);margin-top:2px;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}   /* up to two lines, every word whole (28 Sep) */
 html[data-ion][data-palette] .tear{position:relative;height:0;border-top:1px dashed rgba(26,27,30,.35);margin:0 14px}
 html[data-ion][data-palette] .tear:before,html[data-ion][data-palette] .tear:after{content:"";position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--g1)}
 html[data-ion][data-palette] .tear:before{left:-22px} html[data-ion][data-palette] .tear:after{right:-22px}
@@ -430,10 +432,11 @@ html[data-ion][data-palette] .tchips button.go,html[data-ion][data-palette] .tch
 html[data-ion][data-palette] .tchips button:disabled{opacity:1}
 html[data-ion][data-palette] .tnote{margin-top:6px;font:400 14px/18px var(--font);color:var(--cmuted)}
 /* where an open question stands: a small pill drop-down in the row's corner */
-html[data-ion][data-palette] .trow .k select.qsel{flex:none;height:28px;min-height:28px;max-width:62%;margin:-4px 0;padding:0 24px 0 10px;border:0;border-radius:999px;background:var(--ccard2) var(--chev) right 6px center/14px no-repeat;box-shadow:none;-webkit-appearance:none;appearance:none;font:400 14px var(--mono);color:var(--ctext);text-overflow:ellipsis}
-html[data-ion][data-palette] .trow .k select.qsel.q-notyet,html[data-ion][data-palette] .trow .k select.qsel.q-requested{background-color:var(--cfield)}
-html[data-ion][data-palette] .trow .k select.qsel.q-awaiting{background-color:var(--coral-1)}
-html[data-ion][data-palette] .trow .k select.qsel:focus{box-shadow:0 0 0 2px var(--ion)}
+html[data-ion][data-palette] .trow .k .qpill{position:relative;flex:none;display:inline-flex;align-items:center;height:28px;margin:-4px 0;padding:0 26px 0 10px;border-radius:999px;background:var(--ccard2) var(--chev) right 7px center/14px no-repeat;font:400 14px/1 var(--mono);color:var(--ctext);white-space:nowrap}
+html[data-ion][data-palette] .trow .k .qpill.q-notyet,html[data-ion][data-palette] .trow .k .qpill.q-requested{background-color:var(--cfield)}
+html[data-ion][data-palette] .trow .k .qpill.q-awaiting{background-color:var(--coral-1)}
+html[data-ion][data-palette] :is(#_,.trow .k .qpill select.qsel){position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;opacity:0;-webkit-appearance:none;appearance:none;font-size:16px;cursor:pointer}
+html[data-ion][data-palette] .trow .k .qpill:focus-within{box-shadow:0 0 0 2px var(--ion)}
 html[data-ion][data-palette] .trow .k b small{display:block;font:400 14px/18px var(--font);color:var(--cmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] :is(#_,.tmore){display:flex;align-items:center;gap:8px;width:100%;height:40px;min-height:40px;margin:0 0 8px;padding:0 12px;border-radius:10px;background:var(--g1b);border:1px solid var(--edge);box-shadow:none;color:var(--muted);font:400 14px/1 var(--font);text-align:left;justify-content:flex-start}
 html[data-ion][data-palette] .tmore>span:first-child{flex:1;min-width:0;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -446,13 +449,23 @@ html[data-ion][data-palette] .spr{display:flex;align-items:center;gap:8px;min-he
 html[data-ion][data-palette] .spr .spn{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .spr .spp{flex:none;font-family:var(--mono);font-size:14px}
 html[data-ion][data-palette] .spr .spm,html[data-ion][data-palette] .spe .spm{flex:none;font:400 14px/18px var(--mono);color:var(--cmuted);white-space:nowrap}
-html[data-ion][data-palette] .spe{display:grid;grid-template-columns:minmax(0,1fr) 64px auto 28px;gap:6px;align-items:center}
+html[data-ion][data-palette] .spe{display:grid;grid-template-columns:minmax(0,1fr) 64px auto 40px;gap:6px;align-items:center}
 html[data-ion][data-palette] .spe input{height:40px;min-height:40px;border:0;border-radius:10px;background:var(--ccard2);box-shadow:none;padding:0 10px;font:400 16px var(--font);color:var(--ctext)}
 html[data-ion][data-palette] .spe input:focus{box-shadow:0 0 0 2px var(--ion)}
-html[data-ion][data-palette] :is(#_,.spe .spx){width:28px;height:28px;min-height:28px;padding:0;border:0;border-radius:50%;background:var(--ccard2);color:var(--ctext);font:400 16px/1 var(--font)}
+html[data-ion][data-palette] :is(#_,.spe .spx){width:40px;height:40px;min-height:40px;padding:0;border:0;border-radius:50%;background:var(--ccard2);color:var(--ctext);font:400 16px/1 var(--font)}
 html[data-ion][data-palette] .spt{display:flex;align-items:center;gap:8px;margin-top:6px;font:400 14px/18px var(--font);color:var(--ctext)}
 html[data-ion][data-palette] .spt:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ion)}
 html[data-ion][data-palette] .spt.off:before{background:var(--coral)}
+/* the template sheet: what comes from the deal and the notes sit on the dark sheet (the calculator's .cres rows are hidden) */
+html[data-ion][data-palette] .tplfrom{margin:0 0 8px;border-radius:12px;background:var(--g2);padding:2px 12px}
+html[data-ion][data-palette] .tplfrom .kv{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font:400 14px/20px var(--font)}
+html[data-ion][data-palette] .tplfrom .kv:last-child{border-bottom:0}
+html[data-ion][data-palette] .tplfrom .kv .k{flex:0 0 38%;color:var(--muted);font-size:14px}
+html[data-ion][data-palette] .tplfrom .kv .v{flex:1;min-width:0;text-align:right;color:var(--text);overflow-wrap:anywhere}
+html[data-ion][data-palette] .tpln{margin:6px 0 10px;color:var(--muted)}
+/* a main button that cannot be used yet keeps readable letters – no fading */
+html[data-ion][data-palette] button.primary:disabled{opacity:1;background:var(--g3);background-image:none;color:var(--text);box-shadow:none}
+html[data-ion][data-palette] :is(.trow,.icard,.nextcard) button.primary:disabled{background:var(--cfield);color:var(--ctext)}
 /* documents */
 html[data-ion][data-palette] .docrow.in .k b:before{content:"";display:inline-block;width:8px;height:8px;margin:0 8px 2px 0;border-radius:50%;background:var(--ion)}
 html[data-ion][data-palette] .docrow.na{opacity:.8}
@@ -473,15 +486,23 @@ html[data-ion][data-palette] .dfoot3{display:grid;grid-template-columns:repeat(3
 html[data-ion][data-palette] :is(#_,.dfoot3>.ib){width:100%;min-width:0;height:40px;min-height:40px;padding:0 6px;justify-content:center}
 html[data-ion][data-palette] .tmeter .tag{flex:none}
 /* market price and the deals list groups */
-html[data-ion][data-palette] .mkt .icard.mk{cursor:default}
-html[data-ion][data-palette] .mkt .icard.mk .tag+.tag{margin-left:-3px}
+/* market price cards (28 Sep): a plain list of cards – every word whole */
+html[data-ion][data-palette] .mkt .mkl{margin:10px 0 6px}
+html[data-ion][data-palette] .mkrow{margin:0 0 6px;padding:8px 10px 9px}
+html[data-ion][data-palette] .mkrow.sugg{box-shadow:var(--card-shadow),inset 0 0 0 1.5px var(--ion)}
+html[data-ion][data-palette] .mkrow .mkn{font:400 16px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .mkrow .mkp{margin-top:4px;font:400 16px/20px var(--mono);color:var(--ctext)}
+html[data-ion][data-palette] .mkrow .mkp small{margin-left:8px;font:400 14px/18px var(--mono);color:var(--cmuted)}
+html[data-ion][data-palette] .mkrow .mks{margin-top:2px;font:400 14px/18px var(--font);color:var(--cmuted)}
+html[data-ion][data-palette] .mkacts2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+html[data-ion][data-palette] :is(#_,.mkacts2>button){height:40px;min-height:40px}
 html[data-ion][data-palette] .mkacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 html[data-ion][data-palette] .mkform{margin-top:8px}
 html[data-ion][data-palette] .mkform .seg2{margin:0 0 2px}
 html[data-ion][data-palette] .dgrp .rplain{margin-top:12px}
 /* the status sheet */
 html[data-ion][data-palette] .stprev{margin:0;max-height:260px;overflow:auto;padding:10px 12px;border-radius:12px;background:var(--ccard);box-shadow:var(--card-shadow);color:var(--ctext);font:400 14px/20px var(--font);white-space:pre-wrap;word-break:break-word}
-html[data-ion][data-palette] .stacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+html[data-ion][data-palette] .stacts{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin-top:8px}
 html[data-ion][data-palette] :is(#_,.stacts>button){height:48px;min-height:48px;border-radius:10px;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .tick.off span{color:var(--muted)}
 html[data-ion][data-palette] .tick small{display:block;font-size:14px;color:var(--muted)}

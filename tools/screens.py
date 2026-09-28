@@ -68,8 +68,16 @@ async def run(p, dev, theme, results, errors):
     for seg in ["saved", "all"]:
         await js(f"window.setDirSeg && setDirSeg('{seg}'); goView('leads'); render()"); await snap("contacts-" + seg)
     await js("goTo('deal:' + ((window._deals||[])[0]||{}).id)"); await snap("deal-page"); await snap("deal-page-full", True)
-    for t in ["numbers", "notes"]:
+    for t in ["numbers", "docs", "notes"]:
         await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':" + t + "')); if (b) b.click(); })()"); await snap("deal-" + t)
+        if t == "numbers": await snap("deal-numbers-full", True)
+    # lean deals (28 Sep 2026): the status sheet, a template filled in, the commission split being edited
+    await js("document.querySelector('button[data-dstatus]').click()"); await snap("deal-status"); await js("document.getElementById('stClose').click()")
+    await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':docs')); if (b) b.click(); })()")
+    await js("document.querySelector('button[data-tpl$=\":ncnda\"]').click()"); await snap("deal-template"); await js("document.getElementById('tplClose').click()")
+    await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':numbers')); if (b) b.click(); })()")
+    await js("document.querySelector('button[data-split]').click(); document.querySelector('[data-splitbox]').scrollIntoView({block:'center'})"); await snap("deal-split")
+    await js("const c = document.querySelector('button[data-spcancel]'); if (c) c.click(); window.scrollTo(0,0)")
     # step 1 (v17): step details as short points, calculators, voice note, checks, guides opened
     await js("(() => { const b = [...document.querySelectorAll('[data-dtab]')].find(x => x.dataset.dtab.endsWith(':steps')); if (b) b.click(); })()")
     await js("(() => { const s = document.querySelector('.step.next [data-step]') || document.querySelector('[data-step]'); if (s) { s.click(); setTimeout(() => s.scrollIntoView({block:'start'}), 50); } })()"); await snap("deal-step")

@@ -688,11 +688,15 @@ function stepHtml(s, isNext, o){
   o = o || {};
   const open = openStep === s.id;
   const late = s.status === "open" && s.due_on && dayDiff(new Date(s.due_on + "T08:00:00+02:00")) < 0;
-  const right = isNext ? `<span class="tag i">Next</span>` : s.status === "done" ? "" : s.status === "na" ? `<span class="m">skipped</span>` : late ? `<span class="tag c">late</span>` : `<span class="m">open</span>`;
-  // an open step shows who and by when once they are set (28 Sep); otherwise what closes it
-  const plan = s.status === "open" && (s.owner || s.due_on) ? [s.owner, s.due_on ? "by " + dayName(new Date(s.due_on + "T08:00:00+02:00")) : ""].filter(Boolean).join(" · ") : "";
-  const sub = s.status !== "open" ? [s.done_by, s.done_at ? fmtDay(s.done_at) : "", s.evidence].filter(Boolean).join(" · ") : plan || (s.closes_with ? "Done when: " + s.closes_with : (s.who || ""));
-  let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${right}</button></div>`;
+  // nothing on the right of the card, so the step's name keeps the room (28 Sep: no cut-off names at 360 px): "open" is the
+  // empty tick, the next step has its blue outline and the Next card above, a late step a coral node and tick
+  // the line under the name is short enough to read whole in the rail (28 Sep): who and which day – an open step once
+  // someone has it, a done step who ticked it. "Done when", who does it and the proof are in the step when you open it.
+  const dm = x => dayName(x).replace(/^\w+ /, "");   // "29 Sep"
+  const due = s.due_on ? dm(new Date(s.due_on + "T08:00:00+02:00")) : "";
+  const plan = s.status === "open" && (s.owner || s.due_on) ? [s.owner, !due ? "" : late ? (s.owner ? "late" : "late since " + due) : due].filter(Boolean).join(" · ") : "";
+  const sub = s.status === "na" ? "not needed" : s.status !== "open" ? [s.done_by, s.done_at ? dm(s.done_at) : ""].filter(Boolean).join(" · ") : plan;
+  let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}${late ? " late" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : late ? "late" : isNext ? "next" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : late ? " late" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span></button></div>`;
   if (open) h += `<div class="stepp step-p">${s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
   return h;
 }
@@ -714,7 +718,7 @@ function checklistHtml(d, pg){
   h += railClose();
   const openN = stages.filter(g => g.steps.some(s => s.status === "open")).length, late = itemsOf(d.id).filter(i => !i._me && i._stale).length;
   h += rfoot(`${stages.length - openN} stage${stages.length - openN === 1 ? "" : "s"} done · ${openN} open · ${late ? late + " late on this deal" : "nothing late on this deal"}`);
-  if (addStepFor !== d.id) h += `<div class="acts0 two"><button data-addstep="${d.id}">${ic("plus")}Add a step</button>${window.leanSteps && fullN > pg.total || all ? `<button data-tog="allsteps:${d.id}" data-dflt="0">${ic("list")}${all ? "Only the steps we use" : `Show all ${fullN} steps`}</button>` : ""}</div>`;
+  if (addStepFor !== d.id) h += `<div class="acts0 two"><button data-addstep="${d.id}">${ic("plus")}Add a step</button>${window.leanSteps && fullN > pg.total || all ? `<button data-tog="allsteps:${d.id}" data-dflt="0">${ic("list")}${all ? "Fewer steps" : `All ${fullN} steps`}</button>` : ""}</div>`;
   return h;
 }
 // Terms as chips (the mock's "tap a chip · not agreed is the app's default"): a choice term is a row of chips – tap one
@@ -815,7 +819,7 @@ function dealTicketHtml(d, pg){
   const src = mn && p._src ? (p._src.s === "ok" ? "sourced" : p._src.s === "yes" ? "sourced, to confirm" : "") : "";
   const line = (tr ? [p.cargo, p.route, ["trucks", "truck_type"].filter(has).map(k => p[k]).join(" × ")] : [p.commodity, has("grade") ? p.grade : "grade to confirm", has("basis") ? p.basis + (p.port ? " " + p.port : "") : "FOT or DAP to agree", src]).concat(bigNote(big) ? [bigNote(big)] : []).filter(Boolean).join(" · ");
   const u = (/dmtu/i.test(p.unit || "") ? "/dmtu" : /wmt/i.test(p.unit || "") ? "/WMT" : /dmt/i.test(p.unit || "") ? "/DMT" : "/t");
-  const stub = tr ? [[p.distance || "—", "distance"], [p.haulier_rate || "—", "transporter rate"], [has("vat") ? p.vat : "—", "VAT"]]
+  const stub = tr ? [[p.distance || "—", "distance"], [p.haulier_rate || "—", "truck rate"], [has("vat") ? p.vat : "—", "VAT"]]
     : [[has("asking_price") ? p.asking_price : "—", "asking" + u], [has("price") ? p.price : "—", "agreed" + u], [has("commission") ? p.commission : "—", "our cut" + u]];
   const segs = pg.stages.length ? `<div class="tmeter"><span>steps ${pg.done}/${pg.total}</span><span class="tm">${pg.stages.map(g => `<i class="${g.steps.every(s => s.status !== "open") ? "d" : pg.cur === g ? "c" : ""}"></i>`).join("")}</span><button type="button" class="tag i" data-dstatus="${d.id}">Send status</button></div>` : `<div class="tmeter"><span class="tm"></span><button type="button" class="tag i" data-dstatus="${d.id}">Send status</button></div>`;
   return `<div class="ticket"><div class="tk-top"><div class="tk-r"><span class="k">${kLabel}${big ? "" : " · not set"}</span>${pill}</div>${big ? odoHtml(big) || `<div class="tk-big">${esc(bigMain(big))}</div>` : `<div class="tk-big quiet">Add it in Numbers › Terms</div>`}${line ? `<div class="tk-l">${esc(line)}</div>` : ""}</div>

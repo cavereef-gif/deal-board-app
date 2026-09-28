@@ -142,7 +142,7 @@ function termSelect(d, t, list, v, p) {
   return `<select class="tsel" data-tsel="${d.id}:${t.k}" aria-label="${esc(t.l)}"><option value=""${v ? "" : " selected"}>${isUnset(v) && v ? esc(v) : "Choose…"}</option>${list.map(opt).join("")}${other ? opt(v) : ""}<option value="__type">Other – type it</option></select>`;
 }
 function termInput(d, t, v, priv) {
-  return `<input class="tin${priv ? " private" : ""}" data-tin="${d.id}:${t.k}" value="${esc(isUnset(v) ? "" : v)}" placeholder="${esc(t.ph || "")}${priv ? " · only you and Annemarie see this" : " · type it"}" autocomplete="off"${t.unit ? ' inputmode="text"' : ""}>`;
+  return `<input class="tin${priv ? " private" : ""}" data-tin="${d.id}:${t.k}" value="${esc(isUnset(v) ? "" : v)}" placeholder="${priv ? "Type it · only you two see this" : esc(t.ph ? t.ph + " · type it" : "type it")}" autocomplete="off"${t.unit ? ' inputmode="text"' : ""}>`;
 }
 function unitSelect(d, v) {
   const cur = UNITS.find(u => new RegExp("^" + u.replace(/[$]/g, "\\$&"), "i").test(String(v || "").replace(/\s*\(.*\)$/, ""))) || "";
@@ -155,11 +155,13 @@ function eitherHtml(d, t, v) {
   const moreOn = v && !isUnset(v) && !t.either.some(on);
   return `<div class="seg2 teither" role="group" aria-label="${esc(t.l)}">${t.either.map(x => `<button type="button" data-term="${d.id}:${t.k}" data-v="${x}" class="${on(x) ? "on" : ""}" aria-pressed="${on(x)}">${x}</button>`).join("")}<select class="segsel${moreOn ? " on" : ""}" data-tsel="${d.id}:${t.k}" aria-label="Other delivery term"><option value="">${moreOn ? "" : "Other"}</option>${t.more.map(o => `<option${o === v ? " selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
 }
-// where an open question stands: a small drop-down in the row's corner (Not yet · Requested · Still awaiting)
+// where an open question stands: a small pill in the row's corner; tapping it opens the phone's own list, which says what
+// each choice does (Not yet · Requested · Still awaiting). The pill stays short so the term's name is never cut.
 function qSelect(d, k, q, label) {
   const cur = q ? q.s : "";
-  const opt = (v, w) => `<option value="${v}"${cur === v ? " selected" : ""}>${w}${cur === v && q && q.on ? " " + shortDate(q.on) : ""}</option>`;
-  return `<select class="qsel${cur ? " on q-" + cur : ""}" data-qsel="${d.id}:${k}" aria-label="Where ${esc(label)} stands">${opt("", "not asked")}${opt("notyet", "not yet")}${opt("requested", "requested")}${opt("awaiting", "still awaiting")}</select>`;
+  const short = cur === "notyet" ? "not yet" : cur === "requested" ? "asked" + (q && q.on ? " " + shortDate(q.on) : "") : cur === "awaiting" ? "awaiting" : "not asked";
+  const opt = (v, w) => `<option value="${v}"${cur === v ? " selected" : ""}>${w}</option>`;
+  return `<span class="qpill${cur ? " on q-" + cur : ""}">${esc(short)}<select class="qsel" data-qsel="${d.id}:${k}" aria-label="Where ${esc(label)} stands: ${esc(short)}">${opt("", "Not asked yet")}${opt("notyet", "Not yet – remind me today")}${opt("requested", "Requested – follow up in 2 work days")}${opt("awaiting", "Still awaiting – chase tomorrow")}</select></span>`;
 }
 function termRowHtml(d, t) {
   const p = leanP(d), v = p[t.k] || "", open = isUnset(v), priv = /^(target|limit)$/.test(t.k) || t.priv;
@@ -301,33 +303,33 @@ window.docRow = docRow; window.pofIn = pofIn;
 // in the database; "Show all steps" brings it back. doc: the Documents row that closes the step; needs: what must come first.
 const LEAN_STEPS = {
   mineral: [
-    { st: "1. Start", t: "Buyer's requirement", codes: ["1.1"], old: /buyer identified/i },
+    { st: "1. Start", t: "Buyer's needs", codes: ["1.1"], old: /buyer identified/i },
     { st: "1. Start", t: "NCNDA signed", codes: ["1.4"], old: /\bNCNDA\b/i, doc: ["ncnda"] },
     { st: "2. Our cut", t: "IMFPA signed", codes: ["2.1"], old: /IMFPA|commission agreement/i, doc: ["imfpa"] },
     { st: "3. Offers", t: "LOI or ICPO in", codes: ["4.1"], old: /\bLOI\b|\bICPO\b/i, doc: ["loi", "icpo"] },
     { st: "3. Offers", t: "FCO received", codes: ["4.2"], old: /\bFCO\b/i, doc: ["fco"] },
-    { st: "4. Checks", t: "Proof of ownership", codes: ["5.3"], old: /proof of ownership/i, doc: ["poo"] },
+    { st: "4. Checks", t: "Ownership proof", codes: ["5.3"], old: /proof of ownership/i, doc: ["poo"] },
     { st: "4. Checks", t: "Proof of funds", codes: ["3.7"], old: /proof of funds/i, doc: ["pof"] },
     { st: "4. Checks", t: "KYC both sides", codes: ["3.1"], old: /\bKYC\b/i, doc: ["kyc"] },
     { st: "4. Checks", t: "Assay passed", codes: ["5.2"], old: /independent assay/i, doc: ["assay"] },
     { st: "5. Contract", t: "SPA signed", codes: ["6.7"], old: /SPA signed/i, doc: ["spa"] },
-    { st: "5. Contract", t: "LC or escrow in place", codes: ["7.1", "7.2"], old: /payment instrument agreed/i, needs: "pof" },
+    { st: "5. Contract", t: "Payment secured", codes: ["7.1", "7.2"], old: /payment instrument agreed/i, needs: "pof" },
     { st: "6. Delivery", t: "Loads delivered", codes: ["8.1", "8.2"], old: /loaded and weighed/i },
     { st: "6. Delivery", t: "Seller paid", codes: ["11.5"], old: /buyer paid the seller/i },
     { st: "6. Delivery", t: "Commission paid", codes: ["12.2"], old: /our commission received/i },
   ],
   transport: [
-    { st: "1. Qualify", t: "Client and receiver", codes: ["t1.1"], old: /client and receiver/i },
-    { st: "1. Qualify", t: "Cargo, route, volumes", codes: ["t1.2"], old: /cargo, route/i },
-    { st: "1. Qualify", t: "Transporter lined up", codes: ["t1.3"], old: /transporter lined up/i },
+    { st: "1. Qualify", t: "Client confirmed", codes: ["t1.1"], old: /client and receiver/i },
+    { st: "1. Qualify", t: "Cargo and route", codes: ["t1.2"], old: /cargo, route/i },
+    { st: "1. Qualify", t: "Trucks lined up", codes: ["t1.3"], old: /transporter lined up/i },
     { st: "2. Protect", t: "NCNDA signed", codes: ["t2.1"], old: /NCNDA|non-circumvention/i },
-    { st: "2. Protect", t: "Split per ton agreed", codes: ["t2.2"], old: /split per ton/i },
-    { st: "3. Terms", t: "Client rate and VAT", codes: ["t3.1"], old: /client rate agreed/i, doc: ["quote"] },
-    { st: "3. Terms", t: "Payment terms agreed", codes: ["t3.2"], old: /payment terms agreed/i },
+    { st: "2. Protect", t: "Split agreed", codes: ["t2.2"], old: /split per ton/i },
+    { st: "3. Terms", t: "Client rate set", codes: ["t3.1"], old: /client rate agreed/i, doc: ["quote"] },
+    { st: "3. Terms", t: "Payment terms", codes: ["t3.2"], old: /payment terms agreed/i },
     { st: "3. Terms", t: "Transporter rate", codes: ["t3.3"], old: /transporter rate/i },
     { st: "4. Contract", t: "Insurance in", codes: ["t4.2"], old: /GIT insurance/i, doc: ["insurance"] },
     { st: "4. Contract", t: "Contract signed", codes: ["t5.1"], old: /agreement signed with the client/i, doc: ["contract"] },
-    { st: "5. Loads", t: "Trial load delivered", codes: ["t6.1"], old: /trial load delivered/i, doc: ["pod", "tickets"] },
+    { st: "5. Loads", t: "Trial load done", codes: ["t6.1"], old: /trial load delivered/i, doc: ["pod", "tickets"] },
     { st: "5. Loads", t: "Margin paid", codes: ["t8.2"], old: /margin received/i },
   ],
 };
@@ -432,7 +434,7 @@ function splitHtml(d) {
     h += `<div class="spl edit">${ed.map((r, i) => `<div class="spe"><input data-spn="${i}" value="${esc(r.n)}" placeholder="Name" autocomplete="off" aria-label="Name ${i + 1}"><input data-spp="${i}" value="${esc(r.p)}" placeholder="%" inputmode="decimal" aria-label="Share ${i + 1} in %"><span class="spm">${esc(money(+r.p || 0))}</span>${ed.length > 1 ? `<button type="button" class="spx" data-sprm="${i}" aria-label="Remove">×</button>` : ""}</div>`).join("")}</div>
       <div class="spt${ok ? "" : " off"}">${ok ? "Adds up to 100%" : `Adds up to ${fN(tot, 2)}% – ${tot < 100 ? fN(100 - tot, 2) + "% still to place" : fN(tot - 100, 2) + "% too much"}`}</div>
       <label class="fld"><span>Tons a load (for the per-load figure)</span><input data-sptpl="1" value="${esc(ed.tpl || 34)}" inputmode="decimal"></label>
-      <div class="acts0"><button type="button" data-spadd="${d.id}">${ic("plus")}Add a name</button><button type="button" class="primary" data-spsave="${d.id}"${ok ? "" : " disabled"}>${ic("check")}Save split</button><button type="button" data-spcancel="${d.id}">Cancel</button></div>`;
+      <div class="acts0"><button type="button" data-spadd="${d.id}">${ic("plus")}Add a name</button><button type="button" class="primary" data-spsave="${d.id}">${ic("check")}Save split</button><button type="button" data-spcancel="${d.id}">Cancel</button></div>`;
   }
   return h + `</div>`;
 }
@@ -443,7 +445,6 @@ function splitRefresh(dealId) {   // keep typing smooth: repaint the money, tota
   box.querySelectorAll(".spe").forEach((row, i) => { const m = row.querySelector(".spm"); if (m) m.textContent = base && ed[i] ? `${randR2(base * (+ed[i].p || 0) / 100)}/t · ${randR(base * (+ed[i].p || 0) / 100 * tpl)}/load` : ""; });
   const t = box.querySelector(".spt"); if (t) { t.textContent = ok ? "Adds up to 100%" : `Adds up to ${fN(tot, 2)}% – ${tot < 100 ? fN(100 - tot, 2) + "% still to place" : fN(tot - 100, 2) + "% too much"}`; t.classList.toggle("off", !ok); }
   const k = box.querySelector(".k span"); if (k) k.textContent = ok ? "100%" : `${fN(tot, 2)}%`;
-  const b = box.querySelector("[data-spsave]"); if (b) b.disabled = !ok;
 }
 $("list").addEventListener("click", async e => {
   const o = e.target.closest("button[data-split]");
@@ -483,7 +484,7 @@ document.addEventListener("input", e => {
 // A price you type counts at once. Prices in China (CIF, port spot) are shown as they were reported – with the rand
 // equivalent on the day where the report is in US dollars – so nobody mistakes them for a South African FOT price.
 const MKT_BASIS = ["CIF China", "China port spot", "FOT South Africa", "FOB Richards Bay", "FOB Maputo"];
-const MKT_GRADE = { Chrome: ["40–42% concentrate", "42–44% concentrate", "38–40% ROM", "40–42% lumpy", "44–46% concentrate"], Manganese: ["36–37% semi-carbonate", "37% semi-carbonate lumpy", "44% high grade", "32–34% low grade"] };
+const MKT_GRADE = { Chrome: ["40–42% concentrate", "42–44% concentrate", "38–40% ROM", "40–42% lumpy", "44–46% concentrate"], Manganese: ["36–37% semi-carbonate", "37% semi-carbonate lumpy", "medium-iron", "high-iron", "44% high grade", "32–34% low grade"] };
 let mktForm = null;   // the "type a price" form while it is open
 const curSym = c => c === "ZAR" ? "R" : c === "CNY" ? "¥" : "US$";
 function mktPrice(r) { const lo = +r.price_low, hi = +r.price_high, s = curSym(r.currency); const f = x => (x >= 100 ? Math.round(x).toLocaleString("en-ZA") : String(Math.round(x * 100) / 100)).replace(/[  ,]/g, " "); return `${s}${lo && hi && lo !== hi ? f(lo) + "–" + f(hi) : f(lo || hi)}/${r.unit || "t"}`; }
@@ -494,16 +495,17 @@ function mktLatest() {
   for (const r of rows) { const k = r.commodity + "|" + dash(r.grade) + "|" + r.basis; if (!out[k] || out[k].effective < r.effective) out[k] = r; }
   return Object.values(out).sort((a, b) => a.commodity.localeCompare(b.commodity) || (a.effective < b.effective ? 1 : -1));
 }
+// one price per card, every word whole (28 Sep): the ore and grade, the price, then where and when it was reported
 function mktCard(r, sugg) {
-  return `<div class="irow${sugg ? " prop" : ""}"><i class="in" aria-hidden="true"></i><div class="icard mk"><span class="t">${esc(r.commodity)} ${esc(r.grade)}<small>${esc(r.basis)} · ${esc(String(r.source || "").replace(/ \(.*\)$/, ""))} · ${esc(shortDate(r.effective))}${mktRand(r) ? " · " + esc(mktRand(r)) : ""}</small></span>${sugg ? `<button type="button" class="tag i" data-mkt="accepted" data-id="${r.id}">Accept</button><button type="button" class="tag l" data-mkt="dropped" data-id="${r.id}">Drop</button>` : `<span class="v">${esc(mktPrice(r))}</span>`}</div></div>`;
+  const src = String(r.source || "").replace(/ \(.*\)$/, "");
+  return `<div class="mkrow${sugg ? " sugg" : ""}"><div class="mkn">${esc(r.commodity)} ${esc(r.grade)}</div><div class="mkp">${esc(mktPrice(r))}${mktRand(r) ? `<small>${esc(mktRand(r))}</small>` : ""}</div><div class="mks">${esc(r.basis)} · ${esc(src)} · ${esc(shortDate(r.effective))}</div>${sugg ? `<div class="mkacts2"><button type="button" class="primary" data-mkt="accepted" data-id="${r.id}">${ic("check")}Accept</button><button type="button" data-mkt="dropped" data-id="${r.id}">Drop</button></div>` : ""}</div>`;
 }
 window.marketHtml = function () {
   const sugg = (window._market || []).filter(r => r.status === "suggested").slice(0, 4), latest = mktLatest().slice(0, 6);
   const last = (window._market || []).reduce((a, r) => (r.created_at > a ? r.created_at : a), "");
-  let h = sheetOpen("market · chrome and manganese", last ? "updated " + esc(dayWords(last)) : "weekly from public reports", "mkt") + railOpen(0);
-  if (sugg.length) h += `<section class="iblk"><div class="ilab">suggested · tap accept</div><div class="ibody">${sugg.map(r => mktCard(Object.assign({}, r, { grade: r.grade + " · " + mktPrice(r) }), true)).join("")}</div></section>`;
-  h += `<section class="iblk"><div class="ilab">latest price</div><div class="ibody">${latest.length ? latest.map(r => mktCard(r, false)).join("") : `<div class="empty">no price yet – the weekly check fills it, or type one</div>`}</div></section>`;
-  h += railClose();
+  let h = sheetOpen("market price", last ? "updated " + esc(dayWords(last)) : "weekly", "mkt");
+  if (sugg.length) h += `<div class="lbl mkl">suggested · check, then accept</div>${sugg.map(r => mktCard(r, true)).join("")}`;
+  h += `<div class="lbl mkl">latest accepted</div>${latest.length ? latest.map(r => mktCard(r, false)).join("") : `<div class="empty">no price yet – the Monday check fills it, or type one</div>`}`;
   if (mktForm) h += mktFormHtml();
   h += `<div class="acts0 mkacts"><button type="button" data-mktadd="1">${ic("edit")}Type a price</button><button type="button" data-mktcheck="1">${ic("refresh")}Check now</button></div>`;
   h += rfoot("prices in China are as reported (CIF or port) – not a South African FOT price") + sheetClose();
@@ -520,7 +522,13 @@ function mktFormHtml() {
 }
 // the reference line under the agreed price on a mineral deal
 window.marketLine = function (d) {
-  const c = (leanP(d).commodity || d.area || ""), r = mktLatest().find(x => x.commodity === c); if (!r) return "";
+  // the price closest to this deal's grade (same words, same % figures), else the newest for the ore
+  const p = leanP(d), c = (p.commodity || d.area || ""), g = String(p.grade || "").toLowerCase();
+  const nums = s => (String(s).match(/\d+/g) || []).filter(n => +n >= 10);
+  const score = x => { const mg = String(x.grade || "").toLowerCase(); let s = 0;
+    for (const w of ["semi-carbonate", "high grade", "high-iron", "medium-iron", "lumpy", "concentrate", "rom"]) if (g.includes(w) && mg.includes(w)) s += 3;
+    if (nums(g).some(n => nums(mg).includes(n))) s += 2; return s; };
+  const r = mktLatest().filter(x => x.commodity === c).sort((a, b) => score(b) - score(a) || (a.effective < b.effective ? 1 : -1))[0]; if (!r) return "";
   return `<div class="tnote">Market ${esc(shortDate(r.effective))}: ${esc(r.grade)}, ${esc(r.basis)} ${esc(mktPrice(r))}${mktRand(r) ? " " + esc(mktRand(r)) : ""} (${esc(String(r.source || "").replace(/ \(.*\)$/, ""))})</div>`;
 };
 $("list").addEventListener("click", async e => {

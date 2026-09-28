@@ -1,5 +1,5 @@
 {
- "label": "mid",
+ "label": "after",
  "jobs": {
   "J1": {
    "name": "Start a mineral deal",
@@ -41,7 +41,7 @@
      "n": 7,
      "prio": 1,
      "due": "2026-09-29",
-     "chased": "2026-09-27T23:59:06.422Z"
+     "chased": "2026-09-28T01:14:10.244Z"
     }
    }
   },
@@ -85,8 +85,8 @@
    "taps": 3,
    "typed": 0,
    "info": {
-    "pdf_bytes": 3537,
-    "copy_chars": 435,
+    "pdf_bytes": 3493,
+    "copy_chars": 393,
     "copy_start": "*Deal status – Chrome deal – 20,000–50,000 t per month*\nRef CHR-260928-DM1 · 28 "
    }
   },
@@ -139,7 +139,7 @@
    "taps": 1,
    "typed": 0,
    "info": {
-    "card": "market · chrome and manganese\nupdated today\nsuggested · tap accept\nChrome 42–44% concentrate · US$320/t\nCIF China · Demo report · 27 Sep · ≈"
+    "card": "market price\nupdated today\nsuggested · check, then accept\nChrome 42–44% concentrate\nUS$320/t≈ R 5 600/t\nCIF China · Demo report · 27 Sep\nAcc"
    }
   },
   "J12": {
