@@ -184,6 +184,7 @@ function tplSheetHtml() {
     ${missCo.length && (t.head || TPLS.key !== "kyc") ? `<div class="quiet tpln">Our company details are missing (${missCo.map(k => ({ legal_name: "name", reg_no: "registration number", address: "address" }[k])).join(", ")}) – Settings › Company details.</div>` : ""}
     ${TPLS.key === "imfpa" && !((leanP(d)._split) || []).length ? `<div class="quiet tpln">No commission split yet – the IMFPA lists Verve alone. Split it on Numbers › Private first if others share.</div>` : ""}
     <div class="quiet tpln">A generic draft for the parties to check${/ncnda|imfpa|spa/.test(TPLS.key) ? " – have an SA commercial attorney check this one once before first use" : ""}.</div>
+    ${window.sigToggleHtml ? sigToggleHtml("tpl") : ""}
     <button type="button" class="primary wide" id="tplMake">${ic("file")}Make the PDF and save it to the deal</button>`;
 }
 document.addEventListener("click", e => {
@@ -289,6 +290,8 @@ function tplPdf(doc) {
       P.need(62);
       P.text(L, P.y, s, 10.5, true); P.y -= 26;
       const ln = (x, w, lab) => { P.line(x, P.y, x + w, P.y); P.text(x, P.y - 11, lab, 8.5, false, true); };
+      const mine = doc.sig && (s === doc.us || s === doc.sig.person);
+      if (mine) { P.y -= 16; P.image(L + 168, P.y + 1, 126, 42, doc.sig.png); P.text(L, P.y + 3, [doc.sig.full_name || doc.sig.person, doc.sig.title].filter(Boolean).join(", "), 9.5); P.text(L + 332, P.y + 3, saDayPlus(0).split("-").reverse().join("/"), 9.5); }
       ln(L, 150, "Name of the person signing"); ln(L + 164, 150, "Signature"); ln(L + 328, 70, "Date"); ln(L + 412, 71, "Place"); P.y -= 34;
     }
     const co = window._company || {};
@@ -297,6 +300,7 @@ function tplPdf(doc) {
 }
 async function tplMake() {
   const d = dealById(TPLS.dealId), key = TPLS.key, t = TPL[key], doc = tplDoc(d, key, TPLS.f); if (!doc) return;
+  doc.us = (window._company || {}).legal_name || "Verve South Africa (Pty) Ltd"; doc.sig = window.sigToUse ? sigToUse("tpl") : null;
   const blob = tplPdf(doc), name = `${t.l} ${dealRef(d)} ${saDayPlus(0)}.pdf`;
   const btn = $("tplMake"); if (btn) btn.disabled = true;
   let att = null;
@@ -335,7 +339,7 @@ function statusModel(d, o) {
   for (const [k, q] of Object.entries(p._q || {})) { const t = leanDef(d.kind, k); if (!isUnset(p[k])) continue; waiting.push(`${t.l} – ${Q_WORDS[q.s] || q.s}${q.s !== "notyet" ? " (asked " + shortDate(q.on) + ", " + (names && q.who ? q.who : role(k)) + ")" : ""}`); }
   for (const x of DOCS[d.kind] || []) { const r = docRow(d.id, x.k); if (r && r.status === "requested") waiting.push(`${x.l} – requested ${shortDate(saDayKey(r.updated_at || Date.now()))}`); }
   const terms = mn ? [["Volume", T.volume], ["Grade", T.grade], ["Form", T.form], ["Delivery", T.basis], ["Asking price", T.asking], ["Agreed price", T.price], ["Payment", T.payment ? T.payment + (isLC(T.payment) ? " (only after proof of funds)" : "") : ""], ["VAT", T.vat]]
-    : [["Cargo", p.cargo], ["Route", p.route], ["Trucks", [p.trucks, p.truck_type].filter(x => !isUnset(x)).join(" × ")], ["Loads", p.loads], ["Rate", p.client_rate], ["Payment", p.payment], ["VAT", p.vat]];
+    : [["Cargo", p.cargo], ["Route", p.route], ["Trucks", [p.trucks, p.truck_type].filter(x => !isUnset(x)).join(" × ")], ["Loads", p.loads], ["Rate", [p.client_rate, !isUnset(p.client_rate) && window.rateBasis && rateBasis(p) !== "ton" ? "(" + basisWord(rateBasis(p)).toLowerCase() + ")" : ""].filter(Boolean).join(" ")], ["Payment", p.payment], ["VAT", p.vat]];
   if (mn && d.kind === "mineral") { const s = p._src; if (s) terms.unshift(["Sourced", s.s === "ok" ? "yes – confirmed" : s.s === "yes" ? "yes – being confirmed" : "not yet"]); }
   if (o.comm) terms.push([mn ? "Our commission" : "Our margin", isUnset(p.commission) ? "" : p.commission]);
   if (o.cuts) terms.push(["Other parties' cuts", isUnset(p.other_cuts || p.cuts) ? "" : (p.other_cuts || p.cuts)]);

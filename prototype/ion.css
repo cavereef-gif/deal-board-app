@@ -692,3 +692,46 @@ html[data-ion][data-palette] .d-ok{background:var(--ion)} html[data-ion][data-pa
 html[data-ion][data-palette] .dcard .dh{flex:1;min-width:0}
 html[data-ion][data-palette] .dn{font-weight:400;font-size:16px}
 html[data-ion][data-palette] .foot{margin:8px 0 0;font:400 14px/20px var(--mono);color:var(--muted);text-align:right}
+/* 28 Sep 2026 (office.js): Documents page, Sign-ups page, My signature, the "Sign it" chip */
+html[data-ion][data-palette] .fchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+html[data-ion][data-palette] .fchips button{height:40px;min-height:40px;padding:0 12px;border:0;border-radius:999px;background:var(--g2);color:var(--text);font:400 14px/1 var(--font);box-shadow:none;white-space:nowrap}
+html[data-ion][data-palette] .fchips button small{margin-left:6px;font:400 14px/1 var(--mono);color:var(--muted)}
+html[data-ion][data-palette] .fchips button.on{background:var(--ion);color:var(--ctext)}
+html[data-ion][data-palette] .fchips button.on small{color:var(--ctext)}
+html[data-ion][data-palette] .fwait{display:flex;flex-direction:column;gap:6px;margin:0 0 6px}
+html[data-ion][data-palette] .fwait .fw{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;width:100%;min-height:52px;padding:8px 12px 8px 16px;border:0;border-radius:12px;background:var(--ccard);box-shadow:var(--card-shadow);text-align:left;position:relative}
+html[data-ion][data-palette] .fwait .fw:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--coral)}
+html[data-ion][data-palette] .fwait .fw b{font:400 16px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .fwait .fw span{font:400 14px/18px var(--font);color:var(--cmuted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-ion][data-palette] .fdeal{border-top:0;margin-top:10px}
+html[data-ion][data-palette] .fdeal .lsh{border-top:1px solid var(--line);padding:12px 0 8px}
+html[data-ion][data-palette] .fdeal .lsh b{font:500 16px/20px var(--font);color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-ion][data-palette] .fdeal .lsh .linkb{flex:none;min-height:40px;padding:0 4px;color:var(--text);text-decoration:underline;font:400 14px/1 var(--font);background:transparent;box-shadow:none}
+html[data-ion][data-palette] .frow{margin:0 0 6px;padding:8px 12px 9px 16px;border-radius:12px;background:var(--ccard);box-shadow:var(--card-shadow);position:relative}
+html[data-ion][data-palette] .frow:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--ccard2)}
+html[data-ion][data-palette] .frow.in:before{background:var(--ion)}
+html[data-ion][data-palette] .frow .fk{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+html[data-ion][data-palette] .frow .fk b{font:400 16px/20px var(--font);color:var(--ctext);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-ion][data-palette] .frow .fk span{flex:none;font:400 14px/20px var(--mono);color:var(--cmuted)}
+html[data-ion][data-palette] .frow .ff{display:flex;align-items:center;gap:6px;margin-top:4px;font:400 14px/20px var(--font);color:var(--ctext);min-width:0}
+html[data-ion][data-palette] .frow .ff svg.i{flex:none;width:16px;height:16px;color:var(--cmuted)}
+html[data-ion][data-palette] .frow .ff span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-ion][data-palette] .frow .ff a{color:var(--ctext);text-decoration:underline}
+html[data-ion][data-palette] .frow .ff.quiet{color:var(--cmuted)}
+html[data-ion][data-palette] .surow .sub{margin-top:2px;font:400 14px/20px var(--font);color:var(--cmuted)}
+html[data-ion][data-palette] .surow.na{opacity:.8}
+html[data-ion][data-palette] .surow .acts0{margin-top:8px}
+html[data-ion][data-palette] a.abtn{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:12px;background:var(--ccard2);color:var(--ctext);font:400 14px/1 var(--font);text-decoration:none}
+html[data-ion][data-palette] a.abtn svg.i{width:18px;height:18px}
+html[data-ion][data-palette] .suform{padding:14px;margin:8px 0 10px}
+html[data-ion][data-palette] .suform .chk{align-items:center;border-bottom:0;font-size:16px}
+html[data-ion][data-palette] .sigpad{position:relative;margin:10px 0 0;border-radius:12px;overflow:hidden;background:#FFFFFF;box-shadow:inset 0 0 0 1px var(--cline2)}
+html[data-ion][data-palette] .sigpad canvas{display:block;width:100%;height:150px;touch-action:none;background:#FFFFFF}
+html[data-ion][data-palette] .sigpad .sigl{position:absolute;left:14px;right:14px;bottom:30px;border-top:1px solid #9AA4AE;padding-top:4px;font:400 14px/1 var(--font);color:#55606B;pointer-events:none}
+html[data-ion][data-palette] .sigview{margin:10px 0 0;border-radius:12px;background:#FFFFFF;padding:8px;box-shadow:inset 0 0 0 1px var(--cline2)}
+html[data-ion][data-palette] .sigview img{display:block;width:100%;max-width:360px;height:auto}
+html[data-ion][data-palette] .sigt{margin:12px 0 4px}
+html[data-ion][data-palette] .sigt button{height:40px;min-height:40px;padding:0 14px;font-size:16px}
+html[data-ion][data-palette] .signo{margin:10px 0 4px}
+html[data-ion][data-palette] .tplfrom.cpl .kv .k{flex:1 1 auto;color:var(--text)}
+html[data-ion][data-palette] .tplfrom.cpl .kv .v{flex:none}

@@ -439,7 +439,7 @@ document.addEventListener("click", async e => {
     if (TR.deal === td.dataset.trdeal) { TR.deal = ""; render(); return; }   // tap again = not linked to a deal
     const d = dealById(td.dataset.trdeal); const route = ((d && d.params && d.params.route) || "").split(/→|->| to /);
     if (route.length >= 2) { TR.from = route[0].replace(/\(.*?\)/g, "").trim(); TR.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
-    const p = (d && d.params) || {}; const cr = String(p.client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TR.client = cr[0];
+    const p = (d && d.params) || {}; const cr = window.perTonRate ? perTonRate(p, num(TR.tpl) || 34) : ""; if (cr) TR.client = cr;
     TR.deal = td.dataset.trdeal; tripClearRoute(); render(); return;
   }
   if (e.target.closest("button[data-trcopy]")) { try { await navigator.clipboard.writeText(tripText()); toast("Copied."); } catch (er) { toast("Copy not allowed here."); } return; }

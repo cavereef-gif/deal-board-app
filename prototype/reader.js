@@ -264,7 +264,7 @@ async function rvSave() {
     const route = v("from") || v("to") ? `${v("from") || "?"} → ${v("to") || "?"}` : "";
     const rate = [v("rate"), v("unit")].filter(Boolean).join(" "), vat = /incl/i.test(v("vat")) ? "Included" : /excl/i.test(v("vat")) ? "Excluded" : "";
     const extras = [v("extras"), v("start") ? "Starts: " + v("start") : ""].filter(Boolean).join("; ");
-    const P = ore ? { commodity: v("commodity"), volume: v("volume"), asking_price: rate, port: v("from"), vat } : { cargo: v("commodity"), route, trucks: v("trucks"), client_rate: rate, loads: v("volume"), payment: v("payment"), extras, vat };
+    const P = ore ? { commodity: v("commodity"), volume: v("volume"), asking_price: rate, port: v("from"), vat } : { cargo: v("commodity"), route, trucks: v("trucks"), client_rate: rate, rate_basis: /whole|job|total|lump/i.test(v("unit")) ? "Flat – whole job" : /load|trip|flat/i.test(v("unit")) ? "Flat per load" : /ton|\/t\b/i.test(v("unit")) ? "Per ton" : "", loads: v("volume"), payment: v("payment"), extras, vat };
     Object.keys(P).forEach(k => { if (!P[k]) delete P[k]; });
     const contact = v("contact"), who = contact.replace(/\+?\d[\d\s()-]{6,}\d/g, "").replace(/[\s,;:–-]+$/, "").trim();
     const facts = [`From ${src}, ${dayName(Date.now())}${l.words ? ": “" + l.words + "”" : ""}`, ore && v("payment") ? "Payment: " + v("payment") : "", ore && v("trucks") ? "Trucks: " + v("trucks") : "", ore && extras ? extras : "", contact ? "Contact: " + contact : "", (l.flags || []).length ? "Watch: " + l.flags.join("; ") : ""].filter(Boolean).join("\n");

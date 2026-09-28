@@ -1359,3 +1359,36 @@ select.tsel{width:100%;min-height:var(--ctl);border-radius:var(--r-ctl)}
 .whyl{display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px;padding:4px 0;font-size:14px;line-height:1.4}
 .whyl b{color:var(--muted)}
 .docrow .whyb{min-height:32px;margin-top:8px;font-size:14px}
+/* 28 Sep 2026 (office.js): Documents, Sign-ups, My signature – base styles for Graphite and Velvet */
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.fchips button{min-height:40px;padding:0 12px;border-radius:999px;font-size:14px;white-space:nowrap}
+.fchips button small{margin-left:6px;color:var(--muted)}
+.fchips button.on{background:var(--accent,var(--card2));outline:2px solid var(--text)}
+.fwait{display:flex;flex-direction:column;gap:6px;margin:0 0 6px}
+.fwait .fw{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:52px;padding:8px 12px 8px 16px;text-align:left;position:relative;background:var(--card)}
+.fwait .fw:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--bad)}
+.fwait .fw b{font-weight:400;font-size:16px}
+.fwait .fw span{font-size:14px;color:var(--muted)}
+.fdeal .lsh b{font-weight:500}
+.fdeal .lsh .linkb{min-height:40px;text-decoration:underline}
+.frow{margin:0 0 6px;padding:8px 12px 9px 16px;border-radius:12px;background:var(--card);position:relative}
+.frow:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--card2)}
+.frow.in:before{background:var(--ok,var(--text))}
+.frow .fk{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.frow .fk b{font-weight:400;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .fk span{flex:none;font-size:14px;color:var(--muted)}
+.frow .ff{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:14px;min-width:0}
+.frow .ff span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .ff a{color:inherit;text-decoration:underline}
+.surow .sub{margin-top:2px;font-size:14px}
+a.abtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:12px;background:var(--card2);color:var(--text);font-size:14px;text-decoration:none}
+.suform{padding:14px;margin:8px 0 10px}
+.sigpad{position:relative;margin:10px 0 0;border-radius:12px;overflow:hidden;background:#FFFFFF}
+.sigpad canvas{display:block;width:100%;height:150px;touch-action:none;background:#FFFFFF}
+.sigpad .sigl{position:absolute;left:14px;right:14px;bottom:30px;border-top:1px solid #9AA4AE;padding-top:4px;font-size:14px;color:#55606B;pointer-events:none}
+.sigview{margin:10px 0 0;border-radius:12px;background:#FFFFFF;padding:8px}
+.sigview img{display:block;width:100%;max-width:360px;height:auto}
+.sigt{margin:12px 0 4px}
+.sigt button{min-height:40px;padding:0 14px;font-size:16px}
+.tplfrom.cpl .kv .k{flex:1 1 auto}
+.tplfrom.cpl .kv .v{flex:none}

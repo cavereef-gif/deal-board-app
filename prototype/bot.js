@@ -82,7 +82,7 @@ function botGo(go) {
     if (d.kind === "transport" && window._trip) {
       const route = ((d.params && d.params.route) || "").split(/→|->| to /), TRp = window._trip;
       if (route.length >= 2) { TRp.from = route[0].replace(/\(.*?\)/g, "").trim(); TRp.to = route[1].split("/")[0].replace(/\(.*?\)/g, "").trim(); }
-      const cr = String((d.params || {}).client_rate || "").match(/\d+(?:[.,]\d+)?/); if (cr) TRp.client = cr[0];
+      const cr = window.perTonRate ? perTonRate(d.params || {}, +TRp.tpl || 34) : ""; if (cr) TRp.client = cr;
       TRp.deal = d.id; TRp.km = null; TRp.geo = null;
       try { localStorage.setItem("calcTab", "transport"); } catch (e) {} if (typeof calcTab !== "undefined") calcTab = "transport";
       goView("calc"); window.scrollTo(0, 0); return;
@@ -186,10 +186,14 @@ async function runAct(a) {
   throw new Error("the app cannot do that yet");
 }
 // handle what the bot sent back: open/show/calculator at once (the first one), changes as cards
-window.botApply = function (acts) {
+// a question ("anything risky from … to …?") is answered in words and never jumps to another page (28 Sep 2026): the app only
+// opens things at once when the words ask for it (open, show, find, take me to …); otherwise they come as a card to tap
+window.botWantsOpen = q => !q || QC_VERB.test(qcNorm(q)) || /\b(calculat|work out the (numbers|route)|numbers for)\b/i.test(q);
+window.botApply = function (acts, allowOpen) {
   let opened = null;
   for (const a of acts || []) {
     if (a.do === "change") { chat.push({ role: "act", a, text: a.label || "" }); continue; }
+    if (allowOpen === false) { const g = actGo(a); if (g) chat.push({ role: "sys", text: "Tap to open: " + (a.label || g), go: g }); continue; }
     if (opened) { const g = actGo(a); if (g) chat.push({ role: "sys", text: "Also found: " + (a.label || g), go: g }); continue; }
     if (a.do === "calculator") { opened = () => actCalc(a); chat.push({ role: "sys", text: "Opened: " + (a.label || "Transport calculator") }); continue; }
     const g = actGo(a); if (g) { opened = () => botGo(g); chat.push({ role: "sys", text: "Opened: " + (a.label || g) }); }
