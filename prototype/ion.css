@@ -31,6 +31,8 @@ html[data-ion][data-palette]{
   --surface:var(--g1); --btn:var(--g3); --seg-on:var(--g4); --seg-on-shadow:inset 0 1px 0 rgba(255,255,255,.08);
   --sw-done:#4FC3F7; --sw-wait:#484C55; --sw-rest:#3F434B; --sw-ink:#1A1B1E;
   --room:none; --r:16px; --r2:12px; --r3:10px; --ctl:40px; --r-ctl:10px;
+  --plate:#33363C; --on-ink:#D4D5DD; --on-ink-muted:#B4B5C0; --node-dim:#4A4E57; --ck:#7D7E8C; --ck-na:#B9BAC3; --meter-off:#B9BAC3; --handle:#5C6069; --craise2:#E9EAEF; --live:var(--ion);
+  --ion-glow:rgba(79,195,247,.22); --ion-glow2:rgba(79,195,247,.25); --ion-ring:rgba(79,195,247,.45); --ion-line:rgba(79,195,247,.7); --ion-soft:rgba(79,195,247,.16); --ion-edge:rgba(79,195,247,.55); --coral-soft:rgba(238,156,136,.2);
   --card-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 14px -10px rgba(0,0,0,.6);
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B4B5C0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
@@ -40,12 +42,54 @@ html[data-ion][data-palette][data-theme="light"]{
   --edge:rgba(0,0,0,.08); --edge2:rgba(0,0,0,.24); --dots:rgba(0,0,0,.07); --tick:rgba(255,255,255,.35);
   --bg:#A2A6AE; --bg-a:rgba(162,166,174,.92); --text:#16181B; --muted:#33363D; --ivory:#16181B;
   --line:rgba(0,0,0,.12); --line2:rgba(0,0,0,.24); --accent:#33363D; --accent2:#16181B;
-  --ccard:#ECEDF1; --ccard2:#DEDFE5; --cfield:#D6D7DE;
+  --ccard:#ECEDF1; --ccard2:#DEDFE5; --cfield:#D6D7DE; --plate:#B3B7BE;
   --soft-up:inset 0 1px 0 rgba(255,255,255,.35),0 14px 30px -22px rgba(0,0,0,.5);
   --glass-edge:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 1px rgba(0,0,0,.1);
   --card-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -10px rgba(0,0,0,.35);
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2333363D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
+
+/* ================= "Twilight" – Chris's palette on the Ion Rail structure (28 Sep 2026) =================
+   Crystal Cut #F8F4ED and Angelic White #F4EDE4 (the two off-whites: reading cards and the chips/fields on them),
+   Twilight Bliss #083645 (the night frame and every letter on a card), Star of Life #057BC1 (deep blue: pressed
+   states, stage rings), Azure Cloud #4DDBFF (the one accent: main buttons, now line, nodes), Lime Jelly #E3FF00
+   (only the live dot). Letters are never coloured and never pure white. Settings › Look › Twilight. */
+html[data-ion="twilight"][data-palette]{
+  --ion:#4DDBFF; --ion-deep:#057BC1; --ion-a:rgba(77,219,255,.22); --live:#E3FF00;
+  --ion-glow:rgba(77,219,255,.22); --ion-glow2:rgba(77,219,255,.25); --ion-ring:rgba(77,219,255,.45); --ion-line:rgba(77,219,255,.7); --ion-soft:rgba(77,219,255,.16); --ion-edge:rgba(77,219,255,.55);
+  --g0a:#0B3A4B; --g0b:#072D3B; --g1:#0E4152; --g1b:#0C3B4B; --g2:#134B5E; --g3:#195669; --g4:#1F6074; --groove:#04202A; --bay:#0B3746; --navc:#0B3746; --plate:#0F4658;
+  --ctext:#083645; --cmuted:#3D6170; --ccard:#F8F4ED; --ccard2:#F4EDE4; --cfield:#ECE3D6; --cline:rgba(8,54,69,.14); --cline2:rgba(8,54,69,.32); --ink:#083645; --rail:#5E8796; --craise2:#F4EDE4;
+  --on-ink:#F4EDE4; --on-ink-muted:#C1D3DA; --node-dim:#2C5D6E; --ck:#6F8E9A; --ck-na:#C9D3D6; --meter-off:#C9D3D6; --handle:#2C5D6E;
+  --edge:rgba(255,255,255,.08); --edge2:rgba(255,255,255,.2); --dots:rgba(255,255,255,.05); --tick:rgba(255,255,255,.16);
+  --bg:#072D3B; --bg-a:rgba(7,45,59,.9); --text:#DCE8EC; --muted:#C1D3DA; --ivory:#E8F0F3;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
+  --primary:#4DDBFF; --primary-2:#6AE2FF; --on-primary:#083645; --accent:#C1D3DA; --accent2:#DCE8EC;
+  --grad:linear-gradient(180deg,#63E1FF 0%,#3FD1F9 100%); --btn-primary:linear-gradient(180deg,#63E1FF 0%,#3FD1F9 100%);
+  --ok:#8FD3B0; --prop:#9DB5BE; --low:#5E8796; --rail-normal:#5E8796;
+  --g-today:#4DDBFF; --g-tmrw:#C1D3DA; --g-week:#9DB5BE; --g-later:#5E8796; --g-prop:#9DB5BE;
+  --sw-done:#4DDBFF; --sw-wait:#195669; --sw-rest:#134B5E; --sw-ink:#083645;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C1D3DA' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+/* Day: an off-white page (Angelic White) with steel-blue sheets, Crystal Cut cards, navy letters */
+html[data-ion="twilight"][data-palette][data-theme="light"]{
+  --g0a:#EFE7DC; --g0b:#F4EDE4; --g1:#D9E3E8; --g1b:#D0DCE2; --g2:#C6D4DB; --g3:#E7DFD3; --g4:#DED4C6; --groove:#5E8796; --bay:#D0DCE2; --navc:#EAE2D6; --plate:#D9E3E8; --rail:#3D6170;
+  --node-dim:#9FB3BB; --handle:#9FB3BB;
+  --edge:rgba(8,54,69,.12); --edge2:rgba(8,54,69,.26); --dots:rgba(8,54,69,.06); --tick:rgba(8,54,69,.18);
+  --bg:#F4EDE4; --bg-a:rgba(244,237,228,.92); --text:#083645; --muted:#3A525C; --ivory:#083645; --field:#EDF2F4; --well:#EDF2F4;
+  --line:rgba(8,54,69,.12); --line2:rgba(8,54,69,.26); --accent:#3A525C; --accent2:#083645;
+  --ccard:#F8F4ED; --ccard2:#F4EDE4; --cfield:#ECE3D6;
+  --soft-up:inset 0 1px 0 rgba(255,255,255,.5),0 14px 30px -22px rgba(8,54,69,.5);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 1px rgba(8,54,69,.12);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -10px rgba(8,54,69,.35);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233D6170' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Day: the small marks on light surfaces use the deep blue (Star of Life) so they stay visible; fills keep Azure with navy letters */
+html[data-ion="twilight"][data-palette][data-theme="light"] :is(.plate .meter .dots i.on,.tabs button.on:after,.inow:before,.inow>i,.spt:before,.docrow.in .k b:before,.d-ok,.tmeter .tm i.d,.chip2.c-prop i,.wkstrip .dots i:not(.late)){background:var(--ion-deep)}
+html[data-ion="twilight"][data-palette][data-theme="light"] :is(.plate .ring .rv,.deal .dot,.ring .rv){stroke:var(--ion-deep)}
+html[data-ion="twilight"][data-palette][data-theme="light"] :is(.irow.cur>.in,.icard.next){border-color:var(--ion-deep)}
+html[data-ion="twilight"][data-palette][data-theme="light"] .icard.next{box-shadow:var(--card-shadow),inset 0 0 0 2px var(--ion-deep)}
+html[data-ion="twilight"][data-palette][data-theme="light"] #botBtn svg.i{color:var(--ion-deep)}
 
 /* ================= the page ================= */
 html[data-ion][data-palette]{background:var(--g0b)}
@@ -60,7 +104,7 @@ html[data-ion][data-palette] h2{font:400 16px/24px var(--font);margin:16px 0 6px
 /* ================= top bar ================= */
 html[data-ion][data-palette] header.appbar{margin:0 -8px;padding:8px 8px 8px;gap:8px;background:var(--bg-a);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:none}
 html[data-ion][data-palette] h1{font:400 22px/26px var(--font);letter-spacing:-.02em;color:var(--text)}
-html[data-ion][data-palette] .logo{width:34px;height:34px;border-radius:10px;background:var(--g3);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(79,195,247,.45);font:400 14px var(--mono)}
+html[data-ion][data-palette] .logo{width:34px;height:34px;border-radius:10px;background:var(--g3);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px var(--ion-ring);font:400 14px var(--mono)}
 html[data-ion][data-palette] .hdr-btns{gap:8px}
 html[data-ion][data-palette] :is(.backb,#botBtn,#menuBtn.avatar){height:40px;min-height:40px;padding:0 12px;border-radius:10px;background:var(--g3);background-color:var(--g3);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);color:var(--text);font-size:14px}
 html[data-ion][data-palette] #botBtn{display:inline-flex}
@@ -97,9 +141,8 @@ html[data-ion][data-palette] .st{display:flex;justify-content:space-between;alig
 html[data-ion][data-palette] .st>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .st>span:first-child{flex:none}
 html[data-ion][data-palette] .live{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
-html[data-ion][data-palette] .live i{width:6px;height:6px;border-radius:50%;background:var(--ion);box-shadow:0 0 0 2px rgba(79,195,247,.22);display:inline-block}
-html[data-ion][data-palette] .plate{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;min-height:66px;margin:0 0 8px;padding:4px 7px 12px;border-radius:16px;background:#33363C;border:1px solid var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-html[data-ion][data-palette][data-theme="light"] .plate{background:#B3B7BE}
+html[data-ion][data-palette] .live i{width:6px;height:6px;border-radius:50%;background:var(--live);box-shadow:0 0 0 2px var(--ion-glow);display:inline-block}
+html[data-ion][data-palette] .plate{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;min-height:66px;margin:0 0 8px;padding:4px 7px 12px;border-radius:16px;background:var(--plate);border:1px solid var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 html[data-ion][data-palette] .plate .pl-l{flex:1;min-width:0}
 html[data-ion][data-palette] .plate .pl-t{margin:0;font:400 22px/26px var(--font);letter-spacing:-.02em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .plate .pl-s{margin-top:4px;font:400 14px/18px var(--font);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -114,14 +157,15 @@ html[data-ion][data-palette] .plate .ring .rn{font:400 14px var(--mono);color:va
 
 /* ================= the sheet ================= */
 html[data-ion][data-palette] .rsheet{position:relative;margin:0 0 8px;padding:10px 8px 14px;border-radius:20px;background:var(--g1);border:1px solid var(--edge);box-shadow:var(--soft-up)}
-html[data-ion][data-palette] .rsheet:before,html[data-ion][data-palette] .rsheet:after,html[data-ion][data-palette] .rsheet .hud:before,html[data-ion][data-palette] .rsheet .hud:after{content:"";position:absolute;width:12px;height:12px;border:1.5px solid rgba(79,195,247,.7);pointer-events:none;z-index:3}
+html[data-ion][data-palette] .rsheet:before,html[data-ion][data-palette] .rsheet:after,html[data-ion][data-palette] .rsheet .hud:before,html[data-ion][data-palette] .rsheet .hud:after{content:"";position:absolute;width:12px;height:12px;border:1.5px solid var(--ion-line);pointer-events:none;z-index:3}
 html[data-ion][data-palette] .rsheet:before{left:6px;top:6px;border-right:0;border-bottom:0;border-radius:3px 0 0 0}
 html[data-ion][data-palette] .rsheet:after{right:6px;top:6px;border-left:0;border-bottom:0;border-radius:0 3px 0 0}
 html[data-ion][data-palette] .rsheet .hud:before{left:6px;bottom:6px;border-right:0;border-top:0;border-radius:0 0 0 3px}
 html[data-ion][data-palette] .rsheet .hud:after{right:6px;bottom:6px;border-left:0;border-top:0;border-radius:0 0 3px 0}
 html[data-ion][data-palette] .rstrip{display:flex;justify-content:space-between;align-items:center;gap:12px;height:28px;margin:-10px -8px 10px;padding:0 14px;border-radius:19px 19px 0 0;background:var(--g1b);border-bottom:1px solid var(--edge);font-family:var(--mono);font-size:14px;line-height:20px;color:var(--muted)}
 html[data-ion][data-palette] .rstrip>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html[data-ion][data-palette] .rplain{display:flex;justify-content:space-between;align-items:center;gap:12px;height:28px;margin:8px 0 0;padding:0 6px;border-top:1px solid var(--edge);font-family:var(--mono);font-size:14px;line-height:20px;color:var(--muted)}
+html[data-ion][data-palette] .rplain{display:flex;justify-content:space-between;align-items:center;gap:12px;height:28px;margin:12px 0 0;padding:0 6px;border-top:1px solid var(--edge2);font-family:var(--mono);font-size:14px;line-height:20px;color:var(--muted)}
+html[data-ion][data-palette] .rplain>span:first-child{font:500 16px/20px var(--font);color:var(--text)}   /* the section's name reads as a heading; the figure stays mono (28 Sep: "lines or bold letters") */
 html[data-ion][data-palette] .rplain>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-ion][data-palette] .rplain.first{margin-top:0;border-top:0}
 html[data-ion][data-palette] .rfoot{padding:8px 6px 0;font-family:var(--mono);font-size:14px;line-height:20px;color:var(--muted)}
@@ -152,11 +196,11 @@ html[data-ion][data-palette] .iblk .empty{margin:4px 0;padding:8px 0;font-family
 html[data-ion][data-palette] .irow{display:block;position:relative;min-height:48px;padding:0;margin:0;background:transparent;box-shadow:none;border:0}
 html[data-ion][data-palette] .irow>.in{display:block;position:absolute;left:-37px;top:24px;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--rail);border:2px solid var(--groove);z-index:3;box-sizing:border-box}
 html[data-ion][data-palette] .irow>.in.big{left:-39px;width:14px;height:14px;margin-top:-7px}
-html[data-ion][data-palette] .irow>.in.sm{left:-35px;width:6px;height:6px;margin-top:-3px;border:0;background:#4A4E57}
+html[data-ion][data-palette] .irow>.in.sm{left:-35px;width:6px;height:6px;margin-top:-3px;border:0;background:var(--node-dim)}
 html[data-ion][data-palette] .irow.late>.in,html[data-ion][data-palette] .irow.urgent>.in,html[data-ion][data-palette] .irow.ask>.in{background:var(--coral)}
 html[data-ion][data-palette] .irow.ion>.in,html[data-ion][data-palette] .irow.prop>.in,html[data-ion][data-palette] .irow.done>.in,html[data-ion][data-palette] .irow.out>.in{background:var(--ion)}
-html[data-ion][data-palette] .irow.cur>.in{background:var(--groove);border:2px solid var(--ion);box-shadow:0 0 0 3px rgba(79,195,247,.22)}
-html[data-ion][data-palette] .irow.now>.in,html[data-ion][data-palette] .irow.out>.in{box-shadow:0 0 0 3px rgba(79,195,247,.25)}
+html[data-ion][data-palette] .irow.cur>.in{background:var(--groove);border:2px solid var(--ion);box-shadow:0 0 0 3px var(--ion-glow)}
+html[data-ion][data-palette] .irow.now>.in,html[data-ion][data-palette] .irow.out>.in{box-shadow:0 0 0 3px var(--ion-glow2)}
 html[data-ion][data-palette] .irow:before{content:"";position:absolute;left:-20px;top:23.5px;width:20px;height:1px;background:var(--rail);z-index:0}
 html[data-ion][data-palette] .irow.noline:before{display:none}
 /* stations, stages and day ticks to the left of the groove */
@@ -177,7 +221,7 @@ html[data-ion][data-palette] .istn{cursor:pointer;border:0;padding:0;background:
 /* the now line */
 html[data-ion][data-palette] .inow{display:block;position:relative;height:20px;margin-left:-20px;z-index:2}
 html[data-ion][data-palette] .inow:before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;background:var(--ion)}
-html[data-ion][data-palette] .inow>i{position:absolute;left:-7px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--ion);border:2px solid var(--groove);box-shadow:0 0 0 3px rgba(79,195,247,.25);box-sizing:border-box}
+html[data-ion][data-palette] .inow>i{position:absolute;left:-7px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--ion);border:2px solid var(--groove);box-shadow:0 0 0 3px var(--ion-glow2);box-sizing:border-box}
 html[data-ion][data-palette] .inow>span{position:absolute;right:8px;top:-2px;height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:999px;background:var(--ion);color:var(--ctext);font:400 14px/1 var(--mono);white-space:nowrap}
 
 /* ================= cards on the rail ================= */
@@ -186,14 +230,14 @@ html[data-ion][data-palette] .icard.ion{background:var(--ion)}
 html[data-ion][data-palette] .icard.ion .s,html[data-ion][data-palette] .icard.ion .m,html[data-ion][data-palette] .icard.ion .t small,html[data-ion][data-palette] .icard.ion .t small.mono{color:var(--ink)}
 html[data-ion][data-palette] .icard.dim{background:var(--ccard2)}
 html[data-ion][data-palette] .icard.dim .t{color:var(--cmuted)}
-html[data-ion][data-palette] .icard.typed{background:var(--ccard2);box-shadow:inset 0 0 0 1px rgba(79,195,247,.55)}
+html[data-ion][data-palette] .icard.typed{background:var(--ccard2);box-shadow:inset 0 0 0 1px var(--ion-edge)}
 html[data-ion][data-palette] .icard.ask{background:var(--ccard2);box-shadow:inset 0 0 0 1px rgba(26,27,30,.35);background-image:none;outline:1px dashed rgba(26,27,30,.35);outline-offset:-1px}
 html[data-ion][data-palette] .icard.next{box-shadow:var(--card-shadow),inset 0 0 0 2px var(--ion)}
-html[data-ion][data-palette] .icard .ck{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid #7D7E8C;box-sizing:border-box}
+html[data-ion][data-palette] .icard .ck{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ck);box-sizing:border-box}
 html[data-ion][data-palette] .icard .ck.late{border-color:var(--coral)}
 html[data-ion][data-palette] .icard .ck.on{border-color:var(--ion);background:var(--ion);display:inline-flex;align-items:center;justify-content:center}
 html[data-ion][data-palette] .icard .ck.on:after{content:"";width:7px;height:4px;border-left:1.5px solid var(--ctext);border-bottom:1.5px solid var(--ctext);transform:translateY(-1px) rotate(-45deg)}
-html[data-ion][data-palette] .icard .ck.na{border-color:#7D7E8C;background:#B9BAC3}
+html[data-ion][data-palette] .icard .ck.na{border-color:var(--ck);background:var(--ck-na)}
 html[data-ion][data-palette] .icard .av{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ccard2);display:inline-flex;align-items:center;justify-content:center;font:400 14px var(--font);color:var(--ctext)}
 html[data-ion][data-palette] .icard .av.ion{background:var(--ion)}
 html[data-ion][data-palette] .icard .t{flex:1;min-width:0;display:block;font:400 16px/20px var(--font);color:var(--ctext);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -208,7 +252,7 @@ html[data-ion][data-palette] .tag{display:inline-flex;align-items:center;flex:no
 html[data-ion][data-palette] .tag.c{background:var(--coral-1);color:var(--ctext)}
 html[data-ion][data-palette] .tag.i{background:var(--ion);color:var(--ctext)}
 html[data-ion][data-palette] .tag.l{background:var(--ccard2);color:var(--ctext)}
-html[data-ion][data-palette] .tag.k{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .tag.k{background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] button.tag{cursor:pointer}
 /* Today's rows keep their swipe track: the track is the card */
 html[data-ion][data-palette] .irow>.hrow.swrow{margin:0;border-radius:12px!important;background:var(--ccard);box-shadow:var(--card-shadow);border:0;overflow:hidden;--text:var(--ctext);--muted:var(--cmuted)}
@@ -218,7 +262,7 @@ html[data-ion][data-palette] .irow .scont{background:var(--ccard);background-col
 html[data-ion][data-palette] .irow .hr-main{display:flex;flex-direction:row;align-items:center;gap:9px;width:100%;height:48px;min-height:48px;padding:0 11px;border:0;border-radius:12px;background:transparent;box-shadow:none;color:var(--ctext);text-align:left;font-weight:400}
 html[data-ion][data-palette] .irow .hr-main:after,html[data-ion][data-palette] .irow .hr-main .chev{display:none}
 html[data-ion][data-palette] .irow .hr-main .av2{display:none}
-html[data-ion][data-palette] .irow .hr-main:before{content:"";flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid #7D7E8C;box-sizing:border-box}
+html[data-ion][data-palette] .irow .hr-main:before{content:"";flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ck);box-sizing:border-box}
 html[data-ion][data-palette] .irow.late .hr-main:before,html[data-ion][data-palette] .irow.urgent .hr-main:before{border-color:var(--coral)}
 html[data-ion][data-palette] .irow.done .hr-main:before{border-color:var(--ion);background:var(--ion)}
 html[data-ion][data-palette] .irow .hr-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:0}
@@ -238,7 +282,7 @@ html[data-ion][data-palette] .irow .hr-main .hr-tx{order:1}
 /* ================= reading surfaces: tokens switch inside ================= */
 html[data-ion][data-palette] :is(.card:not(.calcc),.deal,.ccard,.lead,.hero2,.nextup,.htile,.brief,.bl-main,.pinfo,.tsec,.post,.bub.a,.bub.u,.ask,.sbar,.dtile,.fcard,.bothelp,form.panel,.qteaser,.cnote,.step,.sec,.kitban,.hist,.trr,.meets,.draft,.sugg,.warn,.seen,.lf,.qcard,.gcard,.ticket,.trow,.mkrow,.mrow,.tile,.icard,.stepp,.trtoll,.trfuel){
   --text:var(--ctext); --muted:var(--cmuted); --ivory:var(--ctext); --surface:var(--ccard); --card:var(--ccard); --card2:var(--ccard2); --row:var(--ccard);
-  --raise:var(--ccard2); --raise-2:#E9EAEF; --field:var(--cfield); --well:var(--cfield); --line:var(--cline); --line2:var(--cline2);
+  --raise:var(--ccard2); --raise-2:var(--craise2); --field:var(--cfield); --well:var(--cfield); --line:var(--cline); --line2:var(--cline2);
   --btn:var(--ccard2); --seg-on:var(--ink); --glass-soft:var(--ccard2); --glass-soft-edge:inset 0 0 0 1px rgba(0,0,0,.06);
   --soft-up-sm:inset 0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(0,0,0,.12); --soft-in:inset 0 1px 2px rgba(0,0,0,.18);
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23474956' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -249,8 +293,8 @@ html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,
 html[data-ion][data-palette] :is(.card,.deal,.ccard,.lead,.pinfo,.tsec,.bothelp,.cnote,.post){margin-bottom:8px}
 html[data-ion][data-palette] :is(.bl-main,.trow,.mkrow,.stepp,.hist,.sugg,.warn,.seen){border-radius:12px}
 /* a one-of-several switch inside a card: light track, charcoal chosen segment */
-html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on,.chips:not(.segbar) button.on){background:var(--ink);background-color:var(--ink);color:#D4D5DD;box-shadow:none}
-html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on) span{color:#D4D5DD}
+html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on,.chips:not(.segbar) button.on){background:var(--ink);background-color:var(--ink);color:var(--on-ink);box-shadow:none}
+html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.hero2,.nextup,.brief,.bothelp,.post,.ask,.stepp) :is(.seg.on,.seg2>button.on,.segbar>button.on) span{color:var(--on-ink)}
 html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.post,.stepp) :is(.seg2,.segbar){background:var(--ccard2);box-shadow:none;border:0}
 html[data-ion][data-palette] :is(#_,.card,.deal,.ccard,.lead,.post,.stepp) :is(.seg2>button:not(.on),.segbar>button:not(.on),.seg2>label:not(.on)){color:var(--ctext)}
 
@@ -307,7 +351,7 @@ html[data-ion][data-palette] .h2-l{font:400 14px/20px var(--mono);letter-spacing
 html[data-ion][data-palette] .hero2 .chip2{height:24px;padding:0 9px;border-radius:999px;background:var(--coral-1);color:var(--ctext);font:400 14px/1 var(--font)}
 html[data-ion][data-palette] .hero2 .chip2 i,html[data-ion][data-palette] .hero2 .chip2 .cs{display:none}
 html[data-ion][data-palette] .hero2 .chip2:is(.c-plain,.c-today){background:var(--ccard2)}
-html[data-ion][data-palette] .hero2 .chip2.c-prop{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .hero2 .chip2.c-prop{background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .h2-main{margin:8px 0 12px;gap:9px;align-items:center}
 html[data-ion][data-palette] :is(#_,.hero2 .av2){width:24px;height:24px;font-size:14px;background:var(--ccard2);color:var(--ctext);box-shadow:none}
 html[data-ion][data-palette] .hero2 .av2:after{width:8px;height:8px;box-shadow:0 0 0 2px var(--ccard)}
@@ -327,8 +371,8 @@ html[data-ion][data-palette] .htile:before{display:none}
 html[data-ion][data-palette] .htile .ht-i:before{width:6px;height:6px}
 html[data-ion][data-palette] .htile.t-bad,html[data-ion][data-palette] .htile.t-over{--tc:var(--coral)}
 html[data-ion][data-palette] .htile.t-prop{--tc:var(--ion)}
-html[data-ion][data-palette] .htile.on{background:var(--ink);--text:#D4D5DD;--muted:#B4B5C0;color:#D4D5DD;box-shadow:0 0 0 1px var(--ion)}
-html[data-ion][data-palette] .htile.on .ht-n,html[data-ion][data-palette] .htile.on .ht-l{color:#D4D5DD}
+html[data-ion][data-palette] .htile.on{background:var(--ink);--text:var(--on-ink);--muted:var(--on-ink-muted);color:var(--on-ink);box-shadow:0 0 0 1px var(--ion)}
+html[data-ion][data-palette] .htile.on .ht-n,html[data-ion][data-palette] .htile.on .ht-l{color:var(--on-ink)}
 html[data-ion][data-palette] .bline{margin:0 0 8px}
 html[data-ion][data-palette] .bl-main{height:48px;min-height:48px;padding:0 14px;border-radius:12px;gap:9px}
 html[data-ion][data-palette] .bl-l{font:400 14px/18px var(--mono);color:var(--cmuted)}
@@ -344,17 +388,17 @@ html[data-ion][data-palette] .sugg2 .ilab .ilab-x svg.i{width:14px;height:14px;c
 /* swipe actions behind a row */
 html[data-ion][data-palette] :is(.sw-done,.sw-confirm,.sw-ftdone){background:var(--ion)!important;color:var(--ctext)}
 html[data-ion][data-palette] :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop){background:var(--g3)!important;color:var(--text)}
-html[data-ion][data-palette] .sact button,html[data-ion][data-palette] .sact button span{color:#D4D5DD;font-size:14px}
+html[data-ion][data-palette] .sact button,html[data-ion][data-palette] .sact button span{color:var(--on-ink);font-size:14px}
 html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone) span{color:var(--ctext)}
-html[data-ion][data-palette] .sact :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop) svg.i{color:#D4D5DD}
+html[data-ion][data-palette] .sact :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop) svg.i{color:var(--on-ink)}
 html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone) svg.i{color:var(--ctext)}
-html[data-ion][data-palette][data-theme="light"] .sact button,html[data-ion][data-palette][data-theme="light"] .sact button span,html[data-ion][data-palette][data-theme="light"] .sact button svg.i{color:#16181B}
+html[data-ion][data-palette][data-theme="light"] .sact button,html[data-ion][data-palette][data-theme="light"] .sact button span,html[data-ion][data-palette][data-theme="light"] .sact button svg.i{color:var(--text)}
 /* status pills elsewhere (item sheet, hero) */
 html[data-ion][data-palette] .chip2{background:var(--ccard2);background-image:none;color:var(--ctext);border-radius:999px;font-weight:400}
 html[data-ion][data-palette] :is(.chip2.c-bad,.chip2.c-warn){background:var(--coral-1);color:var(--ctext)}
 html[data-ion][data-palette] :is(.chip2.c-bad,.chip2.c-warn) i{background:var(--ctext)!important}
 html[data-ion][data-palette] .chip2.c-today{background:var(--ccard2);color:var(--ctext)}
-html[data-ion][data-palette] .chip2.c-prop{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .chip2.c-prop{background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .chip2.c-prop i{background:var(--ion)!important}
 html[data-ion][data-palette] :is(#_,.av2){background:var(--ccard2);color:var(--ctext);box-shadow:none;font-weight:400}
 html[data-ion][data-palette] .av2:after{box-shadow:0 0 0 2px var(--ccard)}
@@ -393,7 +437,7 @@ html[data-ion][data-palette] .tk-stub div{font:400 14px/18px var(--font);color:v
 html[data-ion][data-palette] .tk-stub b{display:block;font:400 16px/20px var(--font);color:var(--ctext);margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html[data-ion][data-palette] .tmeter{display:flex;align-items:center;gap:10px;padding:0 14px 10px;font:400 14px/20px var(--mono);color:var(--cmuted)}
 html[data-ion][data-palette] .tmeter .tm{flex:1;display:flex;gap:4px}
-html[data-ion][data-palette] .tmeter .tm i{flex:1;height:4px;border-radius:2px;background:#B9BAC3}
+html[data-ion][data-palette] .tmeter .tm i{flex:1;height:4px;border-radius:2px;background:var(--meter-off)}
 html[data-ion][data-palette] .tmeter .tm i.d{background:var(--ion)} html[data-ion][data-palette] .tmeter .tm i.c{background:transparent;box-shadow:inset 0 0 0 1px var(--ion-deep)}
 /* a step's open panel (proof, Done, Not needed, Reopen, Close) – a light card under its row */
 html[data-ion][data-palette] .stepp{padding:10px 12px 12px;margin:0}
@@ -407,7 +451,7 @@ html[data-ion][data-palette] .trow .k b{font:400 16px/20px var(--font);color:var
 html[data-ion][data-palette] .trow .k span{white-space:nowrap;flex:none}
 html[data-ion][data-palette] .tchips{display:flex;flex-wrap:wrap;gap:5px}
 html[data-ion][data-palette] .tchips button{height:24px;min-height:24px;padding:0 9px;border:0;border-radius:999px;background:var(--ccard2);color:var(--ctext);font:400 14px/1 var(--font);box-shadow:none;white-space:nowrap}
-html[data-ion][data-palette] .tchips button.on{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .tchips button.on{background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .tchips button.warn{background:var(--coral-1);color:var(--ctext)}
 html[data-ion][data-palette] .tin{width:100%;height:40px;min-height:40px;border-radius:10px;background:var(--ccard2);box-shadow:none;border:0;padding:0 10px;font:400 16px var(--font);color:var(--ctext)}
 html[data-ion][data-palette] .tin:focus{box-shadow:0 0 0 2px var(--ion)}
@@ -422,11 +466,11 @@ html[data-ion][data-palette] .tpair>select.tunit{flex:none;width:112px}
 html[data-ion][data-palette] .tpair>.fld{flex:1 1 0;min-width:0;margin-top:0}
 html[data-ion][data-palette] :is(#_,.trow .teither){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:40px;margin:0;padding:3px;gap:0;border-radius:10px;background:var(--ccard2);border:0}
 html[data-ion][data-palette] :is(#_,.trow .teither>button){height:34px;min-height:34px;border-radius:7px;background:transparent;color:var(--ctext);font:400 16px/1 var(--font);padding:0}
-html[data-ion][data-palette] :is(#_,.trow .teither>button.on){background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] :is(#_,.trow .teither>button.on){background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .teither>select.segsel{height:34px;min-height:34px;margin:0;padding:0 22px 0 8px;border:0;border-radius:7px;background:transparent var(--chev) right 4px center/14px no-repeat;box-shadow:none;-webkit-appearance:none;appearance:none;font:400 14px var(--font);color:var(--ctext);text-align:center}
-html[data-ion][data-palette] .teither>select.segsel.on{background-color:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .teither>select.segsel.on{background-color:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .tchips.tq,html[data-ion][data-palette] .tchips.tsame,html[data-ion][data-palette] .tchips.dfile{margin-top:6px}
-html[data-ion][data-palette] .tchips.tq button.on{background:var(--ink);color:#D4D5DD}
+html[data-ion][data-palette] .tchips.tq button.on{background:var(--ink);color:var(--on-ink)}
 html[data-ion][data-palette] .tchips.tq button.on[data-v="awaiting"]{background:var(--coral-1);color:var(--ctext)}
 html[data-ion][data-palette] .tchips button.go,html[data-ion][data-palette] .tchips.tsame button{background:var(--ion);color:var(--ctext)}
 html[data-ion][data-palette] .tchips button:disabled{opacity:1}
@@ -466,6 +510,29 @@ html[data-ion][data-palette] .tpln{margin:6px 0 10px;color:var(--muted)}
 /* a main button that cannot be used yet keeps readable letters – no fading */
 html[data-ion][data-palette] button.primary:disabled{opacity:1;background:var(--g3);background-image:none;color:var(--text);box-shadow:none}
 html[data-ion][data-palette] :is(.trow,.icard,.nextcard) button.primary:disabled{background:var(--cfield);color:var(--ctext)}
+/* sections inside a card (a person's page, sheets): a rule above, a 16 px semibold title, the figure on the right */
+html[data-ion][data-palette] .lsec{border-top:1px solid var(--cline2);margin-top:14px}
+html[data-ion][data-palette] .lsec-h{padding:12px 0;min-height:48px}
+html[data-ion][data-palette] .lsec-h .st{display:block;height:auto;padding:0;font:600 16px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .lsec-h svg.i{color:var(--cmuted)}
+html[data-ion][data-palette] .lsec-h .cnt{height:24px;padding:0 9px;border-radius:999px;background:var(--ccard2);color:var(--ctext);font:400 14px/24px var(--mono)}
+html[data-ion][data-palette] .lsh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:12px 0 8px;border-top:1px solid var(--cline2)}
+html[data-ion][data-palette] .lsh b{font:600 16px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .lsh .cnt{font:400 14px/20px var(--mono);color:var(--cmuted);white-space:nowrap}
+html[data-ion][data-palette] .lsx{font:400 16px/22px var(--font);color:var(--ctext);margin:0 0 6px}
+html[data-ion][data-palette] .lc .qrow{margin:12px 0 0}
+html[data-ion][data-palette] .lbl{font:600 14px/18px var(--font);color:var(--text);letter-spacing:0}
+/* an open step's panel spreads over the whole rail width (28 Sep: it was squeezed into the 178 px card column) */
+html[data-ion][data-palette] .irail .iblk .stepp.step-p{position:relative;z-index:2;margin-left:calc(-1 * (var(--col) + 36px));margin-top:6px}
+/* plain-words explanations (28 Sep): What · Why · Who · Done when */
+html[data-ion][data-palette] .why{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:var(--ccard2)}
+html[data-ion][data-palette] .whyl{display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px;padding:4px 0;font:400 14px/20px var(--font);color:var(--ctext)}
+html[data-ion][data-palette] .whyl b{font:600 14px/20px var(--font);color:var(--cmuted)}
+html[data-ion][data-palette] .stepp.how{margin-top:6px}
+html[data-ion][data-palette] .stepp.how .whyl{grid-template-columns:96px minmax(0,1fr);font-size:16px;line-height:22px}
+html[data-ion][data-palette] .stepp.how .whyl b{font-size:16px;line-height:22px;color:var(--ctext)}
+html[data-ion][data-palette] :is(#_,.docrow .whyb){display:inline-flex;align-items:center;height:28px;min-height:28px;margin-top:8px;padding:0 10px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--cline2);color:var(--ctext);font:400 14px/1 var(--font)}
+html[data-ion][data-palette] .docrow .why{margin:8px 0 0}
 /* documents */
 html[data-ion][data-palette] .docrow.in .k b:before{content:"";display:inline-block;width:8px;height:8px;margin:0 8px 2px 0;border-radius:50%;background:var(--ion)}
 html[data-ion][data-palette] .docrow.na{opacity:.8}
@@ -486,15 +553,10 @@ html[data-ion][data-palette] .dfoot3{display:grid;grid-template-columns:repeat(3
 html[data-ion][data-palette] :is(#_,.dfoot3>.ib){width:100%;min-width:0;height:40px;min-height:40px;padding:0 6px;justify-content:center}
 html[data-ion][data-palette] .tmeter .tag{flex:none}
 /* market price and the deals list groups */
-/* market price cards (28 Sep): a plain list of cards – every word whole */
-html[data-ion][data-palette] .mkt .mkl{margin:10px 0 6px}
-html[data-ion][data-palette] .mkrow{margin:0 0 6px;padding:8px 10px 9px}
-html[data-ion][data-palette] .mkrow.sugg{box-shadow:var(--card-shadow),inset 0 0 0 1.5px var(--ion)}
-html[data-ion][data-palette] .mkrow .mkn{font:400 16px/20px var(--font);color:var(--ctext)}
-html[data-ion][data-palette] .mkrow .mkp{margin-top:4px;font:400 16px/20px var(--mono);color:var(--ctext)}
-html[data-ion][data-palette] .mkrow .mkp small{margin-left:8px;font:400 14px/18px var(--mono);color:var(--cmuted)}
-html[data-ion][data-palette] .mkrow .mks{margin-top:2px;font:400 14px/18px var(--font);color:var(--cmuted)}
-html[data-ion][data-palette] .mkacts2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+/* market price rail (28 Sep): Accept / Drop sit under a suggested price's card, inside its block */
+html[data-ion][data-palette] .mkt .icard[data-mktrow]{cursor:default}
+html[data-ion][data-palette] .mkt .icard .t small.mono{font-family:var(--mono);color:var(--cmuted)}
+html[data-ion][data-palette] .mkacts2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 8px 6px 44px}
 html[data-ion][data-palette] :is(#_,.mkacts2>button){height:40px;min-height:40px}
 html[data-ion][data-palette] .mkacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 html[data-ion][data-palette] .mkform{margin-top:8px}
@@ -543,7 +605,7 @@ html[data-ion][data-palette] .pcard .hg-b .hr-main{min-height:48px;padding:6px 1
 /* ================= sheets (More, Add, New task, review …) ================= */
 html[data-ion][data-palette] .sheet{background:rgba(10,12,15,.62);-webkit-backdrop-filter:none;backdrop-filter:none}
 html[data-ion][data-palette] .sheet-b{padding:10px 12px 14px;background:var(--g1);background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--edge2);border-bottom:0;border-radius:24px 24px 0 0;box-shadow:0 -20px 40px -20px rgba(0,0,0,.8)}
-html[data-ion][data-palette] .sheet-b:before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:#5C6069;margin:0 auto 10px}
+html[data-ion][data-palette] .sheet-b:before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:var(--handle);margin:0 auto 10px}
 html[data-ion][data-palette] .sheet-h{display:flex;justify-content:space-between;align-items:center;gap:10px;height:28px;margin:0 0 10px;padding:0 4px;border-radius:0;background:transparent;font:400 14px/20px var(--mono);color:var(--muted)}
 html[data-ion][data-palette] .sheet-h>span{font:400 14px/20px var(--mono);color:var(--muted)}
 html[data-ion][data-palette] :is(#_,.sheet-h button){height:28px;min-height:28px;padding:0 10px;border-radius:999px;background:var(--g3);box-shadow:none;color:var(--text);font-size:14px}
@@ -572,8 +634,8 @@ html[data-ion][data-palette] .micwrap{gap:6px}
 html[data-ion][data-palette] #tsWhat{height:48px;min-height:48px;border-radius:12px;background:var(--ccard);color:var(--ctext);box-shadow:inset 0 0 0 1px var(--ion);font-size:16px}
 html[data-ion][data-palette] #tsWhat:focus{box-shadow:inset 0 0 0 2px var(--ion)}
 html[data-ion][data-palette] .tstoks{gap:6px;margin-top:6px}
-html[data-ion][data-palette] .tok{height:24px;padding:0 6px;border-radius:6px;background:rgba(79,195,247,.16);box-shadow:inset 0 0 0 1px rgba(79,195,247,.55);color:var(--text);font:400 14px/1 var(--font)}
-html[data-ion][data-palette] .tok.t-urg{background:rgba(238,156,136,.2);box-shadow:inset 0 0 0 1px var(--coral)}
+html[data-ion][data-palette] .tok{height:24px;padding:0 6px;border-radius:6px;background:var(--ion-soft);box-shadow:inset 0 0 0 1px var(--ion-edge);color:var(--text);font:400 14px/1 var(--font)}
+html[data-ion][data-palette] .tok.t-urg{background:var(--coral-soft);box-shadow:inset 0 0 0 1px var(--coral)}
 html[data-ion][data-palette] .tshint{margin:6px 0 0;font:400 14px/20px var(--mono)}
 html[data-ion][data-palette] #tsWeek{margin-top:8px}
 html[data-ion][data-palette] .twrail{display:none}
@@ -584,7 +646,7 @@ html[data-ion][data-palette] #tsAdd{margin-top:8px}
 html[data-ion][data-palette] .irow.day .icard.pick{background:var(--ion)}
 html[data-ion][data-palette] .irow.day .icard.pick .t,html[data-ion][data-palette] .irow.day .icard.pick .t .s{color:var(--ctext)}
 html[data-ion][data-palette] .irow.day .icard.pick .t .s{color:var(--ink)}
-html[data-ion][data-palette] .irow.day.blank>.in{background:#4A4E57;width:6px;height:6px;left:-35px;margin-top:-3px;border:0}
+html[data-ion][data-palette] .irow.day.blank>.in{background:var(--node-dim);width:6px;height:6px;left:-35px;margin-top:-3px;border:0}
 html[data-ion][data-palette] .irow.day.blank:before{display:none}
 html[data-ion][data-palette] .irow.day>button.blank{display:block;width:100%;height:48px;min-height:48px;border:0;border-radius:12px;background:transparent;box-shadow:none}
 
@@ -615,11 +677,10 @@ html[data-ion][data-palette] :is(#_,.ecgrid button:not(.primary)){background:var
 html[data-ion][data-palette] :is(#_,.ecgrid button.op){background:var(--ccard2)}
 
 /* ================= board, bot, settings, archive, guides ================= */
-html[data-ion][data-palette] .post.mine{background:#E9EAEF;color:var(--ctext)}
+html[data-ion][data-palette] .post.mine{background:var(--craise2);color:var(--ctext)}
 html[data-ion][data-palette] .post.pinned{box-shadow:var(--card-shadow),inset 0 0 0 2px var(--ion)}
 html[data-ion][data-palette] .post .pa a{background:var(--ccard2);box-shadow:none}
-html[data-ion][data-palette] .composer{background:var(--g1);--text:#D4D5DD;--muted:#B4B5C0;--field:var(--groove);color:#D4D5DD;border:1px solid var(--edge);border-radius:20px 20px 0 0}
-html[data-ion][data-palette][data-theme="light"] .composer{--text:#16181B;--muted:#33363D;color:#16181B}
+html[data-ion][data-palette] .composer{background:var(--g1);--field:var(--groove);border:1px solid var(--edge);border-radius:20px 20px 0 0}
 html[data-ion][data-palette] .bub.u{background:var(--ccard2);color:var(--ctext);box-shadow:var(--card-shadow)}
 html[data-ion][data-palette] .setc .kv{border-radius:10px;background:var(--ccard2);box-shadow:none}
 html[data-ion][data-palette] .keybox summary{min-height:40px;display:flex;align-items:center;font-size:16px}

@@ -495,17 +495,28 @@ function mktLatest() {
   for (const r of rows) { const k = r.commodity + "|" + dash(r.grade) + "|" + r.basis; if (!out[k] || out[k].effective < r.effective) out[k] = r; }
   return Object.values(out).sort((a, b) => a.commodity.localeCompare(b.commodity) || (a.effective < b.effective ? 1 : -1));
 }
-// one price per card, every word whole (28 Sep): the ore and grade, the price, then where and when it was reported
+// the market rail (28 Sep, Chris: "I liked it" – the rail stays): a block per ore and place (chrome · CIF China, manganese ·
+// port spot, chrome · FOT South Africa …) so a China price is never listed beside a South African one; one node per price;
+// the card: the grade, then the price with the rand on the day and the date under it – every word whole.
 function mktCard(r, sugg) {
-  const src = String(r.source || "").replace(/ \(.*\)$/, "");
-  return `<div class="mkrow${sugg ? " sugg" : ""}"><div class="mkn">${esc(r.commodity)} ${esc(r.grade)}</div><div class="mkp">${esc(mktPrice(r))}${mktRand(r) ? `<small>${esc(mktRand(r))}</small>` : ""}</div><div class="mks">${esc(r.basis)} · ${esc(src)} · ${esc(shortDate(r.effective))}</div>${sugg ? `<div class="mkacts2"><button type="button" class="primary" data-mkt="accepted" data-id="${r.id}">${ic("check")}Accept</button><button type="button" data-mkt="dropped" data-id="${r.id}">Drop</button></div>` : ""}</div>`;
+  const rand = mktRand(r).replace(/\/t$/, "");
+  const row = icardRow({ cls: sugg ? "prop" : "ion", attrs: `data-mktrow="${r.id}"`, cardCls: sugg ? "" : "dim", title: esc(r.grade), sub: `${esc(mktPrice(r))}${rand ? " " + esc(rand) : ""} · ${esc(shortDate(r.effective))}`, mono: true });
+  return row + (sugg ? `<div class="mkacts2"><button type="button" class="primary" data-mkt="accepted" data-id="${r.id}">${ic("check")}Accept</button><button type="button" data-mkt="dropped" data-id="${r.id}">Drop</button></div>` : "");
 }
 window.marketHtml = function () {
-  const sugg = (window._market || []).filter(r => r.status === "suggested").slice(0, 4), latest = mktLatest().slice(0, 6);
-  const last = (window._market || []).reduce((a, r) => (r.created_at > a ? r.created_at : a), "");
-  let h = sheetOpen("market price", last ? "updated " + esc(dayWords(last)) : "weekly", "mkt");
-  if (sugg.length) h += `<div class="lbl mkl">suggested · check, then accept</div>${sugg.map(r => mktCard(r, true)).join("")}`;
-  h += `<div class="lbl mkl">latest accepted</div>${latest.length ? latest.map(r => mktCard(r, false)).join("") : `<div class="empty">no price yet – the Monday check fills it, or type one</div>`}`;
+  const all = window._market || [], latest = mktLatest();
+  const last = all.reduce((a, r) => (r.created_at > a ? r.created_at : a), "");
+  const place = b => String(b || "").replace(/^China port spot$/, "port spot").replace(/^FOT South Africa$/, "FOT SA");
+  const keys = [], seen = new Set();
+  for (const r of [...all.filter(r => r.status === "suggested"), ...latest]) { const k = `${r.commodity}|${r.basis}`; if (!seen.has(k)) { seen.add(k); keys.push(k); } }
+  keys.sort((a, b) => a.localeCompare(b));   // chrome before manganese, then by place
+  let h = sheetOpen("market price", last ? "updated " + esc(dayWords(last)) : "weekly", "mkt") + railOpen(0);
+  for (const k of keys) {
+    const [c, b] = k.split("|"), sugg = all.filter(r => r.status === "suggested" && r.commodity === c && r.basis === b).slice(0, 3), acc = latest.filter(r => r.commodity === c && r.basis === b).slice(0, 3);
+    h += `<section class="iblk"><div class="ilab">${esc(c.toLowerCase())} · ${esc(place(b))}${sugg.length ? " · suggested" : ""}</div><div class="ibody">${sugg.map(r => mktCard(r, true)).join("")}${acc.map(r => mktCard(r, false)).join("")}</div></section>`;
+  }
+  if (!keys.length) h += `<section class="iblk"><div class="ilab">no price yet</div><div class="ibody"><div class="empty">the Monday check fills it, or type one</div></div></section>`;
+  h += railClose();
   if (mktForm) h += mktFormHtml();
   h += `<div class="acts0 mkacts"><button type="button" data-mktadd="1">${ic("edit")}Type a price</button><button type="button" data-mktcheck="1">${ic("refresh")}Check now</button></div>`;
   h += rfoot("prices in China are as reported (CIF or port) – not a South African FOT price") + sheetClose();
@@ -582,3 +593,76 @@ function demoMarket() {
   ];
 }
 (window._after ||= []).push(() => { if (!window._market && !window._mktBusy) { window._mktBusy = true; loadMarket().finally(() => { window._mktBusy = false; }); } });
+
+// ---------- plain-words explanations (28 Sep 2026, Chris: "I need explanation for procedures and what each document is for and why") ----------
+// One entry per short-procedure step and per document: what it is, why we need it, who gives it, when it counts as done.
+const STAGE_WHY = {
+  mineral: [["1. Start", "know exactly what the buyer wants, and lock in the NCNDA before names are shared"], ["2. Our cut", "the IMFPA writes our commission into the deal"], ["3. Offers", "the buyer's LOI or ICPO and the seller's FCO meet in the middle"], ["4. Checks", "is it real? ownership, funds, company papers and an assay"], ["5. Contract", "the SPA is signed, then the buyer's payment is secured"], ["6. Delivery", "loads go, the seller is paid, our commission is paid"]],
+  transport: [["1. Qualify", "who pays, what moves where, and trucks that can move it"], ["2. Protect", "the NCNDA and the split per ton, in writing"], ["3. Terms", "client rate with VAT, payment terms, transporter rate"], ["4. Contract", "insurance in and the agreement signed"], ["5. Loads", "a trial load with POD and tickets, then the margin"]],
+};
+const STEP_WHY = {
+  "Buyer's needs": { what: "Write down exactly what the buyer wants: ore, grade, tons a month, where it must be delivered, how they pay.", why: "Everything after this is measured against it. A vague brief wastes weeks.", who: "Us, with the buyer", done: "The requirement is in the deal's terms" },
+  "NCNDA signed": { what: "A non-circumvention, non-disclosure agreement: nobody goes around us or shares the other side's contacts.", why: "It protects our commission and our contacts before any names are shared.", who: "Both sides sign, with us", done: "Signed copy in Docs" },
+  "IMFPA signed": { what: "The fee protection agreement: the paying party promises our commission on every lot, with the split.", why: "Without it a buyer or seller can forget us once they have each other.", who: "The party that pays the commission, and us", done: "Signed copy in Docs" },
+  "LOI or ICPO in": { what: "The buyer's letter of intent (LOI) or firm order (ICPO): quantity, spec and the price they will pay.", why: "It shows the buyer is real and gives the seller enough to make a firm offer.", who: "Buyer", done: "LOI or ICPO in Docs" },
+  "FCO received": { what: "The seller's full corporate offer: price, spec, quantity, delivery, payment and how long it holds.", why: "This is the firm offer both sides negotiate from.", who: "Seller", done: "FCO in Docs" },
+  "Ownership proof": { what: "Proof the seller owns or may sell the material: mine papers, a stockpile survey or a mandate letter.", why: "Many 'sellers' are brokers with nothing to sell. This stops a deal that cannot deliver.", who: "Seller", done: "Document in Docs and checked" },
+  "Proof of funds": { what: "A bank letter or statement showing the buyer has the money for the first lot.", why: "An LC or escrow only makes sense once we know the buyer can pay. It also filters out time-wasters.", who: "Buyer's bank", done: "Proof in Docs" },
+  "KYC both sides": { what: "Company papers of both sides: registration, directors, address, VAT (our own KYC sheet too).", why: "Know who you deal with. Banks, lawyers and the SPA ask for it, and it stops fraud.", who: "Both sides, and us", done: "Papers in Docs" },
+  "Assay passed": { what: "An independent inspector's test of the material: chrome or manganese content, moisture, size.", why: "The price depends on the grade. The buyer pays on the assay, not on promises.", who: "The inspector, paid as agreed", done: "Certificate in Docs" },
+  "SPA signed": { what: "The sale and purchase agreement: the contract with every term.", why: "Nothing is enforceable until it is signed.", who: "Buyer and seller, us as the intermediary", done: "Signed SPA in Docs" },
+  "Payment secured": { what: "The buyer's payment is in place: a letter of credit (LC), escrow or the agreed deposit.", why: "The seller only loads once the money is secured. No LC before proof of funds.", who: "Buyer's bank", done: "Bank confirmation in Docs" },
+  "Loads delivered": { what: "The material is loaded, weighed and delivered as agreed; tickets and delivery notes are kept.", why: "The weighbridge tickets and the assay decide how much is paid.", who: "Seller and transporter", done: "Tickets and delivery proof in Docs" },
+  "Seller paid": { what: "The buyer has paid the seller for the lot.", why: "Our commission is due once the seller is paid.", who: "Buyer", done: "Payment confirmation" },
+  "Commission paid": { what: "Our commission (as in the IMFPA) is paid and split as agreed.", why: "The deal is only finished for us when our cut is in the bank.", who: "Paying party", done: "Proof of payment; statements sent" },
+  "Client confirmed": { what: "Who pays and who receives: company names and the person who signs.", why: "The invoice must go to the right company and the receiver must expect the loads.", who: "Client", done: "Names and numbers in the terms" },
+  "Cargo and route": { what: "What is carried, from where to where, tons a load, loads a month, loading hours.", why: "The rate and the trucks depend on it.", who: "Client", done: "Written confirmation" },
+  "Trucks lined up": { what: "A transporter with the right trucks (e.g. 34 t side tippers), how many and from when.", why: "No point quoting loads we cannot move.", who: "Transporter", done: "Written availability" },
+  "Split agreed": { what: "Who gets what per ton, in writing: client rate, transporter rate, our margin.", why: "This is our income. Unclear splits end in arguments.", who: "Us, with the transporter", done: "Written split" },
+  "Client rate set": { what: "The rate per ton the client pays, with VAT stated.", why: "'R350 a ton' without VAT stated is 15% of doubt.", who: "Client", done: "Our quote accepted in writing" },
+  "Payment terms": { what: "When the client pays, e.g. 7 days from the POD.", why: "Transporters want paying. The gap between them and the client is our cash risk.", who: "Client", done: "Written payment terms" },
+  "Transporter rate": { what: "What the truck costs per ton, and whether tolls and diesel are in it.", why: "Our margin is the client rate minus the transporter rate.", who: "Transporter", done: "Rate confirmation" },
+  "Insurance in": { what: "Goods-in-transit insurance certificate and the vehicle list.", why: "A lost load without insurance is our problem.", who: "Transporter", done: "Certificate in Docs" },
+  "Contract signed": { what: "The transport agreement with the client, and with the transporter.", why: "Enforceable terms for rates, payment and liability.", who: "Client and transporter", done: "Signed agreement in Docs" },
+  "Trial load done": { what: "The first load delivered, with its POD and weighbridge tickets.", why: "It proves the route, the trucks and the paperwork before the volume starts.", who: "Transporter", done: "POD and tickets in Docs" },
+  "Margin paid": { what: "Our margin on the loads is paid.", why: "Finished only when the money is in.", who: "Client", done: "Proof of payment" },
+};
+const DOC_WHY = {
+  ncnda: { what: "Non-circumvention, non-disclosure agreement: nobody goes around us or shares the other side's contacts.", why: "Protects our commission and our names before anyone talks to anyone.", when: "First, before names are shared. Both sides sign; we make it here." },
+  imfpa: { what: "Fee protection agreement: the paying party promises our commission on every lot, with the split.", why: "Our income is written into the deal, not left to goodwill.", when: "Right after the NCNDA. We make it here from the split." },
+  loi: { what: "Letter of intent: the buyer says what they want to buy and on what terms.", why: "Shows the buyer is serious and gives the seller enough to make a firm offer.", when: "Before the seller's offer. From the buyer; we can draft it." },
+  icpo: { what: "Irrevocable corporate purchase order: a firm order with quantity, spec, price and how long it holds.", why: "Stronger than an LOI; sellers and banks act on it.", when: "Instead of, or after, the LOI. From the buyer." },
+  fco: { what: "Full corporate offer: the seller's firm offer with price, spec, quantity, delivery, payment and validity.", why: "The offer the buyer accepts or counters.", when: "After the LOI or ICPO. From the seller; we can draft it." },
+  poo: { what: "Proof of ownership: mine papers, a stockpile survey or a mandate letter showing the seller may sell.", why: "Stops deals with 'sellers' who have nothing to sell.", when: "Before spending on assays or bank instruments. From the seller." },
+  assay: { what: "Assay certificate: an independent inspector's report of the grade, moisture and size.", why: "The price and the payment are based on it.", when: "Before the SPA price is final, then per lot. From the inspector (SGS, Bureau Veritas, Alfred H Knight)." },
+  pof: { what: "Proof of funds: a bank letter or statement showing the buyer has the money for the first lot.", why: "No LC or escrow talk before this. It filters out time-wasters.", when: "Before the SPA and any payment instrument. From the buyer's bank." },
+  kyc: { what: "KYC company sheet: registration, directors, address, VAT and bank details of each side (ours is made here).", why: "Know who you deal with; banks, lawyers and the SPA need it.", when: "Before the SPA. From both sides." },
+  spa: { what: "Sale and purchase agreement: the contract with every term, and what happens when things go wrong.", why: "The only enforceable document. Everything else leads to it.", when: "After the checks, before payment. We draft it here; an attorney checks it once." },
+  quote: { what: "Our quote: rate per ton, VAT, what is included, with the client's acceptance.", why: "The rate is agreed in writing before the first truck moves.", when: "First. Made in Numbers › Quote PDF." },
+  contract: { what: "Transport contract: the agreement with the client (and the transporter) on rates, payment, liability, insurance.", why: "Enforceable terms.", when: "Before the loads start." },
+  insurance: { what: "Insurance certificate: goods-in-transit cover and the vehicle list.", why: "A lost or damaged load is covered, not ours to pay.", when: "Before the first load. From the transporter." },
+  tickets: { what: "Weighbridge tickets: the weight at loading and at delivery for each load.", why: "The invoice is per ton; the tickets prove the tons.", when: "Every load. From the transporter." },
+  pod: { what: "Proof of delivery: the signed delivery note per load.", why: "Payment terms run from the POD. No POD, no payment.", when: "Every load. From the receiver, via the transporter." },
+  invoices: { what: "Invoices: ours to the client, and the transporter's to us.", why: "The money trail, with VAT.", when: "Per load or per statement." },
+};
+window.STAGE_WHY = STAGE_WHY; window.STEP_WHY = STEP_WHY; window.DOC_WHY = DOC_WHY;
+const whyLine = (k, v) => v ? `<div class="whyl"><b>${k}</b><span>${esc(v)}</span></div>` : "";
+// the explainer inside an open step (short procedure only – the full kit has its own detail text)
+window.stepWhyHtml = function (s) {
+  const w = s && s._lean && STEP_WHY[s.title]; if (!w) return "";
+  return `<div class="why">${whyLine("What", w.what)}${whyLine("Why", w.why)}${whyLine("Who", w.who)}${whyLine("Done when", w.done)}</div>`;
+};
+// "How this deal runs": one line per stage, folded under the procedure strip
+window.howHtml = function (d) {
+  const st = STAGE_WHY[d.kind]; if (!st) return "";
+  const k = `how:${d.id}`, o = isOpen(k, false);
+  let h = `<button type="button" class="tmore" data-tog="${k}" data-dflt="0" aria-expanded="${o}"><span>How a ${d.kind === "transport" ? "transport" : "mineral"} deal runs</span><span class="m">${st.length} stages</span><span class="chev"></span></button>`;
+  if (o) h += `<div class="stepp how">${st.map(([n, t]) => `<div class="whyl"><b>${esc(n)}</b><span>${esc(t)}</span></div>`).join("")}<div class="quiet" style="margin-top:8px">Open a step for what it is, why, who gives it and when it counts as done. Docs has the same for every document.</div></div>`;
+  return h;
+};
+// the explainer on a document card (tap "What is this?")
+window.docWhyHtml = function (dealId, key) {
+  const w = DOC_WHY[key]; if (!w) return "";
+  const k = `docwhy:${dealId}:${key}`, o = isOpen(k, false);
+  return `<button type="button" class="whyb" data-tog="${k}" data-dflt="0" aria-expanded="${o}">${o ? "Hide" : "What is this?"}</button>${o ? `<div class="why">${whyLine("What", w.what)}${whyLine("Why", w.why)}${whyLine("When", w.when)}</div>` : ""}`;
+};
