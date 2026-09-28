@@ -469,6 +469,13 @@ async def main():
             await pg.fill(f"input[data-evid='{gt['id']}']", "buyer signed at the plant, test done on site"); await tap(f"button[data-setstep='{gt['id']}'][data-v=skip]")
             g3=await ev(f"(() => {{ const s=window._steps.find(x=>x.id==='{gt['id']}'); return s.status + ' | ' + s.evidence; }})()")
             check("Hard stop: SPA signed can't be ticked before its checks; Skip needs a reason, then counts as settled", len(gt['miss'])>0 and g1=="open" and g2=="open" and g3.startswith("na | Skipped:"), f"missing {gt['miss']} done→{g1} skip-no-reason→{g2} skip→{g3}")
+            # B3: proforma and final invoice from the deal, saved to its documents
+            await ev("setDealTab('dm1','docs'); render()"); await W()
+            await tap("button[data-dinv='dm1:Final']")
+            await ev("DOC.f.qty='1000'; DOC.f.price='2250'; DOC.f.moist='5'; DOC.f.unit='per DMT'; DOC.f.paid='500000'; docRefresh()"); await W()
+            iv=await ev("({ title: document.getElementById('docTitle').textContent, rows: docRows().rows.map(r=>r[0]+'='+r[1]).join(' | ') })")
+            await ev("document.getElementById('docSheet').classList.add('hidden')")
+            check("Final invoice: tested tons (WMT → DMT at the moisture), price, VAT, less the proforma, balance due", iv['title']=="Final invoice" and "950 DMT" in iv['rows'] and "Balance due=R 1 958 125.00" in iv['rows'], str(iv))
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

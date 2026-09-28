@@ -53,8 +53,9 @@ function docControls(d, x) {
   const r = docRow(d.id, x.k), st = r ? r.status : "", done = x.kind === "sign" ? "signed" : "received", att = docAtt(r);
   const chip = (v, w) => `<button type="button" data-doc="${d.id}:${x.k}" data-v="${v}" class="${st === v ? "on" : ""}" aria-pressed="${st === v}">${w}</button>`;
   const url = att && window._urls && window._urls[att.path];
-  return `<div class="tchips">${chip("requested", "Requested")}${chip(done, done === "signed" ? "Signed" : "Received")}${chip("na", "Not needed")}</div>
-    <div class="tchips dfile">${att ? `<span class="dfn">${ic("clip")}${url && url !== "#" ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(att.name)}</a>` : esc(att.name)}</span>` : ""}<button type="button" data-docup="${d.id}:${x.k}">${ic("clip")}${att ? "Replace" : "Upload"}</button>${x.tpl ? `<button type="button" data-tpl="${d.id}:${x.k}">${ic("file")}Make it</button>` : x.make === "quote" ? `<button type="button" data-dquote="${d.id}">${ic("file")}Make the quote</button>` : ""}</div>`;
+  const ours = x.make === "proforma" || x.make === "invoice";
+  return `<div class="tchips">${ours ? "" : chip("requested", "Requested")}${chip(done, done === "signed" ? "Signed" : ours ? "Sent" : "Received")}${chip("na", "Not needed")}</div>
+    <div class="tchips dfile">${att ? `<span class="dfn">${ic("clip")}${url && url !== "#" ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(att.name)}</a>` : esc(att.name)}</span>` : ""}<button type="button" data-docup="${d.id}:${x.k}">${ic("clip")}${att ? "Replace" : "Upload"}</button>${x.tpl ? `<button type="button" data-tpl="${d.id}:${x.k}">${ic("file")}Make it</button>` : x.make === "quote" ? `<button type="button" data-dquote="${d.id}">${ic("file")}Make the quote</button>` : x.make === "proforma" ? `<button type="button" data-dinv="${d.id}:Proforma">${ic("file")}Make the proforma</button>` : x.make === "invoice" ? `<button type="button" data-dinv="${d.id}:Final">${ic("file")}Make the final invoice</button>` : ""}</div>`;
 }
 function docCardHtml(d, x) {
   const r = docRow(d.id, x.k), it = r && r.item_id ? (window._items || []).find(i => i.id === r.item_id) : null;
