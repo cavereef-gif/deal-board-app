@@ -1319,10 +1319,10 @@ async function askBot(question, mode, focus, silent){
     const history = chat.filter(m => m.role === "user" || m.role === "assistant").slice(-12, -1).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
     const { data, error } = await sb.functions.invoke("ask", { body: { question: question || "", mode, history, focus: focus || "", app: 2 } });
     if (error) { let msg = error.message || String(error); try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){} throw new Error(msg); }
-    if (data.answer || !(data.app_actions || []).length) chat.push({ role: "assistant", text: data.answer || "(no answer)" });
+    if (data.answer || !(data.app_actions || []).length) chat.push({ role: "assistant", text: data.answer || "No answer came back – ask again in other words." });
     if (data.actions && data.actions.length) chat.push({ role: "sys", text: data.actions.join("\n") });
     for (const s of (data.suggestions || [])) chat.push({ role: "sugg", s, text: "" });
-    const goNow = window.botApply ? botApply(data.app_actions) : null;   // open / show at once; changes wait as "Do it" cards
+    const goNow = window.botApply ? botApply(data.app_actions, mode !== "ask" || !question || (window.botWantsOpen ? botWantsOpen(question) : true)) : null;   // open / show at once only when asked; changes wait as "Do it" cards
     if (mode === "brief") window._brief = { text: data.brief ? JSON.stringify(data.brief) : (data.answer || ""), created_at: new Date().toISOString(), actor: me, for_date: "" };
     botBusy = false; render();
     if (goNow) { if (view === "bot") navPush(); goNow(); }

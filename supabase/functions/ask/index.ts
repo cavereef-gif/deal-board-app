@@ -1,4 +1,4 @@
-// Record copy of the deployed Supabase edge function `ask` (v12, 26 Sep 2026: prompt caching – see "prompt caching" below; outside text is marked and never obeyed). One example name differs from v10 because this repo is public.
+// Record copy of the deployed Supabase edge function `ask` (v13, 28 Sep 2026: route_check tool + road-freight risk notes; questions are answered in words, never only with a page jump. v12, 26 Sep 2026: prompt caching – see "prompt caching" below; outside text is marked and never obeyed). One example name differs from v10 because this repo is public.
 // v10: app_action tool for the v17 app (sent app:2) – open/show/calculator at once, changes only prepared ("Do it" in the app).
 // Older apps (no app flag) get exactly the v9 tools. propose_item takes an optional due date; the board lists due dates.
 // Deploying needs Supabase access (done from the Claude project), never from this repo.
@@ -97,6 +97,28 @@ const TOOLS = [
   },
 ];
 
+// v13 (28 Sep 2026): a route question ("anything risky from Piet Retief to Richards Bay?") is answered with real figures:
+// the tools function works out the truck route, toll gates and the weather at both ends (same free services as the calculator)
+const ROUTE_TOOL = {
+  name: "route_check",
+  description: "Work out a South African truck route between two places: distance, driving time, toll gates on the way with class 3/4 costs, and rain/wind for the next 3 days at both ends. Use for any question about a route, its risks, costs or timing.",
+  input_schema: { type: "object", properties: { from: { type: "string" }, to: { type: "string" } }, required: ["from", "to"] },
+};
+async function routeCheck(url: string, auth: string, anon: string, from: string, to: string) {
+  const call = async (body: unknown) => { const r = await fetch(`${url}/functions/v1/tools`, { method: "POST", headers: { Authorization: auth, apikey: anon, "Content-Type": "application/json" }, body: JSON.stringify(body) }); return r.json().catch(() => ({})); };
+  const r = await call({ action: "route", from, to });
+  if (!r || r.ok === false || r.error || !r.km) return `Could not work out the route (${(r && (r.error || r.note)) || "no answer"}). Answer from general knowledge and say the figures are not checked.`;
+  const gates = (r.plazas || []).filter((z: any) => z.pick);
+  const c4 = gates.reduce((t: number, z: any) => t + (+z.c4 || 0), 0), c3 = gates.reduce((t: number, z: any) => t + (+z.c3 || 0), 0);
+  let wx = "";
+  try {
+    const w = await call({ action: "weather", points: [{ name: from, lat: r.a.lat, lon: r.a.lon }, { name: to, lat: r.b.lat, lon: r.b.lon }] });
+    wx = (w.weather || []).map((p: any) => `${p.name}: ` + (p.days || []).map((d: any) => `${d.date} rain ${d.rain} mm, wind up to ${d.wind} km/h`).join("; ")).join(" | ");
+  } catch { /* weather is a bonus */ }
+  return `Route ${r.from} → ${r.to}: ${r.km} km one way, about ${Math.round(r.minutes / 6) / 10} h driving (${r.provider}).` +
+    ` Toll gates one way: ${gates.length ? gates.map((z: any) => `${z.name} (${z.road}) class 4 R${z.c4}`).join(", ") + ` – total class 4 R${c4}, class 3 R${c3}` : "none found on this route"}.` +
+    (wx ? ` Weather next 3 days: ${wx}.` : "");
+}
 const TERM_KEYS = Object.keys(TERM_LABELS).filter((k) => k !== "target" && k !== "limit");
 const APP_TOOL = {
   name: "app_action",
@@ -125,6 +147,7 @@ const APP_RULES = (todayLong: string) => `
 - When the user asks to change something – a due date, urgent or not, who does it, a follow-up, chased today, ticking or unticking a checklist step, a term, the deal status, a new deal, a board message, accepting, dropping or finishing a task – prepare it with app_action do=change and end with "Tap Do it to save." Never say it is done. One change per call.
 - New tasks and waits still go through propose_item (they arrive as Suggested); give due when a day is named.
 - Never set or reveal the private target or walk-away numbers. Never send messages; drafts are for the user to send.
+- A QUESTION GETS AN ANSWER IN WORDS. Only call app_action open/show when the user asks to open, show or find something – never as the only reply to a question. For a route question call route_check first, then answer.
 - Dates: today is ${todayLong}. A weekday name means the next one to come (today counts only if the user says today). Write dates as YYYY-MM-DD in app_action.`;
 
 const BRIEF_TOOL = {
@@ -223,6 +246,7 @@ South African deal kit (researched 25 Sep 2026) – use this when advising on mi
 - Chrome export: on 25 Sep 2026 no ITAC permit and no export tax are in force (draft Notice 6712 only). Export SPAs need a change-in-law clause. Manganese has no export control. Tell the user to re-check ITAC's gazette list before each shipment.
 - Commission: typically R30–R50 per DMT; DMT = wet tonnes × (1 − moisture); payable on paid and delivered tonnes; a claim prescribes after 3 years.
 - Red flags: no mining right in the seller's name; a prospecting right or small mining permit selling big tonnages; wash plant without environmental authorisation or water use licence; night loading without papers; only the seller's own lab certificate; up-front fees; screenshot proof of funds; bank account changes; "FOB" without an exporter code, clearing agent or terminal; anyone selling an "ITAC permit"; a seller refusing a legal-origin warranty.
+- South African road freight – risks to name when asked about a route (general knowledge, not live news; tell the user to check traffic and news on the day): truck hijacking and cargo theft on the N2 through northern KwaZulu-Natal (Pongola, Mkuze, Hluhluwe, Empangeni), the N3 and the N4, and at unofficial stops – daylight driving, tracked trucks, no stops outside secure truck stops; truck-driver protests and road blockades have closed the N2 and N3 before; long queues at the Richards Bay terminals (book slots, check the terminal's rules and weighbridge); potholed provincial roads (R33/R34 via Vryheid, R543) and mist or heavy rain on the escarpment; overloading fines at weighbridges (legal payload, e.g. about 34 t on a side tipper); fuel price changes on the first Wednesday of the month. Piet Retief is also called eMkhondo (Mpumalanga).
 - Each open step in the current stage shows "closes with" – the document that proves it. When asked what is missing, name that document. You never tick steps.
 
 ${board}
@@ -325,7 +349,7 @@ Deno.serve(async (req: Request) => {
     let answer = "";
     for (let round = 0; round < 4; round++) {
       const briefMode = mode === "brief";
-      const resp = await anthropic(key, { model: MODEL, max_tokens: mode === "chat" ? 2000 : briefMode ? 2500 : 1500, system, tools: briefMode ? [BRIEF_TOOL] : appV >= 2 ? [...TOOLS, APP_TOOL] : TOOLS, ...(briefMode ? { tool_choice: { type: "tool", name: "write_brief" } } : {}), messages });
+      const resp = await anthropic(key, { model: MODEL, max_tokens: mode === "chat" ? 2000 : briefMode ? 2500 : 1500, system, tools: briefMode ? [BRIEF_TOOL] : appV >= 2 ? [...TOOLS, APP_TOOL, ROUTE_TOOL] : [...TOOLS, ROUTE_TOOL], ...(briefMode ? { tool_choice: { type: "tool", name: "write_brief" } } : {}), messages });
       if (briefMode) {
         const u = (resp.content || []).find((c: any) => c.type === "tool_use" && c.name === "write_brief");
         if (!u) throw new Error("The bot did not return a brief. Try again.");
@@ -406,6 +430,8 @@ Deno.serve(async (req: Request) => {
             suggestions.push(s);
             actions.push(`Suggested ${s.field} change for ${s.target} — tap Apply below to accept.`);
             out = "suggestion shown to user with an Apply button";
+          } else if (u.name === "route_check") {
+            out = await routeCheck(url, auth, Deno.env.get("SUPABASE_ANON_KEY")!, String(u.input.from || ""), String(u.input.to || ""));
           } else if (u.name === "app_action" && appV >= 2) {
             const a = { ...u.input };
             const t = a.target_type, tid = String(a.target_id || "");
@@ -419,6 +445,12 @@ Deno.serve(async (req: Request) => {
         results.push({ type: "tool_result", tool_use_id: u.id, content: out });
       }
       messages.push({ role: "user", content: results });
+    }
+    // a question must never come back empty (v13): if the rounds ended with only a page jump or tool results, ask once more for words
+    if (!answer.trim() && mode !== "brief") {
+      if (messages[messages.length - 1].role === "assistant") messages.push({ role: "user", content: "Answer my question in plain words now." });
+      const fin = await anthropic(key, { model: MODEL, max_tokens: 900, system, tools: appV >= 2 ? [...TOOLS, APP_TOOL, ROUTE_TOOL] : [...TOOLS, ROUTE_TOOL], tool_choice: { type: "none" }, messages });
+      answer = (fin.content || []).filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim();
     }
     await admin.from("events").insert({ item_id: null, field: "bot", old_value: mode, new_value: userText.slice(0, 300), changed_by: actor, source: "bot" });
     return json({ answer: answer || (app_actions.length ? "" : "(no answer)"), actions, suggestions, reload, ...(appV >= 2 ? { app_actions: app_actions.slice(0, 12) } : {}) });
