@@ -318,11 +318,11 @@ const LEAN_STEPS = {
     { st: "3. Grade test", t: "Test paid (escrow or cash)", codes: ["v2.05"], old: /test paid/i },
     { st: "3. Grade test", t: "Grade test passed", codes: ["v2.10", "5.2"], old: /independent assay|assay 1|grade test passed/i, doc: ["assay"] },
     { st: "4. Contract", t: "FCO in", codes: ["v2.11", "4.2"], old: /\bFCO\b/i, doc: ["fco"] },
-    { st: "4. Contract", t: "SPA signed", codes: ["v2.12", "6.7"], old: /SPA signed/i, doc: ["spa"] },
+    { st: "4. Contract", t: "SPA signed", codes: ["v2.12", "6.7"], old: /SPA signed/i, doc: ["spa"], gate: ["Buyer checked", "Stockpile checked", "Grade test passed"] },
     { st: "4. Contract", t: "Purchase order in", codes: ["v2.06"], old: /purchase order/i, doc: ["po"] },
     { st: "5. Invoice and load", t: "Proforma invoice sent", codes: ["v2.07"], old: /proforma/i, doc: ["proforma"] },
-    { st: "5. Invoice and load", t: "Loads delivered", codes: ["v2.13", "8.1", "8.2"], old: /loaded and weighed|trial/i, gate: 1 },
-    { st: "5. Invoice and load", t: "Final invoice sent", codes: ["v2.08", "11.3", "11.1"], old: /final invoice|tax invoice/i, doc: ["invoice"] },
+    { st: "5. Invoice and load", t: "Loads delivered", codes: ["v2.13", "8.1", "8.2"], old: /loaded and weighed|trial/i, gate: ["SPA signed", "Grade test passed", "Proforma invoice sent"] },
+    { st: "5. Invoice and load", t: "Final invoice sent", codes: ["v2.08", "11.3", "11.1"], old: /final invoice|tax invoice/i, doc: ["invoice"], gate: ["Loads delivered"] },
     { st: "6. Paid", t: "Seller paid", codes: ["v2.14", "11.5"], old: /buyer paid the seller|seller confirms/i },
     { st: "6. Paid", t: "Commission paid", codes: ["v2.15", "12.2"], old: /our commission received|commission received/i },
   ],
@@ -337,7 +337,7 @@ const LEAN_STEPS = {
     { st: "3. Terms", t: "Transporter rate", codes: ["t3.3"], old: /transporter rate/i },
     { st: "4. Contract", t: "Insurance in", codes: ["t4.2"], old: /GIT insurance/i, doc: ["insurance"] },
     { st: "4. Contract", t: "Contract signed", codes: ["t5.1"], old: /agreement signed with the client/i, doc: ["contract"] },
-    { st: "5. Loads", t: "Trial load done", codes: ["t6.1"], old: /trial load delivered/i, doc: ["pod", "tickets"] },
+    { st: "5. Loads", t: "Trial load done", codes: ["t6.1"], old: /trial load delivered/i, doc: ["pod", "tickets"], gate: ["Client rate set", "Insurance in", "Contract signed"] },
     { st: "5. Loads", t: "Margin paid", codes: ["t8.2"], old: /margin received/i },
   ],
 };
@@ -375,7 +375,7 @@ window.leanStageOf = function (dealId, stepId) {
 };
 // a document came in or was signed: the step it closes is ticked (a person's own tap – never the bot)
 async function leanTickFromDoc(d, docKey, label) {
-  const hits = leanSteps(d, stepsOf(d.id)).filter(s => s._lean && (s._lean.doc || []).includes(docKey) && s.status === "open");
+  const hits = leanSteps(d, stepsOf(d.id)).filter(s => s._lean && (s._lean.doc || []).includes(docKey) && s.status === "open" && !(window.stepGateMissing && stepGateMissing(d, s.id).length));
   for (const h of hits) {
     const st = (window._steps || []).find(x => x.id === h.id); if (!st) continue;
     const ev = `${label} – in Documents`;
@@ -726,3 +726,77 @@ window.dealSummaryHtml = function (d, pg) {
   if (window.trustLine) { const t = trustLine(d); if (t) rows.push(["Checks", t]); }
   return `<div class="tplfrom dsum">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };
+
+// ---------- hard stops (28 Sep 2026 night) ----------
+// A step with a gate cannot be ticked Done while the steps it depends on are still open ("don't let the deal jump over the
+// dangerous steps"). A step can instead be Not needed, or Skipped with a reason written down – both count as settled.
+function stepGateMissing(d, stepId) {
+  const all = leanSteps(d, stepsOf(d.id)), s = all.find(x => x.id === stepId), g = s && s._lean && s._lean.gate;
+  if (!Array.isArray(g)) return [];
+  return g.filter(t => { const x = all.find(y => y.title === t); return x && x.status === "open"; });
+}
+window.stepGateMissing = stepGateMissing;
+window.dealBlockers = function (d, pg) {
+  const out = [];
+  if (pg.next) stepGateMissing(d, pg.next.id).forEach(t => out.push(t.toLowerCase() + " first"));
+  if (window.trustFlags) trustFlags(d).forEach(f => out.push(f));
+  return out;
+};
+
+// ---------- trust check (28 Sep 2026 night) ----------
+// Chris: "we want to verify our buyers ASAP and we want to verify the stockpile ASAP ... no one trusts each other". A short list
+// per side, ticked by a person (never the bot), kept in the deal (params._trust – app data, never sent out). When the must-haves
+// of a side are ticked, its step (Buyer checked / Stockpile checked) is ticked with that as the proof. A red flag shows on the
+// deal until it is cleared.
+const TRUST = {
+  buyer: { l: "Buyer", step: "Buyer checked", items: [
+    ["cipc", "Company found on CIPC – name, registration number, directors", 1],
+    ["bank", "Their bank confirmed them – we phoned the bank's own number, not the one on their letter", 1],
+    ["who", "The person signing is a director or has a signed mandate", 1],
+    ["refs", "References or past trades checked", 0],
+    ["before", "We have dealt with them before", 0]] },
+  seller: { l: "Stockpile", step: "Stockpile checked", items: [
+    ["cipc", "Seller's company found on CIPC", 1],
+    ["right", "Mining right or permit seen (with its number)", 1],
+    ["owner", "Proof the stockpile belongs to the seller", 1],
+    ["seen", "Stockpile seen – site visit, or dated photos with the location", 1],
+    ["assay", "Seller's own assay seen", 0],
+    ["access", "Access agreed for the buyer's sampling", 0]] },
+};
+const FLAGS = [["fee", "Asked for money up front (a 'fee', 'verification cost', 'bank charges')"], ["bg", "Offered a bank guarantee, SBLC or MT760 we could not confirm with the issuing bank"], ["pressure", "Pressure to sign today, or 'other buyers waiting'"], ["docs", "Documents that look edited, or names that don't match CIPC"]];
+window.TRUST = TRUST;
+const trustOf = d => leanP(d)._trust || {};
+function trustCount(d, side) { const t = trustOf(d)[side] || {}, it = TRUST[side].items; return { done: it.filter(([k]) => t[k]).length, all: it.length, must: it.filter(x => x[2]).every(([k]) => t[k]) }; }
+window.trustFlags = d => { const f = trustOf(d).flags || {}; return FLAGS.filter(([k]) => f[k]).map(([, l]) => "red flag: " + l.split(" (")[0].toLowerCase()); };
+window.trustLine = function (d) {
+  if (d.kind !== "mineral") return "";
+  const b = trustCount(d, "buyer"), s = trustCount(d, "seller"), fl = trustFlags(d).length;
+  return `buyer ${b.done} of ${b.all}${b.must ? " ✓" : ""} · stockpile ${s.done} of ${s.all}${s.must ? " ✓" : ""}${fl ? ` · ${fl} red flag${fl > 1 ? "s" : ""}` : ""}`;
+};
+window.trustHtml = function (d) {
+  if (d.kind !== "mineral") return "";
+  const t = trustOf(d), f = t.flags || {};
+  const side = k => { const c = trustCount(d, k), v = t[k] || {};
+    return `<div class="trow trust"><div class="k"><b>${TRUST[k].l}</b><span>${c.done} of ${c.all}${c.must ? " · must-haves done" : ""}</span></div><div class="tlist">${TRUST[k].items.map(([ik, l, must]) => `<button type="button" class="tck${v[ik] ? " on" : ""}" data-trust="${d.id}:${k}:${ik}" aria-pressed="${!!v[ik]}"><i aria-hidden="true">${v[ik] ? "✓" : ""}</i><span>${esc(l)}${must ? "" : " <small>(if you can)</small>"}${v[ik] ? `<small>${esc([v[ik].by, v[ik].on ? shortDate(v[ik].on) : ""].filter(Boolean).join(" · "))}</small>` : ""}</span></button>`).join("")}</div></div>`; };
+  return rplain("trust check", trustLine(d)) + side("buyer") + side("seller")
+    + `<div class="trow trust flags"><div class="k"><b>Red flags</b><span>${trustFlags(d).length || "none"}</span></div><div class="tlist">${FLAGS.map(([k, l]) => `<button type="button" class="tck flag${f[k] ? " on" : ""}" data-trust="${d.id}:flags:${k}" aria-pressed="${!!f[k]}"><i aria-hidden="true">${f[k] ? "!" : ""}</i><span>${esc(l)}</span></button>`).join("")}</div><div class="tnote">Never pay a fee to "verify" a deal. Confirm any bank guarantee or SBLC with the issuing bank yourself before you rely on it.</div></div>`;
+};
+document.addEventListener("click", async e => {
+  const b = e.target.closest && e.target.closest("button[data-trust]"); if (!b) return;
+  const [id, side, k] = b.dataset.trust.split(":"), d = dealById(id); if (!d) return;
+  const p = { ...leanP(d) }, t = JSON.parse(JSON.stringify(p._trust || {})); t[side] = t[side] || {};
+  if (t[side][k]) delete t[side][k]; else t[side][k] = side === "flags" ? { on: saDayPlus(0), by: me || "" } : { on: saDayPlus(0), by: me || "" };
+  p._trust = t;
+  await leanSaveParams(d, p, side === "flags" ? (t.flags[k] ? "Red flag noted." : "Red flag cleared.") : "Saved.");
+  // the must-haves of a side are all ticked: tick its step (a person's own tap made this happen)
+  if (side !== "flags") {
+    const c = trustCount(dealById(id) || d, side);
+    const step = leanSteps(d, stepsOf(d.id)).find(s => s.title === TRUST[side].step);
+    if (c.must && step && step.status === "open") {
+      const st = (window._steps || []).find(x => x.id === step.id), ev = `Trust check: ${c.done} of ${c.all} ticked`;
+      if (DEMO) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev });
+      else { const { error } = await sb.rpc("set_step", { p_id: st.id, p_status: "done", p_evidence: ev }); if (!error) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev }); }
+      toast(`${TRUST[side].step} – ticked.`); render();
+    }
+  }
+});

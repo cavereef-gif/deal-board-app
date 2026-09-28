@@ -1407,3 +1407,8 @@ a.abtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 
 .post .pm{flex-wrap:wrap;row-gap:4px}
 .post .pm .sp{flex:1 0 100%}
 .tplfrom.dsum .kv .k{flex:0 0 96px}.tplfrom.dsum .kv .v{text-align:left}
+.trow.trust .tlist{display:flex;flex-direction:column;gap:4px}
+.trow.trust .tck{display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;text-align:left;justify-content:flex-start;font-size:15px}
+.trow.trust .tck i{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--muted);font-style:normal}
+.trow.trust .tck.on i{background:var(--accent,var(--card2))}
+.trow.trust .tck small{display:block;font-size:14px;color:var(--muted)}
