@@ -304,21 +304,27 @@ window.docRow = docRow; window.pofIn = pofIn;
 // The steps a broker really uses, mapped onto the kit's steps (by code) or the old checklist (by title). The full kit stays
 // in the database; "Show all steps" brings it back. doc: the Documents row that closes the step; needs: what must come first.
 const LEAN_STEPS = {
+  // 28 Sep 2026 night – Chris's own order: check the buyer and the stockpile first, then LOI → ICPO → proof of funds → grade
+  // test (escrow or cash) → FCO → SPA → purchase order → proforma invoice → final invoice after the test. v2.xx codes are the
+  // steps the kit did not have (added to a deal by lean_seed_v2, database change 014).
   mineral: [
-    { st: "1. Start", t: "Buyer's needs", codes: ["1.1"], old: /buyer identified/i },
-    { st: "1. Start", t: "NCNDA signed", codes: ["1.4"], old: /\bNCNDA\b/i, doc: ["ncnda"] },
-    { st: "2. Our cut", t: "IMFPA signed", codes: ["2.1"], old: /IMFPA|commission agreement/i, doc: ["imfpa"] },
-    { st: "3. Offers", t: "LOI or ICPO in", codes: ["4.1"], old: /\bLOI\b|\bICPO\b/i, doc: ["loi", "icpo"] },
-    { st: "3. Offers", t: "FCO received", codes: ["4.2"], old: /\bFCO\b/i, doc: ["fco"] },
-    { st: "4. Checks", t: "Ownership proof", codes: ["5.3"], old: /proof of ownership/i, doc: ["poo"] },
-    { st: "4. Checks", t: "Proof of funds", codes: ["3.7"], old: /proof of funds/i, doc: ["pof"] },
-    { st: "4. Checks", t: "KYC both sides", codes: ["3.1"], old: /\bKYC\b/i, doc: ["kyc"] },
-    { st: "4. Checks", t: "Assay passed", codes: ["5.2"], old: /independent assay/i, doc: ["assay"] },
-    { st: "5. Contract", t: "SPA signed", codes: ["6.7"], old: /SPA signed/i, doc: ["spa"] },
-    { st: "5. Contract", t: "Payment secured", codes: ["7.1", "7.2"], old: /payment instrument agreed/i, needs: "pof" },
-    { st: "6. Delivery", t: "Loads delivered", codes: ["8.1", "8.2"], old: /loaded and weighed/i },
-    { st: "6. Delivery", t: "Seller paid", codes: ["11.5"], old: /buyer paid the seller/i },
-    { st: "6. Delivery", t: "Commission paid", codes: ["12.2"], old: /our commission received/i },
+    { st: "1. Check both sides", t: "Buyer checked", codes: ["v2.01"], old: /^Buyer checked$/, trust: "buyer" },
+    { st: "1. Check both sides", t: "Stockpile checked", codes: ["v2.02", "5.1"], old: /site visit|stockpile checked/i, trust: "seller", doc: ["poo"] },
+    { st: "1. Check both sides", t: "NCNDA signed", codes: ["v2.16", "1.4"], old: /\bNCNDA\b/i, doc: ["ncnda"] },
+    { st: "1. Check both sides", t: "IMFPA signed", codes: ["v2.17", "2.1"], old: /IMFPA|commission agreement/i, doc: ["imfpa"] },
+    { st: "2. Buyer's offer", t: "LOI in", codes: ["v2.03", "4.1"], old: /\bLOI\b/i, doc: ["loi"] },
+    { st: "2. Buyer's offer", t: "ICPO in", codes: ["v2.04"], old: /\bICPO\b/i, doc: ["icpo"] },
+    { st: "2. Buyer's offer", t: "Proof of funds", codes: ["v2.09", "3.7"], old: /proof of funds/i, doc: ["pof"] },
+    { st: "3. Grade test", t: "Test paid (escrow or cash)", codes: ["v2.05"], old: /test paid/i },
+    { st: "3. Grade test", t: "Grade test passed", codes: ["v2.10", "5.2"], old: /independent assay|assay 1|grade test passed/i, doc: ["assay"] },
+    { st: "4. Contract", t: "FCO in", codes: ["v2.11", "4.2"], old: /\bFCO\b/i, doc: ["fco"] },
+    { st: "4. Contract", t: "SPA signed", codes: ["v2.12", "6.7"], old: /SPA signed/i, doc: ["spa"] },
+    { st: "4. Contract", t: "Purchase order in", codes: ["v2.06"], old: /purchase order/i, doc: ["po"] },
+    { st: "5. Invoice and load", t: "Proforma invoice sent", codes: ["v2.07"], old: /proforma/i, doc: ["proforma"] },
+    { st: "5. Invoice and load", t: "Loads delivered", codes: ["v2.13", "8.1", "8.2"], old: /loaded and weighed|trial/i, gate: 1 },
+    { st: "5. Invoice and load", t: "Final invoice sent", codes: ["v2.08", "11.3", "11.1"], old: /final invoice|tax invoice/i, doc: ["invoice"] },
+    { st: "6. Paid", t: "Seller paid", codes: ["v2.14", "11.5"], old: /buyer paid the seller|seller confirms/i },
+    { st: "6. Paid", t: "Commission paid", codes: ["v2.15", "12.2"], old: /our commission received|commission received/i },
   ],
   transport: [
     { st: "1. Qualify", t: "Client confirmed", codes: ["t1.1"], old: /client and receiver/i },
@@ -338,15 +344,26 @@ const LEAN_STEPS = {
 window.LEAN_STEPS = LEAN_STEPS;
 const leanAll = id => isOpen("allsteps:" + id, false);
 window.leanAll = leanAll;
+// a mineral deal made before 28 Sep night has no rows for the new steps (Buyer checked, ICPO in …): add them once (change 014)
+const leanSeeded = new Set();
+function leanEnsure(d, missing) {
+  if (leanSeeded.has(d.id) || !missing.length) return; leanSeeded.add(d.id);
+  if (DEMO) {
+    missing.forEach((def, n) => (window._steps ||= []).push({ id: "v2" + d.id + n, deal_id: d.id, stage: def.st, sort: 900 + n, title: def.t, status: "open", custom: false, code: def.codes[0], created_at: new Date().toISOString() }));
+    setTimeout(render, 0); return;
+  }
+  sb.rpc("lean_seed_v2", { p_deal: d.id }).then(r => { if (!r.error && r.data > 0) load(); });
+}
 function leanSteps(d, steps) {
   const defs = d && LEAN_STEPS[d.kind]; if (!defs || !steps.length) return steps;
-  const used = new Set(), out = [];
+  const used = new Set(), out = [], missing = [];
   defs.forEach((def, i) => {
     const s = steps.find(x => !used.has(x.id) && ((x.code && def.codes.includes(x.code)) || (!x.code && !x.custom && def.old.test(x.title))));
-    if (!s) return; used.add(s.id);
+    if (!s) { if (d.kind === "mineral" && /^v2\./.test(def.codes[0])) missing.push(def); return; } used.add(s.id);
     out.push(Object.assign({}, s, { stage: def.st, title: def.t, sort: i + 1, _lean: def, _full: s.title }));
   });
   steps.filter(x => x.custom && !used.has(x.id)).forEach((s, j) => out.push(Object.assign({}, s, { stage: "Extra steps", sort: 900 + j })));
+  if (missing.length) leanEnsure(d, missing);
   return out.length ? out : steps;
 }
 window.leanSteps = leanSteps;
@@ -602,10 +619,20 @@ function demoMarket() {
 // ---------- plain-words explanations (28 Sep 2026, Chris: "I need explanation for procedures and what each document is for and why") ----------
 // One entry per short-procedure step and per document: what it is, why we need it, who gives it, when it counts as done.
 const STAGE_WHY = {
-  mineral: [["1. Start", "know exactly what the buyer wants, and lock in the NCNDA before names are shared"], ["2. Our cut", "the IMFPA writes our commission into the deal"], ["3. Offers", "the buyer's LOI or ICPO and the seller's FCO meet in the middle"], ["4. Checks", "is it real? ownership, funds, company papers and an assay"], ["5. Contract", "the SPA is signed, then the buyer's payment is secured"], ["6. Delivery", "loads go, the seller is paid, our commission is paid"]],
+  mineral: [["1. Check both sides", "is the buyer real, is the stockpile real – before anyone spends money; then the NCNDA and IMFPA"], ["2. Buyer's offer", "the buyer's LOI, then the ICPO, then the proof of funds the seller wants before paperwork"], ["3. Grade test", "the buyer tests the stockpile – paid by escrow or cash – and the grade must pass"], ["4. Contract", "the seller's FCO, the SPA signed, then the buyer's purchase order"], ["5. Invoice and load", "proforma invoice, the loads, then the final invoice on the tested grade and tons"], ["6. Paid", "the seller is paid, then our commission"]],
   transport: [["1. Qualify", "who pays, what moves where, and trucks that can move it"], ["2. Protect", "the NCNDA and the split per ton, in writing"], ["3. Terms", "client rate with VAT, payment terms, transporter rate"], ["4. Contract", "insurance in and the agreement signed"], ["5. Loads", "a trial load with POD and tickets, then the margin"]],
 };
 const STEP_WHY = {
+  "Buyer checked": { what: "Is the buyer real? Company on CIPC, directors, a bank that confirms them when we phone it ourselves, references, have we dealt before.", why: "Most chrome scams start with a buyer or mandate that is not what it says. Check before any names or papers go out.", who: "Us", done: "Buyer checks ticked (Trust check on this page)" },
+  "Stockpile checked": { what: "Is the stockpile real and the seller's to sell? Ownership proof, mining right or permit, a site visit or dated photos, the seller's own assay.", why: "No buyer tests a stockpile that may not exist or belong to someone else.", who: "Us, with the seller", done: "Stockpile checks ticked; ownership proof in Docs" },
+  "LOI in": { what: "The buyer's letter of intent: what they want, how much, at what price and basis.", why: "The seller asks for it first – it shows the buyer is serious.", who: "Buyer", done: "LOI in Docs" },
+  "ICPO in": { what: "The buyer's irrevocable purchase order: a firm order with quantity, spec, price and validity.", why: "The seller acts on the ICPO; it comes after the LOI.", who: "Buyer", done: "ICPO in Docs" },
+  "Test paid (escrow or cash)": { what: "Who pays for the buyer's grade test of the stockpile, and how: through escrow (an attorney's trust account or TradeSafe) or in cash.", why: "Breaks the catch-22: funds sit with a neutral party while the buyer samples – nobody hands the other side anything risky.", who: "Buyer (and the seller agrees access)", done: "Payment for the test confirmed" },
+  "Grade test passed": { what: "The buyer's inspector samples the stockpile; the lab report shows the grade, moisture and size.", why: "The price depends on the grade. The buyer pays on the test, not on promises.", who: "The inspector (SGS, Intertek, ALS …)", done: "Lab report in Docs" },
+  "FCO in": { what: "The seller's full corporate offer: price, spec, quantity, delivery, payment and how long it holds.", why: "The firm offer the SPA is written from.", who: "Seller", done: "FCO in Docs" },
+  "Purchase order in": { what: "The buyer's purchase order under the signed SPA: the first lot or month, with quantity and delivery.", why: "It triggers the proforma invoice and the loading plan.", who: "Buyer", done: "Purchase order in Docs" },
+  "Proforma invoice sent": { what: "A proforma invoice for the lot: quantity, price, basis, VAT and payment details – not yet the final amount.", why: "The buyer pays or secures payment against it before loading.", who: "Us or the seller", done: "Proforma made in Docs and sent" },
+  "Final invoice sent": { what: "The final invoice after testing: the tested grade and the weighed tons, with any price adjustment.", why: "What is really owed – the proforma was only the estimate.", who: "Us or the seller", done: "Final invoice made in Docs and sent" },
   "Buyer's needs": { what: "Write down exactly what the buyer wants: ore, grade, tons a month, where it must be delivered, how they pay.", why: "Everything after this is measured against it. A vague brief wastes weeks.", who: "Us, with the buyer", done: "The requirement is in the deal's terms" },
   "NCNDA signed": { what: "A non-circumvention, non-disclosure agreement: nobody goes around us or shares the other side's contacts.", why: "It protects our commission and our contacts before any names are shared.", who: "Both sides sign, with us", done: "Signed copy in Docs" },
   "IMFPA signed": { what: "The fee protection agreement: the paying party promises our commission on every lot, with the split.", why: "Without it a buyer or seller can forget us once they have each other.", who: "The party that pays the commission, and us", done: "Signed copy in Docs" },
@@ -633,6 +660,9 @@ const STEP_WHY = {
   "Margin paid": { what: "Our margin on the loads is paid.", why: "Finished only when the money is in.", who: "Client", done: "Proof of payment" },
 };
 const DOC_WHY = {
+  po: { what: "Purchase order: the buyer's order for a lot or a month under the signed SPA.", why: "It starts the proforma invoice and the loading plan.", when: "After the SPA. From the buyer." },
+  proforma: { what: "Proforma invoice: the amount for the lot before loading – quantity, price, basis, VAT, payment details.", why: "The buyer pays, or secures payment, against it before trucks load.", when: "After the purchase order. We make it here (Make the proforma)." },
+  invoice: { what: "Final invoice: the tested grade and weighed tons, with any price adjustment against the proforma.", why: "What is really owed once the lab and the weighbridge have spoken.", when: "After the loads are tested and weighed. We make it here (Make the final invoice)." },
   ncnda: { what: "Non-circumvention, non-disclosure agreement: nobody goes around us or shares the other side's contacts.", why: "Protects our commission and our names before anyone talks to anyone.", when: "First, before names are shared. Both sides sign; we make it here." },
   imfpa: { what: "Fee protection agreement: the paying party promises our commission on every lot, with the split.", why: "Our income is written into the deal, not left to goodwill.", when: "Right after the NCNDA. We make it here from the split." },
   loi: { what: "Letter of intent: the buyer says what they want to buy and on what terms.", why: "Shows the buyer is serious and gives the seller enough to make a firm offer.", when: "Before the seller's offer. From the buyer; we can draft it." },
@@ -670,4 +700,29 @@ window.docWhyHtml = function (dealId, key) {
   const w = DOC_WHY[key]; if (!w) return "";
   const k = `docwhy:${dealId}:${key}`, o = isOpen(k, false);
   return `<button type="button" class="whyb" data-tog="${k}" data-dflt="0" aria-expanded="${o}">${o ? "Hide" : "What is this?"}</button>${o ? `<div class="why">${whyLine("What", w.what)}${whyLine("Why", w.why)}${whyLine("When", w.when)}</div>` : ""}`;
+};
+
+// ---------- the deal on one screen (28 Sep 2026 night) ----------
+// Next · blocking · waiting on · money · terms · documents · checks – the short answer to "where is this deal?". The full
+// procedure stays underneath. Everything here is worked out from what is saved; nothing is guessed.
+window.dealSummaryHtml = function (d, pg) {
+  if (d.kind !== "mineral" && d.kind !== "transport") return "";
+  const p = leanP(d), rows = [];
+  const s = pg.next, L = (s && s._lean) || {};
+  if (s) rows.push(["Next", [s.title, s.owner, s.due_on ? "by " + keyDay(s.due_on) : ""].filter(Boolean).join(" · ")]);
+  else if (pg.total) rows.push(["Next", "all steps done – mark the deal Won"]);
+  const block = window.dealBlockers ? dealBlockers(d, pg) : [];
+  if (L.needs === "pof" && !pofIn(d)) block.unshift("proof of funds not in");
+  rows.push(["Blocking", block.length ? block.join(" · ") : "nothing"]);
+  const waits = (typeof itemsOf === "function" ? itemsOf(d.id) : []).filter(i => !i._me), late = waits.filter(i => i.due_on && dayDiff(dueDate(i)) < 0).length;
+  rows.push(["Waiting on", waits.length ? `${waits[0].waiting_on} – ${waits[0].waiting_for}${waits.length > 1 ? ` (+${waits.length - 1} more)` : ""}${late ? ` · ${late} late` : ""}` : "nobody"]);
+  const money = window.dealMoneyLine ? dealMoneyLine(d) : "";
+  if (money) rows.push(["Money", money]);
+  const main = (LEAN_TERMS[d.kind] || {}).main || [], set = main.filter(t => !isUnset(p[t.k])).length;
+  rows.push(["Terms", `${set} of ${main.length} agreed${set < main.length ? " · missing: " + main.filter(t => isUnset(p[t.k])).slice(0, 3).map(t => t.l.toLowerCase()).join(", ") + (main.length - set > 3 ? " …" : "") : ""}`]);
+  const dl = (window.DOCS && DOCS[d.kind]) || [], st = k => (docRow(d.id, k) || {}).status;
+  const dIn = dl.filter(x => /received|signed/.test(st(x.k) || "")).length, dAsk = dl.filter(x => st(x.k) === "requested").length, dNa = dl.filter(x => st(x.k) === "na").length;
+  rows.push(["Documents", `${dIn} in · ${dAsk} asked · ${dl.length - dIn - dAsk - dNa} still to get`]);
+  if (window.trustLine) { const t = trustLine(d); if (t) rows.push(["Checks", t]); }
+  return `<div class="tplfrom dsum">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };

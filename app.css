@@ -1406,3 +1406,4 @@ a.abtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 
 /* 28 Sep 2026 evening: Pin · Done · Remove wrap under the name and time so nothing spills out of the bubble */
 .post .pm{flex-wrap:wrap;row-gap:4px}
 .post .pm .sp{flex:1 0 100%}
+.tplfrom.dsum .kv .k{flex:0 0 96px}.tplfrom.dsum .kv .v{text-align:left}

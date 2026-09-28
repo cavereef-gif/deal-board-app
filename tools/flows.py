@@ -397,7 +397,7 @@ async def main():
             await ev("setDealTab('dm1','steps'); render()"); await W()
             await tap("button[data-tog='allsteps:dm1']"); pa=await ev("dealProgress('dm1').total")
             await tap("button[data-tog='allsteps:dm1']"); pb=await ev("dealProgress('dm1').total")
-            check("Procedure: only the steps we use (14 in 6 stages); Show all brings the full 39 back and hides them again", pr['lean']==14 and pr['stages']==6 and pr['all']==39 and pa==39 and pb==14, f"{pr} all {pa} back {pb}")
+            check("Procedure in Chris's order (17 steps in 6 stages: check both sides first … final invoice); Show all brings the full 44 back and hides them again", pr['lean']==17 and pr['stages']==6 and pr['all']==44 and pa==44 and pb==17, f"{pr} all {pa} back {pb}")
             await ev("(()=>{ const d=dealById('dm1'); d.params=Object.assign({}, d.params, {seller:'Zeta Mining (demo)', target:'R45 per DMT', limit:'R30 per DMT', commission:'R40 per DMT'}) })()")
             await tap("button[data-dstatus='dm1']"); await tap("#stCopy")
             t1=await ev("window._lastCopy || ''")

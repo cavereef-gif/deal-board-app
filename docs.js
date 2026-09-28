@@ -19,6 +19,9 @@ const DOCS = {
     { k: "assay", l: "Assay", sub: "lab certificate", kind: "get", side: "seller" },
     { k: "pof", l: "Proof of funds", sub: "buyer's bank letter – before any LC", kind: "get", side: "buyer" },
     { k: "kyc", l: "KYC", sub: "company papers, both sides", kind: "get", side: "both", tpl: 1 },
+    { k: "po", l: "Purchase order", sub: "buyer's order under the SPA", kind: "get", side: "buyer" },
+    { k: "proforma", l: "Proforma invoice", sub: "before loading – we make it", kind: "get", side: "buyer", make: "proforma" },
+    { k: "invoice", l: "Final invoice", sub: "after the test – we make it", kind: "get", side: "buyer", make: "invoice" },
   ],
   transport: [
     { k: "quote", l: "Accepted quote", sub: "the client signs our quote", kind: "sign", side: "client", make: "quote" },
@@ -63,7 +66,7 @@ window.docsTabHtml = function (d) {
   if (list.length) {
     const inN = list.filter(x => docIn(docRow(d.id, x.k))).length, reqN = list.filter(x => (docRow(d.id, x.k) || {}).status === "requested").length;
     h += rplain(`documents · ${d.kind === "transport" ? "transport" : "minerals"}`, `${inN} of ${list.length} in${reqN ? ` · ${reqN} asked` : ""}`, true);
-    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: NCNDA → IMFPA → LOI or ICPO → FCO → KYC, proof of ownership, proof of funds, assay → SPA → the payment secured. Tap What is this? on any document.");
+    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: check the buyer and the stockpile (proof of ownership, KYC) → NCNDA → IMFPA → LOI → ICPO → proof of funds → grade test (assay) → FCO → SPA → purchase order → proforma invoice → final invoice. Tap What is this? on any document.");
     h += list.map(x => docCardHtml(d, x)).join("");
     if (list.some(x => x.tpl)) h += rfoot("Make it fills a generic draft from this deal and our company details – have an SA commercial attorney check the NCNDA, IMFPA and SPA once before first use");
   }

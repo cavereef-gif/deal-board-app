@@ -856,6 +856,7 @@ function dealPageHtml(d){
   h += `<div class="dtabs4" role="tablist">${tabs.map(([k, icn, label]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}</button>`).join("")}</div><div class="dpanel">`;
   if (t === "steps") {
     // the next step first, with the buttons that move it (28 Sep: "step up the workflow")
+    if (window.dealSummaryHtml) h += dealSummaryHtml(d, pg);   // the deal on one screen (28 Sep night)
     if (window.nextCardHtml) h += nextCardHtml(d, pg);
     const all = window.leanAll ? leanAll(d.id) : true, kit = window.kitSecHtml && (d.kit || all) ? kitSecHtml(d) : "";
     h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");

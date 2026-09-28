@@ -749,3 +749,7 @@ html[data-ion][data-palette] .secbar.fl>button.fadd:after{display:none}
    (off-white with an outline) and the answer (ion) */
 html[data-ion][data-palette] .icard.wo{background:#CBD5DE;background-color:#CBD5DE}
 html[data-ion="twilight"][data-palette] .icard.wo{background:#CFE0E6;background-color:#CFE0E6}
+/* 28 Sep 2026 night: the deal on one screen */
+html[data-ion][data-palette] .tplfrom.dsum{margin:8px 0 10px}
+html[data-ion][data-palette] .tplfrom.dsum .kv .k{flex:0 0 96px;color:var(--muted)}
+html[data-ion][data-palette] .tplfrom.dsum .kv .v{text-align:left}
