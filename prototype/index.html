@@ -9,9 +9,9 @@
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"||p==="twilight"){d.dataset.palette="titanium";d.dataset.ion=p==="twilight"?"twilight":"1"}else d.dataset.palette=p})()</script>
-<link rel="stylesheet" href="app.css?v=17.202609281757">
-<link rel="stylesheet" href="titanium.css?v=17.202609281757">
-<link rel="stylesheet" href="ion.css?v=17.202609281757">
+<link rel="stylesheet" href="app.css?v=17.202609282009">
+<link rel="stylesheet" href="titanium.css?v=17.202609282009">
+<link rel="stylesheet" href="ion.css?v=17.202609282009">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -81,21 +81,24 @@
 <input type="file" id="cFileInput" class="hidden">
 <div id="addSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Add">
   <div class="sheet-b">
-    <div class="sheet-h"><span>add · most used first</span><button id="addClose" type="button">Close</button></div>
+    <div class="sheet-h"><span>add</span><button id="addClose" type="button">Close</button></div>
+    <div class="addgrid addmain">
+      <button type="button" data-add="task" class="t-me hi"><span class="qi" data-ico="checkbox"></span>Task</button>
+      <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>Deal</button>
+      <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>Person</button>
+      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Document or photo</button>
+    </div>
+    <details class="addmore"><summary>More ways to add</summary>
     <div class="addgrid">
-      <button type="button" data-add="task" class="t-me hi"><span class="qi" data-ico="checkbox"></span>New task</button>
-      <button type="button" data-add="deal" class="t-note"><span class="qi" data-ico="deals"></span>New deal</button>
-      <button type="button" data-add="contact" class="t-wa"><span class="qi" data-ico="userplus"></span>New contact</button>
       <button type="button" data-add="post" class="t-bot"><span class="qi" data-ico="board"></span>Board message</button>
+      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>WhatsApp quote</button>
+      <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
+      <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
       <button type="button" data-add="check" class="t-call"><span class="qi" data-ico="list"></span>Log a check</button>
       <button type="button" data-add="lead" class="t-mail"><span class="qi" data-ico="search"></span>New lead</button>
-      <button type="button" data-add="voice" class="t-bot"><span class="qi" data-ico="mic"></span>Voice note</button>
-      <button type="button" data-add="read" class="t-note"><span class="qi" data-ico="camera"></span>Read photo or PDF</button>
-      <button type="button" data-add="quote" class="t-wa"><span class="qi" data-ico="chat"></span>WhatsApp quote</button>
       <button type="button" data-add="calc" class="t-ok"><span class="qi" data-ico="calc"></span>Calculators</button>
       <button type="button" data-add="archive" class="t-file"><span class="qi" data-ico="archive"></span>Search archive</button>
-      <button type="button" data-add="chat" class="t-wa"><span class="qi" data-ico="chatin"></span>WhatsApp chat</button>
-    </div>
+    </div></details>
     <div class="mfoot">tap outside to close</div>
   </div>
 </div>
@@ -232,7 +235,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="ui.js?v=17.202609281757"></script>
+<script src="ui.js?v=17.202609282009"></script>
 <script>
 const APP_VERSION = "17";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
@@ -436,7 +439,7 @@ async function load(){
   checkVersion();
   let items;
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
-  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); if (window.officeLoad) officeLoad(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); if (window.officeLoad) officeLoad(); if (window.loadsLoad) loadsLoad(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
@@ -457,6 +460,8 @@ async function load(){
     window._deals = r6.data || []; window._steps = r7.data || []; window._hist = r8.data || []; window._drafts = r9.data || [];
     window._posts = (r10 && r10.data) || []; window._done = (r11 && r11.data) || [];
     window._docs = (r12 && !r12.error && r12.data) || [];
+    // 28 Sep 2026 night: say so when part of the data did not load, instead of quietly showing it empty
+    window._loadErr = [[r2, "areas"], [r3, "contacts"], [r4, "notes"], [r5, "files"], [r6, "deals"], [r7, "deal steps"], [r8, "history"], [r10, "board"], [r11, "done tasks"], [r12, "documents"]].filter(([r]) => r && r.error).map(([, n]) => n);
     window._urls = window._urls || {};
     const paths = window._atts.map(a => a.path).filter(p => !window._urls[p]);
     if (paths.length) { try { const { data } = await sb.storage.from("files").createSignedUrls(paths, 3600); for (const u of (data || [])) if (u.signedUrl) window._urls[u.path] = u.signedUrl; } catch(e){} }
@@ -464,6 +469,7 @@ async function load(){
     // our company details for quotes (database change 009); the app keeps working without it
     sb.from("company_profile").select("*").eq("id", 1).maybeSingle().then(r => { window._company = r.error ? null : (r.data || {}); if (view === "settings") render(); });
     if (window.officeLoad) officeLoad();   // signatures and sign-ups (database change 012)
+    if (window.loadsLoad) loadsLoad();     // the load register (database change 015)
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
       return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
       const b = r && r.data && r.data[0];
@@ -698,10 +704,10 @@ function stepHtml(s, isNext, o){
   const dm = x => dayName(x).replace(/^\w+ /, "");   // "29 Sep"
   const due = s.due_on ? dm(new Date(s.due_on + "T08:00:00+02:00")) : "";
   const plan = s.status === "open" && (s.owner || s.due_on) ? [s.owner, !due ? "" : late ? (s.owner ? "late" : "late since " + due) : due].filter(Boolean).join(" · ") : "";
-  const sub = s.status === "na" ? "not needed" : s.status !== "open" ? [s.done_by, s.done_at ? dm(s.done_at) : ""].filter(Boolean).join(" · ") : plan;
+  const sub = s.status === "na" ? (/^skipped/i.test(s.evidence || "") ? "skipped – " + String(s.evidence).replace(/^skipped:?\s*/i, "").slice(0, 28) : "not needed") : s.status !== "open" ? [s.done_by, s.done_at ? dm(s.done_at) : ""].filter(Boolean).join(" · ") : plan;
   let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}${late ? " late" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : late ? "late" : isNext ? "next" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : late ? " late" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span></button></div>`;
   const why = window.stepWhyHtml ? stepWhyHtml(s) : "";   // the plain-words explainer replaces the kit's own note on a short-procedure step
-  if (open) h += `<div class="stepp step-p">${why}${!why && s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail && !why ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${!why && (s.who || s.closes_with) ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
+  if (open) h += `<div class="stepp step-p">${window.regCheckHtml ? regCheckHtml(s) : ""}${why}${!why && s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail && !why ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${!why && (s.who || s.closes_with) ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label>${(() => { const d0 = dealById(s.deal_id), miss = d0 && window.stepGateMissing && s.status === "open" ? stepGateMissing(d0, s.id) : []; return miss.length ? `<div class="tnote gate">Not yet – first: ${esc(miss.join(", "))}. Tick those, mark them Not needed, or skip this one with a reason.</div>` : ""; })()}<div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button><button data-setstep="${s.id}" data-v="skip">Skip – with a reason</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
   return h;
 }
 // The procedure rail: every stage down one groove. An open stage is a block with its steps as cards and its name to the
@@ -856,13 +862,18 @@ function dealPageHtml(d){
   h += `<div class="dtabs4" role="tablist">${tabs.map(([k, icn, label]) => `<button class="dtab${t === k ? " on" : ""}" data-dtab="${d.id}:${k}" role="tab" aria-selected="${t === k}">${ic(icn)}${label}</button>`).join("")}</div><div class="dpanel">`;
   if (t === "steps") {
     // the next step first, with the buttons that move it (28 Sep: "step up the workflow")
+    if (window.dealSummaryHtml) h += dealSummaryHtml(d, pg);   // the deal on one screen (28 Sep night)
     if (window.nextCardHtml) h += nextCardHtml(d, pg);
+    if (window.trustHtml && d.kind === "mineral") { const tk = `trust:${d.id}`, done = window.trustLine && /buyer [^·]*✓ · stockpile [^·]*✓/.test(trustLine(d)), to = isOpen(tk, !done); h += `<button type="button" class="tmore" data-tog="${tk}" data-dflt="${done ? 0 : 1}" aria-expanded="${to}"><span>Trust check · ${esc(trustLine(d))}</span><span class="chev"></span></button>${to ? trustHtml(d) : ""}`; }
     const all = window.leanAll ? leanAll(d.id) : true, kit = window.kitSecHtml && (d.kit || all) ? kitSecHtml(d) : "";
     h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");
+    if (window.loadsHtml && (d.kind === "mineral" || d.kind === "transport")) h += loadsHtml(d);
     h += rplain("waiting on others", `${waits.length} open`) + railOpen(0) + (waits.length ? `<section class="iblk"><div class="ibody">${waits.map(it => window.swRow ? swRow(it, true) : homeRowSafe(it)).join("")}</div></section>` : `<section class="iblk"><div class="empty">nothing waiting on this deal</div></section>`) + railClose();
     h += `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
     if (d.kind === "mineral" && d.kit && window.kitGuideHtml) { const gk = `guide:${d.id}`, go = isOpen(gk, false); h += `<button type="button" class="tmore" data-tog="${gk}" data-dflt="0" aria-expanded="${go}"><span>Guide – terms, tests, red flags</span><span class="chev"></span></button>${go ? `<div class="card">${kitGuideHtml(d)}</div>` : ""}`; }
   } else if (t === "numbers") {
+    if (window.dealMoneyHtml) h += dealMoneyHtml(d);     // the deal's money on top of Numbers (28 Sep night)
+    if (window.mismatchHtml && (d.kind === "mineral" || d.kind === "transport")) h += mismatchHtml(d);
     if (window.leanTermsHtml && LEAN_TERMS[d.kind]) h += leanTermsHtml(d); else if (defs.length) h += termsHtml(d, defs);
     if (window.calcHtml && d.kind !== "general") h += calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
     if (d.kind === "transport" && window.openDocSheet) h += `<div class="acts0"><button class="primary" data-dquote="${d.id}">${ic("file")}Quote PDF for the client</button></div>`;
@@ -1004,6 +1015,7 @@ function render(){
   const si = window._sheetItem && items.find(i => i.id === window._sheetItem);
   if (window._sheetItem && !si) window._sheetItem = null;
   if (si) html += `<div class="sheet isheet" data-closesheet="bg" role="dialog" aria-modal="true" aria-label="Task"><div class="sheet-b"><div class="sheet-h"><span>${si._me ? "Our job" : esc(si.waiting_on)}</span><button data-closesheet="x" type="button">Close</button></div>${rowHtml(si, 0)}${window.seenHtml && !si._me ? seenHtml(si.waiting_on, { item: si.id }) : ""}</div></div>`;
+  if ((window._loadErr || []).length && ["worklist", "deals", "deal"].includes(view)) html = `<div class="warn"><i class="dot d-stale"></i><div>Some of your data did not load: ${esc(window._loadErr.join(", "))}. Check the signal and tap More › Settings › Refresh, or reopen the app. What you see may be missing those parts.</div></div>` + html;
   $("list").innerHTML = html;
   placeSecBar();
   (window._after || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
@@ -1113,7 +1125,7 @@ $("list").addEventListener("click", async e => {
     if (DEMO) { window._deals = window._deals.filter(x => x.id !== id); window._items = (window._items || []).filter(i => i.deal_id !== id); }
     else {
       rm.disabled = true;
-      const paths = attsFor("deal", id).map(a => a.path).filter(Boolean);
+      const paths = [...attsFor("deal", id), ...(window.loadsOf ? loadsOf(id).flatMap(l => attsFor("load", l.id)) : [])].map(a => a.path).filter(Boolean);
       if (paths.length) { try { await sb.storage.from("files").remove(paths); } catch (x) {} }
       const { error } = await sb.rpc("delete_deal", { p_id: id });
       if (error) { rm.disabled = false; toast("Could not remove: " + error.message, 6000); return; }
@@ -1145,7 +1157,10 @@ $("list").addEventListener("click", async e => {
   const ss = e.target.closest("button[data-setstep]");
   if (ss) {
     const id = ss.dataset.setstep, st = (window._steps || []).find(s => s.id === id); if (!st) return;
-    const evi = document.querySelector(`input[data-evid="${id}"]`); const evidence = evi ? evi.value.trim() : "";
+    const evi = document.querySelector(`input[data-evid="${id}"]`); let evidence = evi ? evi.value.trim() : "";
+    // hard stop: a gated step is not Done while what it depends on is open (28 Sep night)
+    if (ss.dataset.v === "done" && window.stepGateMissing) { const d0 = dealById(st.deal_id), miss = d0 ? stepGateMissing(d0, id) : []; if (miss.length) { toast("Not yet – first: " + miss.join(", ") + ".", 6000); return; } }
+    if (ss.dataset.v === "skip") { if (!evidence) { toast("Write why it is skipped in the note box first.", 5000); if (evi) evi.focus(); return; } evidence = /^skipped/i.test(evidence) ? evidence : "Skipped: " + evidence; ss.dataset.v = "na"; }
     if (DEMO) { Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence }); openStep = null; render(); return; }
     const before = { ...st };
     Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence });
@@ -1458,26 +1473,27 @@ async function show(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("board").classList.contains("hidden")) load(); });
 </script>
-<script src="directory.js?v=17.202609281757"></script>
-<script src="directory2.js?v=17.202609281757"></script>
-<script src="today.js?v=17.202609281757"></script>
-<script src="task.js?v=17.202609281757"></script>
-<script src="kitdata.js?v=17.202609281757"></script>
-<script src="dealkit.js?v=17.202609281757"></script>
-<script src="board.js?v=17.202609281757"></script>
-<script src="calc.js?v=17.202609281757"></script>
-<script src="archive.js?v=17.202609281757"></script>
-<script src="extras.js?v=17.202609281757"></script>
-<script src="easy.js?v=17.202609281757"></script>
-<script src="lean.js?v=17.202609281757"></script>
-<script src="docs.js?v=17.202609281757"></script>
-<script src="office.js?v=17.202609281757"></script>
-<script src="google.js?v=17.202609281757"></script>
-<script src="push.js?v=17.202609281757"></script>
-<script src="reader.js?v=17.202609281757"></script>
-<script src="sections.js?v=17.202609281757"></script>
-<script src="bot.js?v=17.202609281757"></script>
-<script src="motion.js?v=17.202609281757"></script>
+<script src="directory.js?v=17.202609282009"></script>
+<script src="directory2.js?v=17.202609282009"></script>
+<script src="today.js?v=17.202609282009"></script>
+<script src="task.js?v=17.202609282009"></script>
+<script src="kitdata.js?v=17.202609282009"></script>
+<script src="dealkit.js?v=17.202609282009"></script>
+<script src="board.js?v=17.202609282009"></script>
+<script src="calc.js?v=17.202609282009"></script>
+<script src="archive.js?v=17.202609282009"></script>
+<script src="extras.js?v=17.202609282009"></script>
+<script src="easy.js?v=17.202609282009"></script>
+<script src="lean.js?v=17.202609282009"></script>
+<script src="docs.js?v=17.202609282009"></script>
+<script src="office.js?v=17.202609282009"></script>
+<script src="loads.js?v=17.202609282009"></script>
+<script src="google.js?v=17.202609282009"></script>
+<script src="push.js?v=17.202609282009"></script>
+<script src="reader.js?v=17.202609282009"></script>
+<script src="sections.js?v=17.202609282009"></script>
+<script src="bot.js?v=17.202609282009"></script>
+<script src="motion.js?v=17.202609282009"></script>
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>

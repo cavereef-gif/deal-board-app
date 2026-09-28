@@ -1406,3 +1406,16 @@ a.abtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 
 /* 28 Sep 2026 evening: Pin · Done · Remove wrap under the name and time so nothing spills out of the bubble */
 .post .pm{flex-wrap:wrap;row-gap:4px}
 .post .pm .sp{flex:1 0 100%}
+.tplfrom.done1 .kv .k{flex:0 0 96px}.tplfrom.done1 .kv .v{text-align:left}
+.trow.trust .tlist{display:flex;flex-direction:column;gap:4px}
+.trow.trust .tck{display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;text-align:left;justify-content:flex-start;font-size:15px}
+.trow.trust .tck i{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--muted);font-style:normal}
+.trow.trust .tck.on i{background:var(--accent,var(--card2))}
+.trow.trust .tck small{display:block;font-size:14px;color:var(--muted)}
+/* 28 Sep 2026 night: + menu – the four everyday ones big, the rest folded under "More ways to add" */
+.addgrid.addmain{grid-template-columns:repeat(2,1fr)}
+.addmore{margin-top:12px}
+.addmore>summary{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;background:var(--card2);color:var(--text);font-size:16px;list-style:none;cursor:pointer}
+.addmore>summary::-webkit-details-marker{display:none}
+.addmore>summary:after{content:"▾";margin-left:8px;color:var(--muted)}
+.addmore[open]>summary:after{content:"▴"}

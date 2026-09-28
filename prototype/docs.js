@@ -19,6 +19,9 @@ const DOCS = {
     { k: "assay", l: "Assay", sub: "lab certificate", kind: "get", side: "seller" },
     { k: "pof", l: "Proof of funds", sub: "buyer's bank letter – before any LC", kind: "get", side: "buyer" },
     { k: "kyc", l: "KYC", sub: "company papers, both sides", kind: "get", side: "both", tpl: 1 },
+    { k: "po", l: "Purchase order", sub: "buyer's order under the SPA", kind: "get", side: "buyer" },
+    { k: "proforma", l: "Proforma invoice", sub: "before loading – we make it", kind: "get", side: "buyer", make: "proforma" },
+    { k: "invoice", l: "Final invoice", sub: "after the test – we make it", kind: "get", side: "buyer", make: "invoice" },
   ],
   transport: [
     { k: "quote", l: "Accepted quote", sub: "the client signs our quote", kind: "sign", side: "client", make: "quote" },
@@ -50,12 +53,14 @@ function docControls(d, x) {
   const r = docRow(d.id, x.k), st = r ? r.status : "", done = x.kind === "sign" ? "signed" : "received", att = docAtt(r);
   const chip = (v, w) => `<button type="button" data-doc="${d.id}:${x.k}" data-v="${v}" class="${st === v ? "on" : ""}" aria-pressed="${st === v}">${w}</button>`;
   const url = att && window._urls && window._urls[att.path];
-  return `<div class="tchips">${chip("requested", "Requested")}${chip(done, done === "signed" ? "Signed" : "Received")}${chip("na", "Not needed")}</div>
-    <div class="tchips dfile">${att ? `<span class="dfn">${ic("clip")}${url && url !== "#" ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(att.name)}</a>` : esc(att.name)}</span>` : ""}<button type="button" data-docup="${d.id}:${x.k}">${ic("clip")}${att ? "Replace" : "Upload"}</button>${x.tpl ? `<button type="button" data-tpl="${d.id}:${x.k}">${ic("file")}Make it</button>` : x.make === "quote" ? `<button type="button" data-dquote="${d.id}">${ic("file")}Make the quote</button>` : ""}</div>`;
+  const ours = x.make === "proforma" || x.make === "invoice";
+  return `<div class="tchips">${ours ? "" : chip("requested", "Requested")}${chip(done, done === "signed" ? "Signed" : ours ? "Sent" : "Received")}${chip("na", "Not needed")}</div>
+    <div class="tchips dfile">${att ? `<span class="dfn">${ic("clip")}${url && url !== "#" ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(att.name)}</a>` : esc(att.name)}</span>` : ""}<button type="button" data-docup="${d.id}:${x.k}">${ic("clip")}${att ? "Replace" : "Upload"}</button>${x.tpl ? `<button type="button" data-tpl="${d.id}:${x.k}">${ic("file")}Make it</button>` : x.make === "quote" ? `<button type="button" data-dquote="${d.id}">${ic("file")}Make the quote</button>` : x.make === "proforma" ? `<button type="button" data-dinv="${d.id}:Proforma">${ic("file")}Make the proforma</button>` : x.make === "invoice" ? `<button type="button" data-dinv="${d.id}:Final">${ic("file")}Make the final invoice</button>` : ""}</div>`;
 }
 function docCardHtml(d, x) {
   const r = docRow(d.id, x.k), it = r && r.item_id ? (window._items || []).find(i => i.id === r.item_id) : null;
-  return `<div class="trow docrow${docIn(r) ? " in" : ""}${r && r.status === "na" ? " na" : ""}" data-docrow="${x.k}"><div class="k"><b>${esc(x.l)}<small>${esc(x.sub || "")}</small></b><span>${esc(docState(r, it))}</span></div>${docControls(d, x)}${window.docWhyHtml ? docWhyHtml(d.id, x.k) : ""}</div>`;
+  const ex = r && r.expires_on && window.expState ? expState(r.expires_on) : "";
+  return `<div class="trow docrow${docIn(r) ? " in" : ""}${r && r.status === "na" ? " na" : ""}${ex ? " exp" : ""}" data-docrow="${x.k}"><div class="k"><b>${esc(x.l)}<small>${esc(x.sub || "")}</small></b><span>${esc(ex === "expired" ? "expired " + shortDate(r.expires_on) : ex === "soon" ? "runs out " + shortDate(r.expires_on) : docState(r, it))}</span></div>${docControls(d, x)}${window.expiryHtml ? expiryHtml(d, x) : ""}${window.docWhyHtml ? docWhyHtml(d.id, x.k) : ""}</div>`;
 }
 window.docsTabHtml = function (d) {
   const list = DOCS[d.kind] || [];
@@ -63,7 +68,7 @@ window.docsTabHtml = function (d) {
   if (list.length) {
     const inN = list.filter(x => docIn(docRow(d.id, x.k))).length, reqN = list.filter(x => (docRow(d.id, x.k) || {}).status === "requested").length;
     h += rplain(`documents · ${d.kind === "transport" ? "transport" : "minerals"}`, `${inN} of ${list.length} in${reqN ? ` · ${reqN} asked` : ""}`, true);
-    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: NCNDA → IMFPA → LOI or ICPO → FCO → KYC, proof of ownership, proof of funds, assay → SPA → the payment secured. Tap What is this? on any document.");
+    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: check the buyer and the stockpile (proof of ownership, KYC) → NCNDA → IMFPA → LOI → ICPO → proof of funds → grade test (assay) → FCO → SPA → purchase order → proforma invoice → final invoice. Tap What is this? on any document.");
     h += list.map(x => docCardHtml(d, x)).join("");
     if (list.some(x => x.tpl)) h += rfoot("Make it fills a generic draft from this deal and our company details – have an SA commercial attorney check the NCNDA, IMFPA and SPA once before first use");
   }
@@ -417,4 +422,38 @@ document.addEventListener("click", async e => {
 document.addEventListener("change", e => {
   const c = e.target.closest && e.target.closest("input[data-sto]"); if (!c || !stDeal) return;
   (statusOpt[stDeal] ||= {})[c.dataset.sto] = c.checked; $("stBody").innerHTML = stSheetHtml();
+});
+
+// ---------- expiry dates (28 Sep 2026 night; database change 016) ----------
+// Papers that are only good until a date: the app warns 14 days before and once they have run out.
+const EXPIRES = new Set(["icpo", "fco", "pof", "assay", "insurance", "quote", "kyc", "poo", "proforma", "loi"]);
+window.EXPIRES = EXPIRES;
+const expState = iso => { if (!iso) return ""; const n = dayDiff(new Date(iso + "T12:00:00")); return n < 0 ? "expired" : n <= 14 ? "soon" : ""; };
+window.expState = expState;
+function expiryHtml(d, x) {
+  const r = docRow(d.id, x.k); if (!EXPIRES.has(x.k) || !r || !/received|signed|draft/.test(r.status || "")) return "";
+  const st = expState(r.expires_on);
+  return `<label class="fld dexp"><span>Valid until${st === "expired" ? " – expired" : st === "soon" ? " – runs out soon" : ""}</span><input type="date" data-docexp="${d.id}:${x.k}" value="${esc(r.expires_on || "")}"></label>`;
+}
+window.expiryHtml = expiryHtml;
+// every paper that has run out or runs out within 14 days (deal papers and our company papers)
+window.expiringList = function (dealId) {
+  const out = [];
+  for (const r of (window._docs || [])) {
+    if (!r.expires_on || (dealId && r.deal_id !== dealId)) continue;
+    const st = expState(r.expires_on); if (!st) continue;
+    const d = dealById(r.deal_id); if (!d) continue; const x = docDef(d.kind, r.doc);
+    out.push({ d, label: x ? x.l : r.doc, st, on: r.expires_on });
+  }
+  if (!dealId) for (const a of (window._atts || []).filter(a => a.target_type === "company" && a.expires_on)) { const st = expState(a.expires_on); if (st) out.push({ d: null, label: a.name, st, on: a.expires_on }); }
+  return out.sort((a, b) => a.on.localeCompare(b.on));
+};
+document.addEventListener("change", async e => {
+  const i = e.target.closest && e.target.closest("input[data-docexp]"); if (!i) return;
+  const [id, k] = i.dataset.docexp.split(":"), d = dealById(id); if (!d) return;
+  const r = docRow(id, k);
+  if (DEMO) { if (r) r.expires_on = i.value || null; toast("Saved (demo)."); render(); return; }
+  const { error } = await sb.rpc("set_doc_expiry", { p_deal: id, p_doc: k, p_date: i.value || null });
+  if (error) { toast(/set_doc_expiry|function/i.test(error.message) ? "Database change 016 is needed for expiry dates." : "Could not save: " + error.message, 6000); return; }
+  if (r) r.expires_on = i.value || null; toast(i.value ? "Valid until " + shortDate(i.value) + "." : "Date cleared."); render();
 });

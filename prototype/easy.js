@@ -200,6 +200,23 @@ function docRows() {
     }
     return { rows, ok: rate > 0, ex };
   }
+  if (DOC.kind === "inv") {
+    // 28 Sep 2026 night: proforma invoice (before loading) and final invoice (after the test) from the deal's own numbers
+    const fin = f.stage === "Final", unit = f.unit || "per t", dmtBasis = /DMT/i.test(unit);
+    const wmt = n("qty"), moist = n("moist"), dmt = moist ? wmt * (1 - moist / 100) : wmt, qty = fin && dmtBasis ? dmt : wmt;
+    const price = n("price"), line = qty * price, adj = fin ? n("adj") * qty : 0, paid = fin ? n("paid") : 0;
+    const sub = line + adj, zero = /zero/i.test(f.vat || ""), vat = /15%/.test(f.vat || "") ? sub * 0.15 : 0, rows = [];
+    const qtyTxt = `${qty.toLocaleString("en-ZA", { maximumFractionDigits: 3 }).replace(/[  ,]/g, " ")} ${fin && dmtBasis ? "DMT" : "t"}`;
+    rows.push([`${[f.product, f.grade].filter(Boolean).join(", ") || "Material"}${f.basis ? " – " + f.basis : ""}: ${qtyTxt} at ${randR2(price)} ${unit.replace(/^per /, "per ")}`, randR2(line)]);
+    if (fin && moist) rows.push([`Weighed ${wmt.toLocaleString("en-ZA", { maximumFractionDigits: 3 }).replace(/[  ,]/g, " ")} WMT, moisture ${moist}% → ${dmt.toLocaleString("en-ZA", { maximumFractionDigits: 3 }).replace(/[  ,]/g, " ")} DMT${f.tested ? ", tested grade " + f.tested : ""}`, ""]);
+    else if (fin && f.tested) rows.push([`Tested grade ${f.tested}`, ""]);
+    const sR = v => (v < 0 ? "−" : "") + randR2(Math.abs(v));
+    if (adj) rows.push([`Grade/price adjustment (${sR(n("adj"))} per ${fin && dmtBasis ? "DMT" : "t"})`, sR(adj)]);
+    rows.push([zero ? "VAT at 0% (zero-rated export)" : vat ? "VAT at 15%" : "VAT", randR2(vat)]);
+    rows.push([fin ? "Invoice total" : "Proforma total", randR2(sub + vat), paid ? 0 : 1]);
+    if (paid) { rows.push(["Less paid against the proforma", "−" + randR2(paid)]); rows.push(["Balance due", randR2(sub + vat - paid), 1]); }
+    return { rows, ok: qty > 0 && price > 0 };
+  }
   const q = n("qty"), rate = n("rate"), sub = q * rate, vat = f.vat === "Add 15% VAT" ? sub * 0.15 : 0;
   const rows = [[`Commission${f.deal ? " – " + f.deal : ""}: ${q.toLocaleString("en-ZA", { maximumFractionDigits: 2 }).replace(/[  ,]/g, " ")} DMT at ${randR2(rate)} per DMT`, randR2(sub)]];
   if (vat) rows.push(["VAT 15%", randR2(vat)]);
@@ -207,6 +224,21 @@ function docRows() {
   return { rows, ok: q > 0 && rate > 0 };
 }
 const quoteBasis = f => /whole/i.test(f.basis || "") ? "job" : /load/i.test(f.basis || "") ? "load" : "ton";
+function invSheetHtml() {
+  const fin = DOC.f.stage === "Final";
+  return `<div class="coline">${ic(coOn() ? "file" : "info")}<span>${coOn() ? "On our letterhead: " + esc(window._company.legal_name) + (window._company.vat_no ? " · VAT " + esc(window._company.vat_no) : " – no VAT number: it prints as an Invoice, not a Tax invoice") : "No company details yet – Settings › Company details"}</span></div>` +
+    docField("stage", "Which invoice", "", ["Proforma", "Final"]) +
+    docField("to", "Invoice to (buyer company)", "Company") + docField("tovat", "Buyer's VAT number", "needed on a tax invoice above R5,000") +
+    `<div class="calc">${docField("product", "Product", "e.g. Chrome concentrate")}${docField("grade", fin ? "Contract grade" : "Grade", "e.g. 40–42% Cr2O3")}</div>` +
+    docField("basis", "Delivery basis and place", "e.g. FOT Mooinooi plant") +
+    `<div class="calc">${docField("qty", fin ? "Weighed tons (WMT)" : "Tons", "e.g. 1000", "num")}${docField("price", "Price (R)", "e.g. 2250", "num")}</div>` +
+    docField("unit", "Price is", "", ["per t", "per DMT", "per WMT"]) +
+    (fin ? `<div class="calc">${docField("moist", "Moisture %", "from the test", "num")}${docField("tested", "Tested grade", "e.g. 41.2% Cr2O3")}</div>` +
+      `<div class="calc">${docField("adj", "Adjustment per t (R, − for a penalty)", "0", "num")}${docField("paid", "Paid against the proforma (R)", "0", "num")}</div>` : "") +
+    docField("vat", "VAT", "", ["Add 15% VAT", "Zero-rated export", "No VAT"]) +
+    `<div class="calc">${docField("due", "Payment due", "", "date")}${docField("ref", "Order / PO number", "optional")}</div>` +
+    docField("notes", "Payment details and notes", "e.g. Pay by EFT; bank details as on our letter", "area");
+}
 function docSheetHtml() {
   const q = DOC.kind === "quote", r = docRows();
   return (q
@@ -224,6 +256,7 @@ function docSheetHtml() {
       docField("diesel", "Rate based on diesel at (R a litre)", "e.g. 22.50 – the fuel clause uses it", "num") +
       docField("pay", "Payment terms", "e.g. 30 days from statement") + docField("standing", "Standing time", "e.g. 4 hours free, then R650 an hour") +
       docField("notes", "Anything else for the client", "optional", "area")
+    : DOC.kind === "inv" ? invSheetHtml()
     : docField("to", "Statement to (who pays the commission)", "Company") + docField("from", "From (your name – remembered)", "e.g. your trading name") +
       docField("deal", "Deal or reference", "e.g. Chrome lumpy – August") +
       `<div class="calc">${docField("qty", "Dry tons (DMT)", "e.g. 940", "num")}${docField("rate", "Rate per DMT (R)", "e.g. 40", "num")}</div>` +
@@ -240,15 +273,15 @@ function openDocSheet(kind, f) {
   const co = window._company || {};
   DOC = { kind, f: Object.assign({ basis: "Per ton", from: easyGet("docFrom"), valid: "7", tpl: "34", vehicle: "34 t side tipper", pay: co.payment_terms || "", standing: co.standing_rate || "", inc_diesel: true, inc_tolls: true, inc_driver: true, inc_tracking: true, inc_git: false,
     diesel: (() => { const t = window._trip || {}, fu = (window._fuel || [])[0]; return t.diesel ? String(t.diesel) : fu && (fu.inland || fu.coastal) ? String(fu.inland || fu.coastal) : ""; })(), vat: kind === "quote" ? (CROSS_BORDER.test((f && f.toPlace) || "") ? QUOTE_ZERO : QUOTE_EX) : "No VAT" }, f) };
-  $("docTitle").textContent = kind === "quote" ? "Quote PDF" : "Commission statement PDF";
+  $("docTitle").textContent = kind === "quote" ? "Quote PDF" : kind === "inv" ? (DOC.f.stage === "Final" ? "Final invoice" : "Proforma invoice") : "Commission statement PDF";
   $("docBody").innerHTML = docSheetHtml(); $("docSheet").classList.remove("hidden");
 }
 window.openDocSheet = openDocSheet;
-function docRefresh() { const b = $("docBody"); const a = document.activeElement, k = a && a.dataset && a.dataset.docf, pos = a && a.selectionStart; b.innerHTML = docSheetHtml(); if (k) { const el = b.querySelector(`[data-docf="${k}"]`); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} } } }
+function docRefresh() { if (DOC && DOC.kind === "inv") $("docTitle").textContent = DOC.f.stage === "Final" ? "Final invoice" : "Proforma invoice"; const b = $("docBody"); const a = document.activeElement, k = a && a.dataset && a.dataset.docf, pos = a && a.selectionStart; b.innerHTML = docSheetHtml(); if (k) { const el = b.querySelector(`[data-docf="${k}"]`); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} } } }
 async function docMake() {
   const f = DOC.f, q = DOC.kind === "quote", r = docRows(); if (!r.ok) return;
   if (f.from) easySet("docFrom", f.from);
-  const number = docNo(q ? "Q" : "CS"), today = saDayPlus(0);
+  const number = docNo(q ? "Q" : DOC.kind === "inv" ? (f.stage === "Final" ? "INV" : "PF") : "CS"), today = saDayPlus(0);
   const meta = [["Date", longDay(today)]];
   if (q) meta.push(["Valid until", longDay(saDayKey(Date.now() + (num(f.valid) || 7) * 864e5))]); else if (/^\d{4}-\d{2}-\d{2}$/.test(f.due || "")) meta.push(["Payment due", longDay(f.due)]);
   let blob;
@@ -268,10 +301,31 @@ async function docMake() {
       `This quote is valid for ${num(f.valid) || 7} days. Prices are in South African rand.`];
     blob = quotePdf({ sig: window.sigToUse ? sigToUse("doc") : null, number, from: f.from || me || "", to: f.to || "", attn: f.attn || "", meta, job, rows: r.rows, incl, excl, terms, notes: f.notes || "",
       footer: coOn() ? [window._company.legal_name, window._company.reg_no && "Reg. no. " + window._company.reg_no, window._company.vat_no && "VAT no. " + window._company.vat_no].filter(Boolean).join("  ·  ") : "Prices in South African rand." });
+  } else if (DOC.kind === "inv") {
+    const fin = f.stage === "Final", co = window._company || {};
+    const title = fin ? (co.vat_no && /15%/.test(f.vat || "") ? "Tax invoice" : "Invoice") : "Proforma invoice";
+    const m2 = [...meta]; if (f.ref) m2.push(["Order", f.ref]); if (f.deal_ref) m2.push(["Deal", f.deal_ref]);
+    blob = docPdf({ sig: window.sigToUse ? sigToUse("doc") : null, title, number, from: f.from || me || "", to: [f.to || "", f.tovat ? "VAT no. " + f.tovat : ""].filter(Boolean).join("\n"), meta: m2, rows: r.rows, notes: f.notes || "",
+      footer: fin ? "Amounts on the tested grade and the weighed tons. Banking details as on our letterhead or bank letter." : "Proforma only – not a tax invoice. The final invoice follows the test and the weighbridge." });
   } else blob = docPdf({ sig: window.sigToUse ? sigToUse("doc") : null, title: "Commission statement", number, from: f.from || me || "", to: f.to || "", meta, rows: r.rows, notes: f.notes || "",
     footer: "This statement is for the commission agreed in writing for the deal above. Banking details are on our tax invoice." });
-  const name = (q ? "Quote " : "Commission statement ") + (f.to || "").replace(/[^\w\- ]+/g, "").trim().slice(0, 40) + " " + number + ".pdf";
-  const how = await shareFile(blob, name.replace(/\s+/g, " "), q ? "Transport quote" : "Commission statement");
+  const name = (q ? "Quote " : DOC.kind === "inv" ? (f.stage === "Final" ? "Invoice " : "Proforma invoice ") : "Commission statement ") + (f.to || "").replace(/[^\w\- ]+/g, "").trim().slice(0, 40) + " " + number + ".pdf";
+  // an invoice made from a deal is saved to that deal's Documents (Proforma invoice / Final invoice)
+  if (DOC.kind === "inv" && f.deal_id && window.saveDocRow) {
+    const d = dealById(f.deal_id), key = f.stage === "Final" ? "invoice" : "proforma", fname = name.replace(/\s+/g, " ");
+    try {
+      let att;
+      if (DEMO) { att = { id: "a" + Date.now(), target_type: "deal", target_id: String(d.id), path: "demo", name: fname, size: blob.size, uploaded_by: me, created_at: new Date().toISOString() }; (window._atts ||= []).unshift(att); }
+      else {
+        const path = `deal/${d.id}/${Date.now()}-${fname.replace(/[^\w.\-]+/g, "_")}`;
+        const up = await sb.storage.from("files").upload(path, blob, { contentType: "application/pdf", upsert: false }); if (up.error) throw up.error;
+        const r2 = await sb.from("attachments").insert({ target_type: "deal", target_id: String(d.id), path, name: fname, size: blob.size, mime: "application/pdf" }).select("*").single(); if (r2.error) throw r2.error;
+        att = r2.data; (window._atts ||= []).unshift(att);
+      }
+      const cur = window.docRow && docRow(d.id, key); await saveDocRow(d, key, cur && cur.status !== "draft" ? cur.status : "draft", { att: att.id });
+    } catch (e) { toast("The PDF is made but could not be saved to the deal: " + (e.message || e), 6000); }
+  }
+  const how = await shareFile(blob, name.replace(/\s+/g, " "), q ? "Transport quote" : DOC.kind === "inv" ? "Invoice" : "Commission statement");
   if (how === "cancel") return;
   $("docSheet").classList.add("hidden");
   toast(how === "shared" ? "Shared." : "PDF saved to your downloads.");
@@ -296,7 +350,16 @@ document.addEventListener("click", async e => {
     docRefresh(); return;
   }
   if (e.target.closest("button[data-docmake]")) { docMake(); return; }
-  if (e.target.closest("button[data-docclear]") && DOC) { const k = DOC.kind; openDocSheet(k, {}); Object.keys(DOC.f).forEach(x => { if (!/^(from|valid|tpl|vehicle|pay|standing|vat|basis|inc_\w+|diesel)$/.test(x)) DOC.f[x] = ""; }); docRefresh(); toast("Form cleared."); return; }
+  const iv = e.target.closest("button[data-dinv]");
+  if (iv) {
+    const [id, stage] = iv.dataset.dinv.split(":"), d = dealById(id), p = (window.leanP ? leanP(d) : d.params) || {};
+    const clean = v => v && !/^(not agreed|to discuss|to be agreed)$/i.test(v) ? String(v) : "";
+    openDocSheet("inv", { deal_id: id, deal_ref: window.dealRef ? dealRef(d) : "", stage, to: clean(p.buyer).split(/[(,;]/)[0].trim(), product: [clean(p.commodity), clean(p.form)].filter(Boolean).join(" "), grade: clean(p.grade), basis: [clean(p.basis), clean(p.port)].filter(Boolean).join(" "),
+      qty: String(numIn(p.volume) || ""), price: String(numIn(p.price || p.asking_price) || ""), unit: /dmt/i.test(p.unit || "") ? "per DMT" : /wmt/i.test(p.unit || "") ? "per WMT" : "per t",
+      vat: /zero/i.test(p.vat || "") ? "Zero-rated export" : /excl|incl/i.test(p.vat || "") ? "Add 15% VAT" : "Add 15% VAT", due: workDayPlus(stage === "Final" ? 7 : 3), moist: "", tested: "", adj: "", paid: "" });
+    return;
+  }
+  if (e.target.closest("button[data-docclear]") && DOC) { const k = DOC.kind; openDocSheet(k, { deal_id: DOC.f.deal_id, deal_ref: DOC.f.deal_ref, stage: DOC.f.stage }); Object.keys(DOC.f).forEach(x => { if (!/^(from|valid|tpl|vehicle|pay|standing|vat|basis|inc_\w+|diesel|deal_id|deal_ref|stage|unit)$/.test(x)) DOC.f[x] = ""; }); docRefresh(); toast("Form cleared."); return; }
   // from the Transport calculator
   if (e.target.closest("button[data-trquote]")) {
     const TRp = window._trip || {}, d = TRp.deal && dealById(TRp.deal);
