@@ -38,7 +38,8 @@ def make_site():
         open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(h)
     return d
 
-async def run(p, dev, theme, results, errors):
+PALETTES = [x for x in os.environ.get("PALETTES", "ion").split(",") if x]   # e.g. PALETTES=ion,twilight (28 Sep 2026: the Twilight colours)
+async def run(p, dev, theme, results, errors, palette="ion"):
     w, h = DEV[dev]
     b = await p.chromium.launch()
     ctx = await b.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, service_workers="block", color_scheme=theme)
@@ -49,10 +50,12 @@ async def run(p, dev, theme, results, errors):
     await pg.goto(U, wait_until="networkidle"); await pg.evaluate("() => { try { localStorage.clear(); } catch(e){} }")
     await pg.goto(U, wait_until="networkidle"); await pg.wait_for_timeout(500)
     await pg.evaluate(f"window.setTheme && setTheme('{theme}')")
+    if palette != "ion": await pg.evaluate(f"applyPalette('{palette}'); setTheme('{theme}'); render()")
+    tag = f"{dev}-{theme}" + ("" if palette == "ion" else "-" + palette)
     async def snap(name, full=False):
         await pg.wait_for_timeout(250)
-        await pg.screenshot(path=f"{OUT}/{dev}-{theme}-{name}.png", full_page=full)
-        results[f"{dev}-{theme}-{name}"] = await pg.evaluate(MET)
+        await pg.screenshot(path=f"{OUT}/{tag}-{name}.png", full_page=full)
+        results[f"{tag}-{name}"] = await pg.evaluate(MET)
     async def js(s):
         try: await pg.evaluate(s)
         except Exception as e: errors.append(f"{dev}/{theme} step failed: {s[:60]} – {str(e)[:120]}")
@@ -118,8 +121,9 @@ async def main():
         async with async_playwright() as p:
             for dev in DEV:
                 for theme in ["dark", "light"]:
-                    try: await run(p, dev, theme, results, errors)
-                    except Exception as e: errors.append(f"{dev}/{theme} FAILED: {str(e)[:300]}")
+                    for palette in PALETTES:
+                        try: await run(p, dev, theme, results, errors, palette)
+                        except Exception as e: errors.append(f"{dev}/{theme}/{palette} FAILED: {str(e)[:300]}")
     finally:
         srv.terminate(); shutil.rmtree(site, ignore_errors=True)
     json.dump(results, open(os.path.join(OUT, "metrics.json"), "w"), indent=1)

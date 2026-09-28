@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"){d.dataset.palette="titanium";d.dataset.ion="1"}else d.dataset.palette=p})()</script>
+<script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"||p==="twilight"){d.dataset.palette="titanium";d.dataset.ion=p==="twilight"?"twilight":"1"}else d.dataset.palette=p})()</script>
 <link rel="stylesheet" href="app.css?v=17">
 <link rel="stylesheet" href="titanium.css?v=17">
 <link rel="stylesheet" href="ion.css?v=17">
@@ -314,11 +314,11 @@ function isOpen(k, dflt){ if (openKeys.has("+" + k)) return true; if (openKeys.h
 function saveOpen(){ try { localStorage.setItem("open", JSON.stringify([...openKeys].slice(-300))); } catch(e){} }
 function toggleKey(k, dflt){ const next = !isOpen(k, dflt); openKeys.delete("+" + k); openKeys.delete("-" + k); if (next !== !!dflt) openKeys.add((next ? "+" : "-") + k); saveOpen(); }
 
-function curPalette(){ const d = document.documentElement; return d.dataset.ion ? "ion" : (d.dataset.palette || "titanium"); }
-function applyPalette(k){ const d = document.documentElement; if (k === "ion") { d.dataset.palette = "titanium"; d.dataset.ion = "1"; } else { d.dataset.palette = k; delete d.dataset.ion; } }
+function curPalette(){ const d = document.documentElement; return d.dataset.ion ? (d.dataset.ion === "twilight" ? "twilight" : "ion") : (d.dataset.palette || "titanium"); }
+function applyPalette(k){ const d = document.documentElement; if (k === "ion" || k === "twilight") { d.dataset.palette = "titanium"; d.dataset.ion = k === "twilight" ? "twilight" : "1"; } else { d.dataset.palette = k; delete d.dataset.ion; } }
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
   const ti = document.documentElement.dataset.palette === "titanium";
-  document.querySelector('meta[name="theme-color"]').content = document.documentElement.dataset.ion ? (t === "light" ? "#A2A6AE" : "#26292E") : ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
+  document.querySelector('meta[name="theme-color"]').content = document.documentElement.dataset.ion === "twilight" ? (t === "light" ? "#F4EDE4" : "#072D3B") : document.documentElement.dataset.ion ? (t === "light" ? "#A2A6AE" : "#26292E") : ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -613,7 +613,7 @@ function savedContactsHtml(q){
 window.waitingPeopleHtml = waitingPeopleHtml; window.savedContactsHtml = savedContactsHtml;
 function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
-  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
+  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["twilight", "Twilight"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
     <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
     <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(me) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
@@ -697,7 +697,8 @@ function stepHtml(s, isNext, o){
   const plan = s.status === "open" && (s.owner || s.due_on) ? [s.owner, !due ? "" : late ? (s.owner ? "late" : "late since " + due) : due].filter(Boolean).join(" · ") : "";
   const sub = s.status === "na" ? "not needed" : s.status !== "open" ? [s.done_by, s.done_at ? dm(s.done_at) : ""].filter(Boolean).join(" · ") : plan;
   let h = `<div class="irow${s.status === "done" ? " done" : ""}${isNext ? " cur" : ""}${late ? " late" : ""}"><i class="in${o.node || ""}" aria-hidden="true"></i>${o.stn || ""}<button type="button" class="icard${isNext ? " next" : ""}${s.status !== "open" ? " dim" : ""}" data-step="${s.id}" aria-expanded="${open}" aria-label="${esc(s.title)}: ${s.status === "done" ? "done" : s.status === "na" ? "not needed" : late ? "late" : isNext ? "next" : "open"}"><i class="ck${s.status === "done" ? " on" : s.status === "na" ? " na" : late ? " late" : ""}"></i><span class="t">${esc(s.title)}${sub ? `<small>${esc(sub)}</small>` : ""}</span></button></div>`;
-  if (open) h += `<div class="stepp step-p">${s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${s.who || s.closes_with ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
+  const why = window.stepWhyHtml ? stepWhyHtml(s) : "";   // the plain-words explainer replaces the kit's own note on a short-procedure step
+  if (open) h += `<div class="stepp step-p">${why}${!why && s._full && s._full !== s.title ? `<div class="sd"><b>${esc(s._full)}</b></div>` : ""}${s.detail && !why ? `<div class="sd">${window.easyText ? easyText(s.detail) : esc(s.detail)}</div>` : ""}${!why && (s.who || s.closes_with) ? `<div class="swho">${s.who ? `<span class="k">Who</span><span>${esc(s.who)}</span>` : ""}${s.closes_with ? `<span class="k">Done when</span><span>${esc(s.closes_with)}</span>` : ""}</div>` : ""}${window.stepPlanHtml ? stepPlanHtml(s) : ""}<label class="fld"><span>Proof or note (optional)</span><input data-evid="${s.id}" placeholder="${s.closes_with ? "e.g. " + esc(s.closes_with) : "e.g. signed copy in Files"}" value="${esc(s.evidence || "")}" maxlength="500"></label><div class="acts0">${s.status !== "done" ? `<button class="primary" data-setstep="${s.id}" data-v="done">${ic("check")}Done</button>` : ""}${s.status !== "na" ? `<button data-setstep="${s.id}" data-v="na">Not needed</button>` : ""}${s.status !== "open" ? `<button data-setstep="${s.id}" data-v="open">${ic("undo")}Reopen</button>` : ""}<button data-step="${s.id}">Close</button></div></div>`;
   return h;
 }
 // The procedure rail: every stage down one groove. An open stage is a block with its steps as cards and its name to the
@@ -705,7 +706,7 @@ function stepHtml(s, isNext, o){
 function checklistHtml(d, pg){
   const stages = pg.stages, ci = pg.cur ? stages.indexOf(pg.cur) + 1 : stages.length;
   const all = window.leanAll ? leanAll(d.id) : true, fullN = stepsOf(d.id).length;
-  let h = rplain(`procedure${all ? " · all steps" : ""}`, `stage ${ci} of ${stages.length}`) + railOpen(96);
+  let h = rplain(`procedure${all ? " · all steps" : ""}`, `stage ${ci} of ${stages.length}`) + (window.howHtml ? howHtml(d) : "") + railOpen(96);
   stages.forEach((g, i) => {
     const done = g.steps.filter(s => s.status !== "open").length, allDone = done === g.steps.length, isCur = !!(pg.cur && pg.cur.name === g.name);
     const k = `stage:${d.id}:${g.name}`, open = isOpen(k, isCur);

@@ -55,7 +55,7 @@ function docControls(d, x) {
 }
 function docCardHtml(d, x) {
   const r = docRow(d.id, x.k), it = r && r.item_id ? (window._items || []).find(i => i.id === r.item_id) : null;
-  return `<div class="trow docrow${docIn(r) ? " in" : ""}${r && r.status === "na" ? " na" : ""}" data-docrow="${x.k}"><div class="k"><b>${esc(x.l)}<small>${esc(x.sub || "")}</small></b><span>${esc(docState(r, it))}</span></div>${docControls(d, x)}</div>`;
+  return `<div class="trow docrow${docIn(r) ? " in" : ""}${r && r.status === "na" ? " na" : ""}" data-docrow="${x.k}"><div class="k"><b>${esc(x.l)}<small>${esc(x.sub || "")}</small></b><span>${esc(docState(r, it))}</span></div>${docControls(d, x)}${window.docWhyHtml ? docWhyHtml(d.id, x.k) : ""}</div>`;
 }
 window.docsTabHtml = function (d) {
   const list = DOCS[d.kind] || [];
@@ -63,6 +63,7 @@ window.docsTabHtml = function (d) {
   if (list.length) {
     const inN = list.filter(x => docIn(docRow(d.id, x.k))).length, reqN = list.filter(x => (docRow(d.id, x.k) || {}).status === "requested").length;
     h += rplain(`documents · ${d.kind === "transport" ? "transport" : "minerals"}`, `${inN} of ${list.length} in${reqN ? ` · ${reqN} asked` : ""}`, true);
+    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: NCNDA → IMFPA → LOI or ICPO → FCO → KYC, proof of ownership, proof of funds, assay → SPA → the payment secured. Tap What is this? on any document.");
     h += list.map(x => docCardHtml(d, x)).join("");
     if (list.some(x => x.tpl)) h += rfoot("Make it fills a generic draft from this deal and our company details – have an SA commercial attorney check the NCNDA, IMFPA and SPA once before first use");
   }

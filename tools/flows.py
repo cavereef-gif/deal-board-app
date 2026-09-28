@@ -202,8 +202,8 @@ async def main():
             # 15 step details as points, and opening a step does not pop up the keyboard
             await ev("goTo('deal:dm1')"); await W()
             nid=await ev("dealProgress('dm1').next.id"); await tap(f"[data-step='{nid}']")
-            sd=await ev("({ pts: document.querySelectorAll('.step-p .sd .easy li, .step-p .sd .easy .ez-p').length, focus: document.activeElement && document.activeElement.tagName })")
-            check("Step details read as points; opening a step does not focus a text box", sd['pts']>=1 and sd['focus'] not in ("INPUT","TEXTAREA"), str(sd))
+            sd=await ev("({ pts: document.querySelectorAll('.step-p .sd .easy li, .step-p .sd .easy .ez-p, .step-p .why .whyl').length, focus: document.activeElement && document.activeElement.tagName })")
+            check("Step details read as points (What · Why · Who · Done when since 28 Sep); opening a step does not focus a text box", sd['pts']>=1 and sd['focus'] not in ("INPUT","TEXTAREA"), str(sd))
             # 16 voice note
             await tap("#plusTab"); await tap("button[data-add=voice]")
             vn=await ev("({ open: !document.getElementById('vnSheet').classList.contains('hidden'), speak: !!document.querySelector('#vnSheet .bigmic'), rec: !!document.getElementById('vnRecBtn') })")

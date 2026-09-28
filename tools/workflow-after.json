@@ -18,7 +18,7 @@
    "typed": 3,
    "info": {
     "form_rows": 17,
-    "form_height_px": 3042,
+    "form_height_px": 3048,
     "asking": "R2,300 per t",
     "agreed": "R2,250 per t",
     "basis": "FOT"
@@ -41,7 +41,7 @@
      "n": 7,
      "prio": 1,
      "due": "2026-09-29",
-     "chased": "2026-09-28T01:14:10.244Z"
+     "chased": "2026-09-28T03:52:23.145Z"
     }
    }
   },
@@ -139,7 +139,7 @@
    "taps": 1,
    "typed": 0,
    "info": {
-    "card": "market price\nupdated today\nsuggested · check, then accept\nChrome 42–44% concentrate\nUS$320/t≈ R 5 600/t\nCIF China · Demo report · 27 Sep\nAcc"
+    "card": "market price\nupdated today\nchrome · CIF China · suggested\n42–44% concentrate\nUS$320/t ≈ R 5 600 · 27 Sep\nAccept\nDrop\n40–42% concentrate\nUS$3"
    }
   },
   "J12": {
