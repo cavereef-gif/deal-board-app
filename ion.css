@@ -694,7 +694,7 @@ html[data-ion][data-palette] .dn{font-weight:400;font-size:16px}
 html[data-ion][data-palette] .foot{margin:8px 0 0;font:400 14px/20px var(--mono);color:var(--muted);text-align:right}
 /* 28 Sep 2026 (office.js): Documents page, Sign-ups page, My signature, the "Sign it" chip */
 html[data-ion][data-palette] .fchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
-html[data-ion][data-palette] .fchips button{height:36px;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:var(--g2);color:var(--text);font:400 14px/1 var(--font);box-shadow:none;white-space:nowrap}
+html[data-ion][data-palette] .fchips button{height:40px;min-height:40px;padding:0 12px;border:0;border-radius:999px;background:var(--g2);color:var(--text);font:400 14px/1 var(--font);box-shadow:none;white-space:nowrap}
 html[data-ion][data-palette] .fchips button small{margin-left:6px;font:400 14px/1 var(--mono);color:var(--muted)}
 html[data-ion][data-palette] .fchips button.on{background:var(--ion);color:var(--ctext)}
 html[data-ion][data-palette] .fchips button.on small{color:var(--ctext)}

@@ -70,6 +70,12 @@ Edge function: `read` (v2 since 27 Sep 2026 – messy WhatsApps come back as one
 - Server function `tools` action "market" (v16): reads the newest free SMM chrome and manganese reviews, keeps only lines with a South African price, Claude Haiku reads the figures, and a figure is kept only if it is printed in a line of the article that names South Africa (and the named grade); arrives as suggested. The weekly note (weekly_notes kind "market") keeps why any figure was left out.
 - Timer deal-board-market (pg_cron, change 011): Mondays 04:40 UTC = 06:40 in South Africa.
 
+### Signatures and sign-ups (28 Sep 2026 afternoon, docs/db/012 – applied from the Claude project)
+- signatures: person (Chris / Annemarie, primary key), full_name, title, png (the drawn signature as a JPEG data URL, 600 × 200, under 300 KB), updated_at. Only is_owner() can read or write. Placed on a document only when "Sign it as …" is tapped on it.
+- platforms (the sign-ups register): id, name, url, login (login name or email – never a password), joined_on, status (Active / Trial / Lapsed / Cancelled), plan (Free / Paid), cost, renews_on, owner (Chris / Annemarie / Both), use_for, notes, updated_by, created_at, updated_at. Only is_owner(). The app refuses notes that contain a password.
+- Company papers (CIPC certificate, tax PIN, B-BBEE …) are ordinary attachments with target_type "company" (no table change).
+- Deal params key rate_basis (transport): "Per ton" · "Flat per load" · "Flat – whole job"; when empty the app reads it from the client rate's words ("R12,000 a load").
+
 ## Current source of the two task functions (for change 001)
 ```sql
 create or replace function public.add_item(p_project text, p_waiting_on text, p_waiting_for text, p_blocks text, p_next text, p_priority integer default 2, p_owner text default 'Chris', p_deal uuid default null)
@@ -128,3 +134,4 @@ batch1_items_events · batch2_owner_access · batch2_add_item · harden_search_p
 ## Applied since the handover
 - v17_due_dates (26 Sep 2026): items.due_on; add_item gains p_due (optional); item_action gains 'due' (p_value = YYYY-MM-DD or empty). Same as docs/db/001-due-dates.sql.
 - 010_lean_deals (28 Sep 2026): documents per deal, who and by when on a step, market prices – docs/db/010-lean-deals.sql. Timer deal-board-market (28 Sep 2026) – docs/db/011-market-timer.sql.
+- signatures_platforms (28 Sep 2026): signatures and the sign-ups register – docs/db/012-signatures-platforms.sql.

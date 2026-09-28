@@ -7,6 +7,18 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 28 Sep 2026 (afternoon) – v17 prototype: flat rates, signature, Documents, Sign-ups, bot answers route questions, audit (not live)
+- Chris (16:15): flat rate on transport; a signature block; one place for every job's NCNDAs and other papers; the bot jumped to Today instead of answering "anything risky from Piet Retief to Richards Bay"; can the bot check the sites he is signed into; no way to record his Tradekey sign-up; a full audit against similar apps.
+- Bot: a question now gets an answer in words – the app opens a page only when asked to open or show something; otherwise the bot's page link becomes a "Tap to open" line. Server function ask v13: a route_check tool (km, hours, toll gates and 3-day weather from our own tools function), South African road-freight risk notes (N2 northern KZN, protests and blockades, Richards Bay queues, R33/R34 potholes, weighbridges, diesel), and one more try in words if the answer came back empty.
+- Transport rate type: Per ton · Flat per load · Flat – whole job (Numbers › Rate type). The calculator, quote PDF (rows, "included in the rate", terms line), ticket label, deal status, commission split and route calculator all follow it; the WhatsApp reader sets it from "per load".
+- My signature (Settings): drawn once with a finger, saved for that person only (only the two of you can see it); "Sign it as …" on the template, quote and statement sheets – off each time until tapped; the PDF places the signature, name, title and date. Note on ECTA (ordinary electronic signature; land sales and wills still need ink).
+- More › Documents: every deal's papers in one place with filters (NCNDA · IMFPA · contracts and offers · proofs and KYC · load papers · other files · company papers), "still to come" (asked for and not in; NCNDA not signed yet), and our own company papers with the usual KYC list.
+- More › Sign-ups: Tradekey and other sites – link, login name, joined, status, free or paid and cost, renewal with a reminder task 7 days before, whose account, notes; a password in the notes is refused.
+- Database: change 012 (signatures, platforms) – applied from the Claude project.
+- Audit against similar apps: docs/AUDIT-2026-09-28.md (10 proposed builds, none started – each needs Chris's yes).
+- Checks: node --check on every changed file; flows.py 60 of 60 PASS (4 new: flat rate, sign-ups with password refusal, Documents, signature placed in the PDF); geometry.py 1,028 PASS, 0 FAIL; screens.py 188 screens on Ion (lowest contrast 4.51) and 188 on Twilight (lowest 5.28) – no coloured letters, nothing under 14 px; the Documents filter chips were 36 px and are now 40 px; signed quote and NCNDA PDFs opened and looked at; ask v13 answers a signed-out call with "Not signed in" (a full answer needs Chris's login).
+- Not live yet. Prototype link updated (prototype/ folder on main).
+
 ## 28 Sep 2026 (morning) – v17 prototype: Twilight colours, clearer sections, explanations (not live)
 - Chris (05:20): the rail he liked had gone from the market price; sections ran together on a person's page ("make better distinctions maybe with lines or bold letters"); his colour palette (two off-whites, Twilight Bliss, Star of Life, Azure Cloud, Lime Jelly) as another choice; explanations of the procedure and of what each document is for and why.
 - Market price is back on the rail: a block per ore and place (chrome · CIF China, manganese · port spot, chrome · FOT SA …) so a China price never sits beside a South African one; one node per price, Accept / Drop under a suggested one; every word whole at 360 px.
