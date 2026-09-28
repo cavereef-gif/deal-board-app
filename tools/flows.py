@@ -482,6 +482,10 @@ async def main():
             await tap("button[data-ldnew=dm1]"); await pg.fill("[data-ldf=t_loaded]", "33.8"); await tap("button[data-ldchip=paid]"); await tap("button[data-ldsave]")
             ld=await ev("(() => { const t=loadTotals('dm1'), L=loadsOf('dm1'); return { n: t.n, tl: Math.round(t.tl*10)/10, td: t.td, short: t.short, reg: L[0].truck_reg, nums: L.map(l=>l.n).join(','), paid: t.paid, sum: [...document.querySelectorAll('.dsum .kv')].map(k=>k.innerText).filter(x=>/^Loads/.test(x)).join('') }; })()")
             check("Load register: loads numbered 1, 2 …, tons loaded and delivered add up, shown on the deal summary", ld['n']==2 and ld['tl']==68.0 and ld['reg']=="ND 123-456" and ld['nums']=="1,2" and ld['paid']==1 and "2 loads" in ld['sum'], str(ld))
+            # B5: the deal's money and the mismatch check
+            mo=await ev("""(() => { const d=dealById('dm1'); d.params=Object.assign({}, d.params, {asking_price:'R2,300', price:'R2,250', unit:'per t', commission:'R40 per t', other_cuts:'Mandate R10', volume:'20,000 t per month'}); render();
+              return { line: dealMoneyLine(d), mm: dealMismatches(d) }; })()""")
+            check("Deal money: our cut less others on the monthly volume; mismatch: buyer's price below the seller's asking", "R30 per t to us" in mo['line'] and "R600 000 a month" in mo['line'] and any("below the seller" in x for x in mo['mm']), str(mo))
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)

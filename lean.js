@@ -725,6 +725,7 @@ window.dealSummaryHtml = function (d, pg) {
   rows.push(["Documents", `${dIn} in · ${dAsk} asked · ${dl.length - dIn - dAsk - dNa} still to get`]);
   if (window.trustLine) { const t = trustLine(d); if (t) rows.push(["Checks", t]); }
   if (window.loadsLine) { const t = loadsLine(d); if (t) rows.push(["Loads", t]); }
+  if (window.dealMismatches) { const mm = dealMismatches(d); if (mm.length) rows.push(["Mismatch", mm.length === 1 ? mm[0] : `${mm.length} figures disagree – see Numbers`]); }
   return `<div class="tplfrom dsum">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };
 
@@ -800,4 +801,74 @@ document.addEventListener("click", async e => {
       toast(`${TRUST[side].step} – ticked.`); render();
     }
   }
+});
+
+// ---------- the deal's money, on the deal (28 Sep 2026 night) ----------
+// Worked out from the saved terms – nothing typed twice. Minerals: our cut less the other parties' cuts, on the monthly volume.
+// Transport: client rate less transporter rate less cuts, per ton or per load (flat rates too), on the loads a month.
+const perMonthOf = s => { const t = String(s || ""); const m = t.match(/(\d[\d ,.]*)\s*(?:k\s*)?t?\s*(?:a|per|\/)\s*month/i); if (m) { let v = parseFloat(m[1].replace(/[ ,]/g, "")); if (/k\s*t/i.test(t)) v *= 1000; return v; } const r = t.match(/(\d[\d ,]*)\s*[–-]\s*(\d[\d ,]*)/); return r ? parseFloat(r[1].replace(/[ ,]/g, "")) : (numIn(t) || 0); };
+const sumCuts = s => { const a = [...String(s || "").matchAll(/R\s?(\d+(?:[.,]\d+)?)/g)].map(m => +m[1].replace(",", ".")); return a.reduce((x, y) => x + y, 0); };
+const rMoney = v => (v < 0 ? "−" : "") + "R" + Math.round(Math.abs(v)).toLocaleString("en-ZA").replace(/[  ,]/g, " ");
+function dealMoney(d) {
+  const p = leanP(d), out = { rows: [], line: "" };
+  if (d.kind === "mineral") {
+    const u = /dmt/i.test(p.unit || p.commission || "") ? "DMT" : "t";
+    const ask = numIn(p.asking_price), agr = numIn(p.price), cut = isUnset(p.commission) ? 0 : numIn(p.commission), others = sumCuts(p.other_cuts);
+    const vol = perMonthOf(p.volume), net = cut - others;
+    if (ask) out.rows.push(["Seller asks", `${rMoney(ask)} per ${u}`]);
+    if (agr) out.rows.push(["Buyer pays", `${rMoney(agr)} per ${u}${ask ? ` · ${agr >= ask ? "spread " + rMoney(agr - ask) : "below the asking by " + rMoney(ask - agr)}` : ""}`]);
+    if (cut) out.rows.push(["Our cut", `${rMoney(cut)} per ${u}${others ? ` − others ${rMoney(others)} = ${rMoney(net)}` : ""}`]);
+    if (cut && vol) out.rows.push(["A month", `${rMoney(net * vol)} on ${Math.round(vol).toLocaleString("en-ZA").replace(/[  ,]/g, " ")} ${u}`]);
+    out.line = cut ? `${rMoney(net)} per ${u} to us${vol ? ` · ≈ ${rMoney(net * vol)} a month` : ""}` : agr ? `buyer pays ${rMoney(agr)} per ${u} · our cut not agreed` : "";
+  } else if (d.kind === "transport") {
+    const b = window.rateBasis ? rateBasis(p) : "ton", per = b === "load" ? "a load" : b === "job" ? "for the job" : "a ton";
+    const cr = numIn(p.client_rate), hr = numIn(p.haulier_rate), cuts = sumCuts(p.cuts || p.other_cuts), m = cr && hr ? cr - hr - cuts : null;
+    const loads = perMonthOf(p.loads), perLoad = m == null ? null : b === "ton" ? m * 34 : m;
+    if (cr) out.rows.push(["Client pays", `${rMoney(cr)} ${per}`]);
+    if (hr) out.rows.push(["Transporter", `${rMoney(hr)} ${per}${cuts ? ` · others ${rMoney(cuts)}` : ""}`]);
+    if (m != null) out.rows.push(["Margin", `${rMoney(m)} ${per}${b === "ton" ? ` · ${rMoney(perLoad)} a 34 t load` : ""}`]);
+    if (m != null && loads && b !== "job") out.rows.push(["A month", `${rMoney(perLoad * loads)} on ${loads} loads`]);
+    out.line = m != null ? `${rMoney(m)} ${per} margin${loads && b !== "job" ? ` · ≈ ${rMoney(perLoad * loads)} a month` : ""}` : cr ? `client pays ${rMoney(cr)} ${per} · transporter rate not in` : "";
+  }
+  return out;
+}
+window.dealMoney = dealMoney;
+window.dealMoneyLine = d => dealMoney(d).line;
+window.dealMoneyHtml = function (d) {
+  const m = dealMoney(d); if (!m.rows.length) return "";
+  return rplain("money", "from the terms") + `<div class="tplfrom dsum">${m.rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
+};
+
+// ---------- mismatch check (28 Sep 2026 night) ----------
+// Plain rules on what is saved (no AI guess): figures that cannot all be true at once. "Ask the bot to compare" goes further –
+// it reads the notes, WhatsApp chats and documents saved on the deal and lists any figures that disagree.
+window.dealMismatches = function (d) {
+  const p = leanP(d), out = [], set = k => !isUnset(p[k]);
+  if (d.kind === "mineral") {
+    const ask = numIn(p.asking_price), agr = numIn(p.price);
+    if (ask && agr && agr < ask) out.push(`the buyer's price (${p.price}) is below the seller's asking (${p.asking_price}) – no room for the deal`);
+    if (set("price") && set("commission") && /dmt/i.test(p.commission) !== /dmt/i.test(p.unit || "")) out.push(`the price is ${p.unit || "per t"} but our cut is ${/dmt/i.test(p.commission) ? "per DMT" : "per ton"} – put them on the same basis`);
+    if (/zero/i.test(p.vat || "") && /^(FOT|DAP|EXW)/i.test(p.basis || "") && !/port|harbour|richards|durban|maputo|walvis|border/i.test(p.port || "")) out.push("VAT is zero-rated, but delivery is inside South Africa – zero-rating is only for exports");
+    if (set("basis") && /^(FOT|FCA|DAP|CIF|CFR|FOB)/i.test(p.basis) && !set("port")) out.push(`${p.basis} needs a named place`);
+    const tested = (window.loadsOf ? loadsOf(d.id) : []).map(l => parseFloat(l.grade)).filter(x => isFinite(x));
+    const need = parseFloat(String(p.grade || "").replace(/.*?(\d+(?:\.\d+)?)\s*[–-].*/, "$1"));
+    if (tested.length && isFinite(need) && Math.min(...tested) < need) out.push(`a tested load (${Math.min(...tested)}%) is below the contract grade (${p.grade})`);
+    if (/^(LC|SBLC)/i.test(p.instrument || "") && !pofIn(d)) out.push("payment says LC, but the proof of funds is not in");
+  } else if (d.kind === "transport") {
+    const cr = numIn(p.client_rate), hr = numIn(p.haulier_rate);
+    if (cr && hr && hr >= cr) out.push(`the transporter (${p.haulier_rate}) costs as much as or more than the client pays (${p.client_rate})`);
+    if (/load/i.test(p.client_rate || "") && /\/t|per t(on)?\b/i.test(p.haulier_rate || "")) out.push("the client rate is per load but the transporter rate is per ton – compare like with like");
+    if (!set("vat") && cr) out.push("the client rate has no VAT stated – in or out?");
+  }
+  return out;
+};
+window.mismatchHtml = function (d) {
+  const m = dealMismatches(d);
+  return rplain("mismatch check", m.length ? `${m.length} to look at` : "nothing found") + (m.length ? `<div class="fwait">${m.map(x => `<div class="fw mm"><b>Check</b><span>${esc(x)}</span></div>`).join("")}</div>` : "")
+    + `<div class="acts0"><button type="button" data-mmbot="${d.id}">${ic("bot")}Ask the bot to compare the documents and chats</button></div>`;
+};
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("button[data-mmbot]"); if (!b) return;
+  const d = dealById(b.dataset.mmbot); if (!d || typeof askBot !== "function") return;
+  askBot(`Mismatch check for the deal "${d.name}": compare every figure saved on it – the terms, the notes, the WhatsApp chats and the documents that were read (LOI, ICPO, FCO, SPA, quotes, assays) – and list only the ones that disagree (price, grade, quantity, delivery basis and place, payment, VAT, names), saying where each figure comes from. If nothing disagrees, say so in one line.`, "ask", d.id);
 });

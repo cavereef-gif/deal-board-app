@@ -867,6 +867,8 @@ function dealPageHtml(d){
     h += `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
     if (d.kind === "mineral" && d.kit && window.kitGuideHtml) { const gk = `guide:${d.id}`, go = isOpen(gk, false); h += `<button type="button" class="tmore" data-tog="${gk}" data-dflt="0" aria-expanded="${go}"><span>Guide – terms, tests, red flags</span><span class="chev"></span></button>${go ? `<div class="card">${kitGuideHtml(d)}</div>` : ""}`; }
   } else if (t === "numbers") {
+    if (window.dealMoneyHtml) h += dealMoneyHtml(d);     // the deal's money on top of Numbers (28 Sep night)
+    if (window.mismatchHtml && (d.kind === "mineral" || d.kind === "transport")) h += mismatchHtml(d);
     if (window.leanTermsHtml && LEAN_TERMS[d.kind]) h += leanTermsHtml(d); else if (defs.length) h += termsHtml(d, defs);
     if (window.calcHtml && d.kind !== "general") h += calcHtml(d.id, d, d.kind === "transport" ? "transport" : "mineral");
     if (d.kind === "transport" && window.openDocSheet) h += `<div class="acts0"><button class="primary" data-dquote="${d.id}">${ic("file")}Quote PDF for the client</button></div>`;
