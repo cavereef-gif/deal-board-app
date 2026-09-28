@@ -724,6 +724,7 @@ window.dealSummaryHtml = function (d, pg) {
   const dIn = dl.filter(x => /received|signed/.test(st(x.k) || "")).length, dAsk = dl.filter(x => st(x.k) === "requested").length, dNa = dl.filter(x => st(x.k) === "na").length;
   rows.push(["Documents", `${dIn} in · ${dAsk} asked · ${dl.length - dIn - dAsk - dNa} still to get`]);
   if (window.trustLine) { const t = trustLine(d); if (t) rows.push(["Checks", t]); }
+  if (window.loadsLine) { const t = loadsLine(d); if (t) rows.push(["Loads", t]); }
   return `<div class="tplfrom dsum">${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
 };
 

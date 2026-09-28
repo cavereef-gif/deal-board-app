@@ -436,7 +436,7 @@ async function load(){
   checkVersion();
   let items;
   const dirP = window.dirLoad ? window.dirLoad() : Promise.resolve();
-  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); if (window.officeLoad) officeLoad(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
+  if (DEMO) { items = demoItems(); demoExtras(); if (window.loadDocs) loadDocs(); if (window.officeLoad) officeLoad(); if (window.loadsLoad) loadsLoad(); window._company = { legal_name: "Example Trading (Pty) Ltd", trading_as: "Example Africa", reg_no: "2020/000000/07", vat_no: "4000000000", address: "1 Example Road, Durban, 4001", phone: "031 000 0000", email: "quotes@example.co.za", website: "example.co.za", payment_terms: "30 days from statement", standing_rate: "R650 an hour after 4 free hours", show_on_docs: true }; window._keyStatus = "not set"; window._mapKeyStatus = { geoapify: "not set", tomtom: "not set", here: "not set" }; window._projects = [{name:"Transport",sort:10,stage:"Qualifying",summary:"Demo project summary.",key_facts:"Rate R350/t\nAlex R200/t",contacts:"Sam & Lee",next_milestone:"Written agreement",updated_at:new Date().toISOString(),updated_by:"claude"},{name:"Verve admin",sort:40,stage:"Setting up",summary:"Company setup, banking, website.",key_facts:"",contacts:"",next_milestone:"Bank account live",updated_at:new Date().toISOString(),updated_by:"claude"}]; }
   else {
     const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12] = await Promise.all([
       sb.from("items").select("*").neq("state","Done"),
@@ -464,6 +464,7 @@ async function load(){
     // our company details for quotes (database change 009); the app keeps working without it
     sb.from("company_profile").select("*").eq("id", 1).maybeSingle().then(r => { window._company = r.error ? null : (r.data || {}); if (view === "settings") render(); });
     if (window.officeLoad) officeLoad();   // signatures and sign-ups (database change 012)
+    if (window.loadsLoad) loadsLoad();     // the load register (database change 015)
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
       return sb.from("briefs").select("*").order("created_at", { ascending: false }).limit(1); }).then(r => {
       const b = r && r.data && r.data[0];
@@ -861,6 +862,7 @@ function dealPageHtml(d){
     if (window.trustHtml && d.kind === "mineral") { const tk = `trust:${d.id}`, done = window.trustLine && /buyer [^·]*✓ · stockpile [^·]*✓/.test(trustLine(d)), to = isOpen(tk, !done); h += `<button type="button" class="tmore" data-tog="${tk}" data-dflt="${done ? 0 : 1}" aria-expanded="${to}"><span>Trust check – ${esc(trustLine(d))}</span><span class="chev"></span></button>${to ? trustHtml(d) : ""}`; }
     const all = window.leanAll ? leanAll(d.id) : true, kit = window.kitSecHtml && (d.kit || all) ? kitSecHtml(d) : "";
     h += (d.kit ? "" : kit) + (pg.total ? checklistHtml(d, pg) : `<div class="quiet">No checklist yet.</div>`) + (d.kit ? kit : "");
+    if (window.loadsHtml && (d.kind === "mineral" || d.kind === "transport")) h += loadsHtml(d);
     h += rplain("waiting on others", `${waits.length} open`) + railOpen(0) + (waits.length ? `<section class="iblk"><div class="ibody">${waits.map(it => window.swRow ? swRow(it, true) : homeRowSafe(it)).join("")}</div></section>` : `<section class="iblk"><div class="empty">nothing waiting on this deal</div></section>`) + railClose();
     h += `<div class="acts0"><button data-addwait="${d.id}">${ic("plus")}Add a task for this deal</button></div>`;
     if (d.kind === "mineral" && d.kit && window.kitGuideHtml) { const gk = `guide:${d.id}`, go = isOpen(gk, false); h += `<button type="button" class="tmore" data-tog="${gk}" data-dflt="0" aria-expanded="${go}"><span>Guide – terms, tests, red flags</span><span class="chev"></span></button>${go ? `<div class="card">${kitGuideHtml(d)}</div>` : ""}`; }
@@ -1115,7 +1117,7 @@ $("list").addEventListener("click", async e => {
     if (DEMO) { window._deals = window._deals.filter(x => x.id !== id); window._items = (window._items || []).filter(i => i.deal_id !== id); }
     else {
       rm.disabled = true;
-      const paths = attsFor("deal", id).map(a => a.path).filter(Boolean);
+      const paths = [...attsFor("deal", id), ...(window.loadsOf ? loadsOf(id).flatMap(l => attsFor("load", l.id)) : [])].map(a => a.path).filter(Boolean);
       if (paths.length) { try { await sb.storage.from("files").remove(paths); } catch (x) {} }
       const { error } = await sb.rpc("delete_deal", { p_id: id });
       if (error) { rm.disabled = false; toast("Could not remove: " + error.message, 6000); return; }
@@ -1477,6 +1479,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="lean.js?v=17"></script>
 <script src="docs.js?v=17"></script>
 <script src="office.js?v=17"></script>
+<script src="loads.js?v=17"></script>
 <script src="google.js?v=17"></script>
 <script src="push.js?v=17"></script>
 <script src="reader.js?v=17"></script>

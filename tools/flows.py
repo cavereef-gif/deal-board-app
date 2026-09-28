@@ -476,6 +476,12 @@ async def main():
             iv=await ev("({ title: document.getElementById('docTitle').textContent, rows: docRows().rows.map(r=>r[0]+'='+r[1]).join(' | ') })")
             await ev("document.getElementById('docSheet').classList.add('hidden')")
             check("Final invoice: tested tons (WMT → DMT at the moisture), price, VAT, less the proforma, balance due", iv['title']=="Final invoice" and "950 DMT" in iv['rows'] and "Balance due=R 1 958 125.00" in iv['rows'], str(iv))
+            # B4: the load register
+            await ev("setDealTab('dm1','steps'); render()"); await W()
+            await tap("button[data-ldnew=dm1]"); await pg.fill("[data-ldf=truck_reg]", "nd 123-456"); await pg.fill("[data-ldf=t_loaded]", "34.2"); await pg.fill("[data-ldf=t_delivered]", "34.0"); await pg.fill("[data-ldf=moisture]", "5"); await tap("button[data-ldsave]")
+            await tap("button[data-ldnew=dm1]"); await pg.fill("[data-ldf=t_loaded]", "33.8"); await tap("button[data-ldchip=paid]"); await tap("button[data-ldsave]")
+            ld=await ev("(() => { const t=loadTotals('dm1'), L=loadsOf('dm1'); return { n: t.n, tl: Math.round(t.tl*10)/10, td: t.td, short: t.short, reg: L[0].truck_reg, nums: L.map(l=>l.n).join(','), paid: t.paid, sum: [...document.querySelectorAll('.dsum .kv')].map(k=>k.innerText).filter(x=>/^Loads/.test(x)).join('') }; })()")
+            check("Load register: loads numbered 1, 2 …, tons loaded and delivered add up, shown on the deal summary", ld['n']==2 and ld['tl']==68.0 and ld['reg']=="ND 123-456" and ld['nums']=="1,2" and ld['paid']==1 and "2 loads" in ld['sum'], str(ld))
             await b.close()
     finally: srv.terminate(); shutil.rmtree(d,ignore_errors=True)
     for r in res: print(*r)
