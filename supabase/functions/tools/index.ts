@@ -1,4 +1,4 @@
-// Record copy of the Supabase edge function `tools` (28 Sep 2026: + weekly market prices from the public SMM reviews; tasks for "Both" count in the 07:00 note). Deployed from the Claude project, never from this repo.
+// Record copy of the Supabase edge function `tools` (28 Sep 2026: + weekly market prices from the public SMM reviews; tasks for "Both" count in the 07:00 note; 3 Oct 2026: prototype phones get a content-free 07:00 note and the app-icon number – see protoNote). Deployed from the Claude project, never from this repo.
 // Deal Board free services (Chris, 26 Sep 2026: "i want all the free api"): everything here costs R0 except a few cents of
 // Claude when the monthly diesel statement is read. Nothing here changes a deal or a task: prices arrive as "suggested" and a
 // person accepts them with one tap; routes and places are remembered so the same question never costs twice.
@@ -505,13 +505,16 @@ async function vapid(admin: any) {
   }
   return data as { public: string; private: string };
 }
-async function sendPush(admin: any, owner: string, payload: Record<string, unknown>) {
+// payload: one note for every phone, or a function that picks the note per phone (null = nothing for that phone)
+async function sendPush(admin: any, owner: string, payload: Record<string, unknown> | ((sub: any) => Record<string, unknown> | null)) {
   const keys = await vapid(admin);
   const { data: subs } = await admin.from("push_subs").select("*").eq("owner", owner);
   let sent = 0, gone = 0, failed = 0;
   for (const s of subs || []) {
+    const p = typeof payload === "function" ? payload(s) : payload;
+    if (!p) continue;
     try {
-      const d = webpush.generateRequestDetails({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload),
+      const d = webpush.generateRequestDetails({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(p),
         { TTL: 6 * 3600, urgency: "normal", vapidDetails: { subject: APP_URL, publicKey: keys.public, privateKey: keys.private } });
       const r = await fetch(d.endpoint, { method: d.method, headers: d.headers as Record<string, string>, body: d.body as any });
       if (r.status === 404 || r.status === 410) { await admin.from("push_subs").delete().eq("endpoint", s.endpoint); gone++; }
@@ -521,10 +524,28 @@ async function sendPush(admin: any, owner: string, payload: Record<string, unkno
   }
   return { sent, gone, failed, phones: (subs || []).length };
 }
+// 3 Oct 2026 (Phone Flow Batch 1, prototype only – Chris: "content-free wording, e.g. '1 deal needs you'. No deal names, amounts
+// or people on the lock screen"): a phone running the prototype (its label ends "· prototype") gets only how many deals and
+// other tasks need the person today, plus the number of late tasks for the app icon (the app shows the same number on Today's
+// Late tile). Every other phone keeps the note it had.
+// PROTO-NOTE-START
+function protoNote(mine: any[], fu: any[], sugg: number, today: string, due: (i: any) => string) {
+  const need = mine.filter((i: any) => due(i) <= today), fuNeed = fu.filter((t: any) => t.not_before <= today).length;
+  const deals = new Set(need.filter((i: any) => i.deal_id).map((i: any) => i.deal_id)).size, other = need.filter((i: any) => !i.deal_id).length + fuNeed;
+  const late = mine.filter((i: any) => due(i) < today).length + fu.filter((t: any) => t.not_before < today).length;
+  const pl = (n: number, one: string, many: string) => n === 1 ? one : many, parts: string[] = [];
+  if (deals) parts.push(`${deals} ${pl(deals, "deal needs", "deals need")} you`);
+  if (other) parts.push(deals ? `${other} other ${pl(other, "task", "tasks")}` : `${other} ${pl(other, "task needs", "tasks need")} you`);
+  if (sugg) parts.push(`${sugg} ${pl(sugg, "suggestion", "suggestions")} to check`);
+  return { body: parts.join(" · "), badge: late };
+}
+const isProtoPhone = (s: any) => /· prototype$/.test(String(s.device || ""));
+// PROTO-NOTE-END
 async function pushDaily(admin: any) {
   const today = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
   const { data: owners } = await admin.from("allowed_users").select("display_name");
-  const { data: items } = await admin.from("items").select("owner,state,due_on,last_chased,created_at,nudge_after_days,priority").neq("state", "Done");
+  const { data: items } = await admin.from("items").select("owner,state,due_on,last_chased,created_at,nudge_after_days,priority,deal_id").neq("state", "Done");
+  const { data: lts } = await admin.from("lead_tasks").select("owner,status,not_before,outcome").eq("status", "open");   // buyer-search follow-ups
   const out: any = {};
   for (const o of owners || []) {
     const name = o.display_name as string;
@@ -533,9 +554,13 @@ async function pushDaily(admin: any) {
     const late = mine.filter((i: any) => due(i) < today).length, now = mine.filter((i: any) => due(i) === today).length;
     const urgent = mine.filter((i: any) => i.priority === 1 && due(i) <= today).length;
     const sugg = (items || []).filter((i: any) => i.state === "Proposed").length;
-    if (!late && !now && !sugg) { out[name] = "nothing to say"; continue; }
-    const body = [late ? `${late} late` : "", now ? `${now} due today` : "", urgent ? `${urgent} urgent` : "", sugg ? `${sugg} suggested to check` : ""].filter(Boolean).join(" · ");
-    out[name] = await sendPush(admin, name, { title: "Deal Board", body, url: APP_URL, tag: "daily" });
+    const fu = (lts || []).filter((t: any) => ((t.owner || "Chris") === name || t.owner === "Both") && t.not_before && t.outcome);
+    const proto = protoNote(mine, fu, sugg, today, due);
+    const body = late || now || sugg ? [late ? `${late} late` : "", now ? `${now} due today` : "", urgent ? `${urgent} urgent` : "", sugg ? `${sugg} suggested to check` : ""].filter(Boolean).join(" · ") : "";
+    if (!body && !proto.body) { out[name] = "nothing to say"; continue; }
+    out[name] = await sendPush(admin, name, (s: any) => isProtoPhone(s)
+      ? (proto.body ? { title: "Deal Board", body: proto.body, badge: proto.badge, url: APP_URL + "prototype/", tag: "daily" } : null)
+      : (body ? { title: "Deal Board", body, url: APP_URL, tag: "daily" } : null));
   }
   return out;
 }

@@ -7,6 +7,28 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 3 Oct 2026 (later) – v17 prototype: Phone Flow Batch 1, round 2 – the icon number at 07:00, a content-free morning note, published to the prototype link (not live)
+- Chris (3 Oct): "Publish to prototype link." His answers to the decisions:
+  - 1 swipe left opens the chase list – approved.
+  - 2 the due day and "Urgent" on the wait row's second line – approved for the prototype only; judged on the phones before go-live.
+  - 3 "Mark it chased today" ticked by default – approved.
+  - 4 checks on mineral deals only – approved.
+  - 5 overlap with the Trust check – do not build; write a proposal.
+  - Extras approved (R0, prototype only): 6 update the icon number at 07:00 without opening the app; 7 a content-free morning note, e.g. "1 deal needs you".
+  - Not approved: the small older buttons, the Graphite/Velvet contrast on Documents and People, the Saturday test – listed as a separate proposed batch only.
+- 6 + 7 – the 07:00 note to a phone that runs the prototype now says only how many deals and other tasks need you today, e.g. "1 deal needs you", "2 deals need you · 1 other task", "1 suggestion to check". There are no names, amounts or people. The note also carries the number of late tasks, which push-sw.js puts on the app icon (iPhone home-screen app, iOS 16.4+; 0 clears it).
+- Phones on the live app get exactly the note they had. Only phones labelled "· prototype" get the new one. The prototype labels its phone when reminders are turned on, and once more if they were already on (the same subscription is saved again – push_subscribe already does that; no database change).
+- Server: supabase/functions/tools/index.ts (record copy) – protoNote and a per-phone note in sendPush. **The `tools` function needs deploying from the Claude project before 6 and 7 work.** Until then the prototype's icon number still updates whenever the app is opened.
+- The prototype copy now has its own install file (tools/make_preview.py --own-manifest: "Deals test", start and scope = prototype/). Before this, Add to Home Screen on the prototype page opened the **live** app, because iOS uses the install file's start page. Now the iPhone can test the prototype's reminders and icon number as a home-screen app. The WhatsApp share sheet stays with the live app.
+- Settings › Phone reminders on the prototype says what the note now contains.
+- Proposals written, not built: docs/proposals/2026-10-03-merge-trust-and-checks.md (one list per side, three decisions for Chris) and docs/proposals/2026-10-03-proposed-batch-fixes.md (older buttons under 44 px, the Graphite/Velvet contrast, the Saturday test – its cause found: the check reads the swipe button's word "Tomorrow", which says "Mon" on Fridays and Saturdays).
+- Checks:
+  - new tools/push_check.js: 10 PASS (the note shows; its number is set on the icon or cleared; the live app's note leaves the icon alone; the wording – deals, other tasks, suggestions, the late count; no names, amounts or people; only "· prototype" phones).
+  - The changed server code passes a strict TypeScript check, and the whole file parses.
+  - The built prototype copy served from a /prototype/ folder: it runs with no page errors, its install file opens /prototype/ as "Deals test", the phone label ends "· prototype", the root copy is unchanged.
+  - flows.py 93 PASS, 1 FAIL (the Saturday one, as before); geometry.py 1,048 PASS, 0 FAIL.
+- Not live yet. Prototype link: pull request for prototype/ only (see the report).
+
 ## 3 Oct 2026 – v17 prototype: Phone Flow Batch 1 – next step per deal, chase in two taps, checks on deal rows, app badge, Android extras (not live)
 - Brief (Chris, 3 Oct): every deal shows one next step, chasing takes two taps, the checks are visible at a glance; works on the Samsung S22 (Chrome) and the iPhone 8 (iOS 16.7, home-screen app); prototype only. New file flow.js; small hooks in today.js, index.html, motion.js, lean.js, bot.js; styles added at the end of app.css, ion.css, titanium.css (no existing rule changed except adding the Chase button to the Chased/Tomorrow colour rules).
 - 1 Today › "deals · next step": one card per open deal – stage, the one next action, the deal's name, due date (or "no date set", or "2 days late" with a coral dot) and days waiting (since the last step was done). Late ones first; four shown, "Show N more". "Do next step" opens a pull-up panel – the browser's own <dialog> (iOS 15.4+), dressed as the existing sheet: What · Why · Who · Done when, a note, Done (or Received / Signed / Sent for a document step, which marks Docs and ticks the step as the Docs tab does), Requested, Attach the file, Make the NCNDA …, Open the deal. Done uses the same set_step as the deal page (the step goes on the deal's history) and then asks for the next step: who does it, by when (Today · next work days · a date) and "Do it now". Hard stops still hold (SPA signed shows "Not yet – first: …" and no Done). A deal without a checklist: Done goes on its notes, then "What is the next step?" saves it.

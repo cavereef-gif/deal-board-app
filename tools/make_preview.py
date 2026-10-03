@@ -12,10 +12,14 @@ Usage:  python3 tools/make_preview.py [SRC_DIR] [DEST_DIR] [--stamp]
         defaults: SRC_DIR = repo root, DEST_DIR = SRC_DIR/preview
         --stamp adds the build time to every ?v=N on the script and stylesheet links (?v=N.YYYYMMDDHHMM), so phones and
         laptops fetch the new files at once instead of keeping GitHub's 10-minute copies (used for the prototype link).
+        --own-manifest gives the copy its own install file (3 Oct 2026, for the prototype link): "Add to Home Screen" on the
+        iPhone then opens this copy as its own app ("Deals test") instead of the live app – needed to test reminders and the
+        app-icon number on the prototype. Without it the copy uses the live app's manifest (as before).
 """
 import os, re, shutil, sys, time
 stamp = "--stamp" in sys.argv
-sys.argv = [a for a in sys.argv if a != "--stamp"]
+own = "--own-manifest" in sys.argv
+sys.argv = [a for a in sys.argv if a not in ("--stamp", "--own-manifest")]
 
 src = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), ".."))
 dst = os.path.abspath(sys.argv[2] if len(sys.argv) > 2 else os.path.join(src, "preview"))
@@ -29,7 +33,7 @@ for name in sorted(os.listdir(src)):
 
 html = open(os.path.join(src, "index.html"), encoding="utf-8").read()
 reps = [
-    ('<link rel="manifest" href="manifest.webmanifest">', '<link rel="manifest" href="../manifest.webmanifest">'),
+    ('<link rel="manifest" href="manifest.webmanifest">', '<link rel="manifest" href="manifest.webmanifest">' if own else '<link rel="manifest" href="../manifest.webmanifest">'),
     ('<link rel="icon" href="icon.svg" type="image/svg+xml">', '<link rel="icon" href="../icon.svg" type="image/svg+xml">'),
     ('<link rel="apple-touch-icon" href="icon-192.png">', '<link rel="apple-touch-icon" href="../icon-192.png">'),
     ('<script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>',
@@ -43,4 +47,12 @@ if stamp:
     t = time.strftime("%Y%m%d%H%M", time.gmtime())
     html = re.sub(r'((?:href|src)="[\w.-]+\.(?:js|css)\?v=\d+)"', lambda m: m.group(1) + "." + t + '"', html)
 open(os.path.join(dst, "index.html"), "w", encoding="utf-8", newline="").write(html)
+if own:
+    import json
+    m = json.load(open(os.path.join(src, "manifest.webmanifest"), encoding="utf-8"))
+    m.update({"name": "Deal Board – test copy", "short_name": "Deals test", "start_url": "./", "scope": "./"})
+    m.pop("share_target", None)   # the WhatsApp share sheet needs sw.js, which only the live app has
+    for i in m.get("icons", []): i["src"] = "../" + i["src"]
+    open(os.path.join(dst, "manifest.webmanifest"), "w", encoding="utf-8").write(json.dumps(m, indent=2, ensure_ascii=False))
+    copied.append("manifest.webmanifest (own)")
 print("preview built in", dst, "from", src, "files:", ", ".join(copied + ["index.html"]))

@@ -4,6 +4,11 @@
 // Home Screen (Share › Add to Home Screen) – Apple allows web push only there.
 const pushSub = /\/(prototype|preview)\//.test(location.pathname);   // those folders have no sw.js of their own
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+// 3 Oct 2026: a phone that runs the prototype is labelled "· prototype", so the 07:00 note can send it the content-free wording
+// ("1 deal needs you") and the number for the app icon; phones on the live app keep their note exactly as it is.
+const isProto = /\/prototype\//.test(location.pathname);
+const devName = () => (isIOS ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android phone" : "Computer") + " · " + new Date().toISOString().slice(0, 10) + (isProto ? " · prototype" : "");
+window.pushDevName = devName;
 const pushOK = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 function b64uBytes(s) { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); const out = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) out[i] = b.charCodeAt(i); return out; }
 async function pushReg() {
@@ -22,7 +27,7 @@ async function pushLoad() {
 window.pushSettingsHtml = () => {
   const st = window._push || {};
   let h = `<div class="card setc"><div class="lbl" style="margin-top:0">Phone reminders</div>
-    <div class="quiet">One short note at 07:00 on weekdays: what is late, what is due today and what is suggested. Tap it to open the app.</div>`;
+    <div class="quiet">${isProto ? "One short note at 07:00 on weekdays that says only how many things need you – e.g. “1 deal needs you”, never a name, amount or person – and puts the number of late tasks on the app icon (iPhone). Tap it to open the app." : "One short note at 07:00 on weekdays: what is late, what is due today and what is suggested. Tap it to open the app."}</div>`;
   if (!st.ok) {
     h += `<div class="quiet">${isIOS ? "On iPhone: update to iOS 16.4 or newer, then in Safari tap Share › Add to Home Screen and open Deal Board from the Home Screen. The button appears there." : "This browser can't show reminders. Use Chrome on Android."}</div>`;
     return h + `</div>`;
@@ -49,7 +54,7 @@ document.addEventListener("click", async e => {
       if (!key) throw new Error("the server key is missing");
       const reg = await pushReg();
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(key) });
-      const dev = (isIOS ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android phone" : "Computer") + " · " + new Date().toISOString().slice(0, 10);
+      const dev = devName();
       const { error } = await sb.rpc("push_subscribe", { p_sub: sub.toJSON(), p_device: dev });
       if (error) throw error;
       toast("Reminders are on for this phone. Tap Send a test to see one.");
@@ -66,3 +71,13 @@ document.addEventListener("click", async e => {
   await pushLoad(); render();
 });
 (window._after ||= []).push(() => { if (view === "settings" && !window._pushAt) { window._pushAt = 1; pushLoad().then(() => { if (view === "settings") render(); }); } });
+// reminders already on in the prototype (before the label existed): label that phone once – the same subscription, saved again
+(window._after ||= []).push(() => {
+  if (!isProto || DEMO || !me || window._pushTagged || !pushOK() || Notification.permission !== "granted") return;
+  window._pushTagged = 1;
+  navigator.serviceWorker.getRegistration("./").then(r => r && r.pushManager.getSubscription()).then(s => {
+    if (!s) return; let done = ""; try { done = localStorage.getItem("pushTag") || ""; } catch (e) {}
+    if (done === s.endpoint) return;
+    return sb.rpc("push_subscribe", { p_sub: s.toJSON(), p_device: devName() }).then(({ error }) => { if (!error) { try { localStorage.setItem("pushTag", s.endpoint); } catch (e) {} } });
+  }).catch(() => {});
+});
