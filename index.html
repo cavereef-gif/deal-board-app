@@ -205,6 +205,8 @@ button{border-radius:12px}
 .drow2 select{flex:1;font-size:15px;padding:9px;border-radius:12px}
 .drow2 button{flex:none;min-height:40px}
 .lcount{color:var(--muted);font-size:13px;margin:6px 2px}
+.dgrp{grid-column:1 / -1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 2px 6px;padding-top:10px;border-top:1px solid var(--line, rgba(128,128,128,.25));color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.8px}
+.dgrp .dgrp-from{text-transform:none;letter-spacing:0}
 .lead{scroll-margin-top:72px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;border-left:5px solid transparent;overflow:hidden}
 .lead.p0,.lead.p1{border-left-color:var(--dot-high)} .lead.p2{border-left-color:var(--rail-normal)} .lead.p3{border-left-color:var(--dot-low)}
 .lr{display:flex;align-items:flex-start;gap:12px;padding:12px 12px 12px 10px;cursor:pointer}
@@ -423,7 +425,7 @@ What happens: the chat is saved to Files on this person, lead or deal, and the b
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const APP_VERSION = "14";
+const APP_VERSION = "15";
 const SB_URL = "https://egirxhjfgkwqjgxfxzea.supabase.co";
 const SB_KEY = "sb_publishable_DBmbsxFvICXh7XFwWM9XlQ_TtvuUaMM";
 const DEMO = new URLSearchParams(location.search).has("demo");
