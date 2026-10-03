@@ -46,7 +46,7 @@ function dtile(d) {
   const pg = dealProgress(d.id), waits = itemsOf(d.id);
   const owners = [...new Set(waits.map(i => i.owner || "Chris"))];
   const kindIc = d.kind === "transport" ? ["truck", "#72A9FF"] : d.kind === "mineral" ? ["gem", "#C7B6FF"] : ["deals", "#F0C05A"];
-  const av = owners.map(o => `<span style="background:${o === "Annemarie" ? "#FF9CCB" : "#C7B6FF"}" title="${esc(o)}">${esc(o[0])}</span>`).join("");
+  const av = owners.map(o => `<span style="background:${o === "Annemarie" ? "#FF9CCB" : "#C7B6FF"}" title="${esc(pname(o))}">${esc(pname(o)[0])}</span>`).join("");
   return `<button class="dtile" data-tgo="deal:${d.id}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done} of ${pg.total}</span></span></button>`;
 }
 // One task = one line (what) + one line of plain words (kind · due · who).
@@ -56,7 +56,7 @@ function homeRow(it, showOwner, noWho) {
   if (it._ft) {   // a buyer-search step waiting on a reply (follow-up) – opens the step with its Done / Follow up form
     const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null;
     const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() + " – " + l.name : l.name) : t.task;
-    const meta = ["Follow up", n < 0 ? "Overdue" : dw, t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · ");
+    const meta = ["Follow up", n < 0 ? "Overdue" : dw, t.outcome, showOwner ? pname(t.owner || "Chris") : ""].filter(Boolean).join(" · ");
     const fs = window.secsOfLTask ? secsOfLTask(t) : [], fc = fs.length === 1 ? secColor(fs[0]) : "var(--s-all)";
     return `<div class="hrow${n < 0 ? " r-warn" : ""}" style="--rc:${fc}"><button class="hr-main" data-tgo="task:${t.id}"><span class="hr-t">${esc(who)}</span><span class="hr-m">${secTag(fs)}${esc(meta)}</span></button></div>`;
   }
@@ -156,12 +156,12 @@ function taskParts(it, showOwner) {
   if (it._ft) {
     const t = it._ft, l = (t.lead_ids || []).length === 1 ? (window._leads || []).find(x => x.id === t.lead_ids[0]) : null, secs = window.secsOfLTask ? secsOfLTask(t) : [];
     const who = l ? (l.person ? l.person.split(/[,(]/)[0].trim() : l.name) : "Buyer search";
-    return { id: t.id, go: "task:" + t.id, who, title: l ? `Follow up ${l.name}` : t.task, meta: [t.outcome, showOwner ? (t.owner || "Chris") : ""].filter(Boolean).join(" · "), secs,
+    return { id: t.id, go: "task:" + t.id, who, title: l ? `Follow up ${l.name}` : t.task, meta: [t.outcome, showOwner ? pname(t.owner || "Chris") : ""].filter(Boolean).join(" · "), secs,
       left: [["ftdone", "check", "Done"]], right: [["fu3", "clock", "+3 work days"]] };
   }
   const sugg = it.state === "Proposed", secs = window.secsOfItem ? secsOfItem(it) : [];
-  const who = it._me ? (it.owner || "Chris") : it.waiting_on;
-  const meta = [it._me ? "Our job" : "Waiting on " + it.waiting_on, typeof section !== "undefined" && section === "All" && secs.length === 1 ? secs[0] : "", sinceWords(it), showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
+  const who = it._me ? pname(it.owner || "Chris") : it.waiting_on;
+  const meta = [it._me ? "Our job" : "Waiting on " + it.waiting_on, typeof section !== "undefined" && section === "All" && secs.length === 1 ? secs[0] : "", sinceWords(it), showOwner ? pname(it.owner || "Chris") : ""].filter(Boolean).join(" · ");
   return { id: it.id, go: "item:" + it.id, who, me: it._me, title: it.waiting_for, meta, secs,
     left: sugg ? [["confirm", "check", "Accept"]] : [["done", "check", "Done"]],
     right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", nextWorkWord()], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chase", "chat", "Chase"]],
@@ -221,8 +221,8 @@ function todayHtml(items) {
   // a section's plate reads like the mock: its live deal and what the buyer wants; otherwise the day's counts
   const secDeal = secOn ? (window._deals || []).find(x => x.area === secOn && (x.status === "Active" || x.status === "On hold")) : null, sp = (secDeal && secDeal.params) || {};
   const secSub = secDeal ? [secDeal.name, sp.volume || sp.client_rate || sp.cargo].filter(Boolean).join(" · ") : secOn ? `no ${secOn.toLowerCase()} deal yet` : "";
-  h += plateHtml(esc(secOn || "Today"), esc(secSub) || `${g.overdue.length} late · ${g.today.length} due · ${waiting} waiting`, meterHtml());
-  h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
+  h += plateHtml(esc(secOn || (setting("greeting") || "Today")), esc(secSub) || `${g.overdue.length} late · ${g.today.length} due · ${waiting} waiting`, meterHtml());
+  h += `<div class="chips whochips segbar" role="group" aria-label="Whose list">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}" aria-pressed="${target === c}">${c === "All" ? "Both of us" : esc(pname(c))}</button>`).join("")}</div>`;
   h += weekStripHtml(list);
   if (window.meetingsHtml) h += meetingsHtml(target);
   const cnt = { urgent: list.filter(i => i.priority === 1).length + sugg.filter(i => i.priority === 1).length, overdue: g.overdue.length, sugg: sugg.length };
@@ -397,6 +397,8 @@ function goTo(ref) {
     dTaskDone = id;
     const toForm = () => setTimeout(() => { const el = document.querySelector(".tdone"); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 30);
     if (l) { if (window.setDirSeg) setDirSeg("all"); dSeg = "all"; dStat = "any"; dCountry = ""; dQ = l.name; dOpen = l.id; openKeys.delete(`-lc:${l.id}:next`); saveOpen(); render(); toForm(); return; }
+    // 3 Oct 2026: the queue lives under the buyer and supplier list – People and Saved return before it, so switch to the list first
+    if (window.setDirSeg) setDirSeg("all"); dSeg = "all"; dStat = "any"; dCountry = ""; dQ = "";
     openKeys.delete("-dq"); openKeys.add("+dq"); openKeys.add("+dq:more"); openKeys.add("+dq:gated"); openKeys.add("+dq:later"); saveOpen(); render(); toForm(); return;
   }
   if (type === "contact") { navPush(); view = "leads"; if (window.setDirSeg) setDirSeg("saved"); openPanels.add("contact:" + id); render(); scrollTo(`.ccard[data-cid="${id}"]`); return; }
