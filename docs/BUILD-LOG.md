@@ -7,6 +7,19 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 3 Oct 2026 (evening) – v17 prototype: Batch 2 Part A – everything changeable (words, dates, names), built from the Claude project (not live)
+- Chris (3 Oct, after Batch 1): "there's things I can't change, like Annemarie's name on the first page, and Kobus is in Pretoria – I'm not going there, so the only option on the app is to postpone the meeting … make everything changeable for me." Built here in the Claude project (which has database access), not in Claude Code.
+- **Change the words of any task.** Every task (the sheet on Today, Waits, a deal's waits) has a "Change the words" button: what we wait for, the next step (e.g. "Teams call instead of a meeting"), who we wait on (empty = our own job), what it blocks, the project. Save writes each changed field to the history. Database change 017 (edit_item) – applied 3 Oct 2026.
+- **Postpone.** Under Due, a second bar "Postpone to": Next Mon · +1 week · +2 weeks (the Due bar itself keeps its four choices in the locked 40 px box). Uses the existing 'due' action – no database change.
+- **Change the words of a deal step** (title and plain-words detail) from the step's panel – database change 017 (edit_step). **Change the words of a buyer-search step** from its card (the existing save_task). Fix found on the way: opening a queue step from Today while People or Saved was showing landed on an empty page – goTo now switches to the buyer and supplier list first.
+- **Names and greeting (Settings › Names).** What each partner is called on every screen, and the line at the top of Today. Stored in app_settings (change 017, set_setting). The data keeps the keys Chris / Annemarie (owners, history, the 07:00 notes keep working); pname() in ui.js turns a key into the shown name everywhere a name is printed (Today chips and rows, task sheet, new-task sheet, the next-step panel, deal step plans, Sourced, the board composer, the reader, sign-ups, the bot's examples).
+- Who am I: the login now reads its name from allowed_users (your own row) instead of guessing from the email address, so a new login address (e.g. a Verve one) still lands on the right list.
+- Not changed: meetings from Google Calendar are edited in Google (the app only shows them); contacts and leads already had Edit.
+- Checks: node --check on every script and the page script; tools/geometry.py 1,048 PASS · 0 FAIL; tools/flows.py 98 PASS, 1 FAIL (the known Saturday test) – 5 new checks (task words, postpone chips, deal step words, buyer-search step words, names in Settings); tools/screens.py 268 screens at both sizes, all four looks, dark and light – no coloured letters, no low contrast, nothing under 14 px (the one 12 px character is the old avatar initial on lead cards, unchanged); looked at the new forms at iPhone 8 and S22 size.
+- Prototype link PR: see the "prototype-link" entry below once merged. Not live. Database change 017 is applied to the live database (new functions and one new table only – nothing existing changed).
+
+---
+
 ## 3 Oct 2026 (later) – v17 prototype: Phone Flow Batch 1, round 2 – the icon number at 07:00, a content-free morning note, published to the prototype link (not live)
 - Chris (3 Oct): "Publish to prototype link." His answers to the decisions:
   - 1 swipe left opens the chase list – approved.

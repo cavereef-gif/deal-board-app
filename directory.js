@@ -11,7 +11,7 @@ const SIDE_COL = { buyer: "#5C7FB8", supplier: "#4FA88A", broker: "#D9A03F", ser
 const PRIO_W = ["Top", "High", "Medium", "Low", "—"];
 const EVID = { verified: "Verified contact", found: "Found – not yet tested", posted: "As posted – unverified", guess: "Guess – test first", unverified: "Unverified", none: "No contact yet", risk: "Risk" };
 const VIA = ["Email", "WhatsApp", "Call", "Board message", "Web form", "In person"];
-let dSeg = "all", dStat = "any", dQ = "", dCountry = "", dLimit = 40, dOpen = null, dForm = null, dTaskDone = null, dNewLead = false, dEditLead = null, dPersonForm = null;
+let dSeg = "all", dStat = "any", dQ = "", dCountry = "", dLimit = 40, dOpen = null, dForm = null, dTaskDone = null, dTaskEdit = null, dNewLead = false, dEditLead = null, dPersonForm = null;
 try { dSeg = localStorage.getItem("dSeg") || "waiting"; } catch (e) {}
 window.setDirSeg = s => { dSeg = s; dStat = "any"; dLimit = 40; dCountry = ""; try { localStorage.setItem("dSeg", s); } catch (e) {} };
 
@@ -133,11 +133,15 @@ function taskHtml(t, n) {
   let h = `<div class="task${done ? " done" : ""}"><div class="tl">${n ? `<span class="tn">${n}</span>` : ""}<span class="score" title="Value × ease">${t.score}</span><div class="tt">${esc(t.task)}</div>${act}</div>
     <div class="tm">${t.kind ? `<span class="pill">${esc(kindName(t.kind))}</span>` : ""}${gated ? `<span class="tw"><i class="dot" style="background:var(--warn)"></i>Waits: ${(t.gates || []).filter(gateOpen).map(k => esc(((window._gates || []).find(g => g.key === k) || {}).title || k)).join(", ")}</span>` : ""}${fu ? `<span class="pill"><i class="dot" style="background:var(--warn)"></i>${esc(fuWords(t))}</span>` : t.not_before && !done ? `<span class="pill">From ${fmtDay(t.not_before)}</span>` : ""}${ls.slice(0, 4).map(l => `<button class="lk" data-dgo="${l.id}">${ic("user")}${esc(l.name.length > 24 ? l.name.slice(0, 22) + "…" : l.name)}</button>`).join("")}${ls.length > 4 ? `<span class="pill">+${ls.length - 4} more</span>` : ""}${t.status === "blocked" ? `<span class="pill"><i class="dot d-high"></i>Blocked${t.blocked_note ? ": " + esc(t.blocked_note) : ""}</span>` : ""}${done ? `<span class="pill"><i class="dot d-ok"></i>${esc(t.done_by || "")} ${t.done_at ? fmtDay(t.done_at) : ""}${t.outcome ? " — " + esc(t.outcome) : ""}</span>` : ""}</div>`;
   if (fu && dTaskDone !== t.id) h += `<div class="tnote">Last: ${esc(t.outcome)}</div>`;
+  // 3 Oct 2026 (Batch 2): the words of a step can be changed (save_task with the id)
+  if (dTaskEdit === t.id) h += `<div class="step-p tedit" data-tedit="${t.id}"><label class="fld" style="margin-top:0"><span>Step (one line)</span><input class="te-task" value="${esc(t.task)}" maxlength="300"></label>
+    <div class="tacts"><button type="button" class="primary" data-dtasksaveedit="${t.id}">${ic("check")}Save</button><button type="button" data-dtaskedit="">Cancel</button></div></div>`;
+  else if (dTaskDone !== t.id && !done) h += `<div class="acts0"><button type="button" data-dtaskedit="${t.id}">${ic("edit")}Change the words</button></div>`;
   // Done form: Done · Follow up (no reply yet – stays open, comes back on the date) · Blocked · Drop, in two equal columns
-  if (dTaskDone === t.id) h += `<div class="step-p tdone"><label class="fld" style="margin-top:0"><span>What happened? (one line)</span><input id="tOut" maxlength="300" placeholder="e.g. No reply yet · Sent the price list"></label>
+  if (dTaskDone === t.id && dTaskEdit !== t.id) h += `<div class="step-p tdone"><label class="fld" style="margin-top:0"><span>What happened? (one line)</span><input id="tOut" maxlength="300" placeholder="e.g. No reply yet · Sent the price list"></label>
     <label class="fld"><span>No reply yet? Follow up on</span><input type="date" id="tFu" value="${fuDefault(t)}" min="${saDayPlus(1)}"></label>
     <div class="tacts"><button class="primary" data-dtaskact="${t.id}" data-v="done">${ic("check")}Done</button><button data-dtaskact="${t.id}" data-v="followup">${ic("clock")}Follow up</button><button data-dtaskact="${t.id}" data-v="block">${ic("pause")}Blocked</button><button data-dtaskact="${t.id}" data-v="drop">${ic("drop")}Drop</button></div>
-    <button class="tcancel" data-dtaskdone="">Cancel</button></div>`;
+    <button class="tcancel" data-dtaskdone="">Cancel</button><button class="tcancel" data-dtaskedit="${t.id}">${ic("edit")}Change the words</button></div>`;
   return h + `</div>`;
 }
 function taskFormHtml(leadId) {

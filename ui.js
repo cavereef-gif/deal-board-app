@@ -78,6 +78,12 @@ function fillIcons(root) { (root || document).querySelectorAll("[data-ico]").for
 
 // ---------- Dates in words (South African time) ----------
 const WDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Settings both partners share (3 Oct 2026, Batch 2 Part A; database change 017, app_settings): the names shown for each partner
+// and the Today greeting. The data keeps the keys "Chris" and "Annemarie"; pname() turns a key into the name shown on screen.
+window._settings = window._settings || {};
+const setting = k => (window._settings && window._settings[k]) || "";
+const pname = k => k === "Chris" || k === "Annemarie" ? (setting("name:" + k) || k) : k;
+const otherPartner = k => k === "Annemarie" ? "Chris" : "Annemarie";
 const saDate = d => new Date(new Date(d).getTime() + 2 * 3600e3);
 const saDayKey = d => saDate(d).toISOString().slice(0, 10);
 // Whole days from today to d (0 = today, 1 = tomorrow, -1 = yesterday)

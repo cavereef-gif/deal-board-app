@@ -203,7 +203,7 @@ window.signupsHtml = function () {
   return h;
 };
 function suFormHtml() {
-  const f = SU.f, seg = (k, opts) => `<div class="seg2" role="group" aria-label="${k}">${opts.map(o => `<button type="button" data-suseg="${k}" data-v="${o}" class="${f[k] === o ? "on" : ""}" aria-pressed="${f[k] === o}">${o}</button>`).join("")}</div>`;
+  const f = SU.f, seg = (k, opts) => `<div class="seg2" role="group" aria-label="${k}">${opts.map(o => `<button type="button" data-suseg="${k}" data-v="${o}" class="${f[k] === o ? "on" : ""}" aria-pressed="${f[k] === o}">${esc(pname(o))}</button>`).join("")}</div>`;
   const box = (k, l, ph, type) => `<label class="fld"><span>${l}</span><input data-suf="${k}"${type ? ` type="${type}"` : ""} value="${esc(f[k] || "")}" placeholder="${esc(ph || "")}" autocomplete="off"${type === "url" ? ' inputmode="url"' : ""}></label>`;
   return `<div class="card suform"><div class="lbl" style="margin-top:0">${SU.edit === "new" ? "New sign-up" : "Change " + esc(f.name)}</div>
     <label class="fld"><span>Site or service</span><input data-suf="name" list="suKnown" value="${esc(f.name)}" placeholder="e.g. Tradekey" autocomplete="off"></label><datalist id="suKnown">${SU_KNOWN.map(([n]) => `<option value="${esc(n)}">`).join("")}</datalist>

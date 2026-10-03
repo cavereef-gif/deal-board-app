@@ -113,6 +113,12 @@ $("list").addEventListener("click", async e => {
     if (ok) dForm = null; return;
   }
   if ("dtaskdone" in ds && t.matches("[data-dtaskdone]")) { dTaskDone = ds.dtaskdone || null; render(); const x = $("tOut"); if (x) x.focus(); return; }
+  if ("dtaskedit" in ds && t.matches("[data-dtaskedit]")) { dTaskEdit = ds.dtaskedit || null; render(); const x = document.querySelector(".tedit .te-task"); if (x) x.focus(); return; }
+  if (ds.dtasksaveedit) {
+    const box = t.closest(".tedit"), task = box.querySelector(".te-task").value.trim(); if (!task) { toast("The step needs some words."); return; }
+    if (DEMO) { const tk = (window._ltasks || []).find(x => x.id === ds.dtasksaveedit); if (tk) tk.task = task; dTaskEdit = null; toast("Changed (demo – not saved)."); render(); return; }
+    t.disabled = true; const ok = await rpc("save_task", { p_id: ds.dtasksaveedit, p: { task } }, "Saved."); if (ok) dTaskEdit = null; else t.disabled = false; return;
+  }
   if (ds.dtaskact) {
     const out = $("tOut") ? $("tOut").value.trim() : "";
     if (ds.v === "block" && !out) { toast("Write why it is blocked first."); $("tOut").focus(); return; }

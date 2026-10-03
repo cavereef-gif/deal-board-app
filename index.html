@@ -64,7 +64,7 @@
       <select id="fPrio"><option value="1">High</option><option value="2" selected>Normal</option><option value="3">Low</option></select></div>
     </div>
     <label for="fOwner">Who does it – Chris or Annemarie?</label>
-    <select id="fOwner"><option>Chris</option><option>Annemarie</option><option>Both</option></select>
+    <select id="fOwner"><option value="Chris">Chris</option><option value="Annemarie">Annemarie</option><option value="Both">Both</option></select>
     <button class="wide primary" type="submit">Add</button>
     <div class="msg" id="addMsg"></div>
   </form>
@@ -468,6 +468,8 @@ async function load(){
     sb.rpc("service_key_status").then(r => { window._mapKeyStatus = r.data || {}; if (view === "settings") render(); });
     // our company details for quotes (database change 009); the app keeps working without it
     sb.from("company_profile").select("*").eq("id", 1).maybeSingle().then(r => { window._company = r.error ? null : (r.data || {}); if (view === "settings") render(); });
+    // shared settings – the names shown for each partner, the greeting (database change 017); the app keeps working without it
+    sb.from("app_settings").select("key,value").then(r => { window._settingsOk = !r.error; if (!r.error) { const s = {}; for (const x of (r.data || [])) s[x.key] = x.value; const was = JSON.stringify(window._settings); window._settings = s; applyNames(); if (was !== JSON.stringify(s)) render(); } });
     if (window.officeLoad) officeLoad();   // signatures and sign-ups (database change 012)
     if (window.loadsLoad) loadsLoad();     // the load register (database change 015)
     sb.rpc("bot_key_status").then(r => { window._keyStatus = r.data || "unknown"; if (view === "bot") render();
@@ -523,29 +525,60 @@ function rowHtml(it, n){
   const dealOpts = [...liveDeals(), ...(deal && !liveDeals().includes(deal) ? [deal] : [])];
   const prop = it.state === "Proposed";
   const canWa = !it._me && contactsFor(it.waiting_on).some(c => c.phone || c.whatsapp);
+  if (window._itEdit === it.id) return itemEditHtml(it);   // 3 Oct 2026 (Batch 2): the words of any task can be changed
   return `<div class="row p${it.priority || 2}" data-id="${it.id}">
     <div class="l1"><i class="dot ${stateDot}" aria-label="${stateWord}"></i>${n ? `<span class="num">${n}</span>` : ""}<div class="txt">${esc(it.waiting_for)}</div></div>
     <div class="l2">${sinceWords(it)}${due ? " · " + due : ""}</div>
     ${it.blocks ? `<div class="l2">Blocks → <b>${esc(it.blocks)}</b></div>` : ""}
     ${it.next_action ? `<div class="l2">Next: ${esc(it.next_action)}</div>` : ""}
-    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${due === "Overdue" || due === "Due today" ? `<span class="pill"><i class="dot d-stale"></i>${due}</span>` : ""}${prio}<span class="pill">${esc(owner)}${owner === me ? " (me)" : ""}</span><span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
+    <div class="pills"><span class="pill"><i class="dot ${stateDot}"></i>${stateWord}</span>${due === "Overdue" || due === "Due today" ? `<span class="pill"><i class="dot d-stale"></i>${due}</span>` : ""}${prio}<span class="pill">${esc(pname(owner))}${owner === me ? " (me)" : ""}</span><span class="pill">${esc(deal ? deal.name : it.project)}</span></div>
     ${window.draftHtml ? (() => { const cs = contactsFor(it.waiting_on).filter(c => c.phone || c.whatsapp); return draftHtml("item", it.id, cs.length ? (cs[0].whatsapp || toWa(cs[0].phone)) : ""); })() : ""}
     <div class="acts">
       ${prop ? `<button class="primary" data-a="confirm">${ic("check")}Accept</button>${ib("drop", "bad", `data-a="drop"`, "Drop – not needed")}` : it._me ? `<button class="primary" data-a="done">${ic("check")}Done</button>` : `<button class="primary" data-a="done">${ic("check")}Done</button>${ib("clock", "warn", `data-a="chased"`, "Chased – asked again today")}`}
     </div>
-    <div class="lbl">Who does it</div><div class="seg2" role="group" aria-label="Who does it">${["Chris", "Annemarie", "Both"].map(n => n === owner ? `<button class="on" type="button" aria-pressed="true">${n}</button>` : `<button type="button" data-a="assign" data-v="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
+    <div class="lbl">Who does it</div><div class="seg2" role="group" aria-label="Who does it">${["Chris", "Annemarie", "Both"].map(n => n === owner ? `<button class="on" type="button" aria-pressed="true">${esc(pname(n))}</button>` : `<button type="button" data-a="assign" data-v="${n}" aria-pressed="false">${esc(pname(n))}</button>`).join("")}</div>
     ${window.dueRowHtml ? dueRowHtml(it) : ""}
     <div class="tools">
       ${it.priority === 1 ? ib("flag", "bad", `data-a="priority" data-v="2" class="on"`, "Urgent – tap for normal") : ib("flag", "mute", `data-a="priority" data-v="1"`, "Make urgent")}
       ${ib("note", "note", `data-panel="item:${it.id}"${open ? ' class="on"' : ""}`, "Notes and files", (nN + fN) || "")}
       ${canWa ? ib("chat", "wa", `data-wa="${esc(it.waiting_on)}"`, "WhatsApp " + esc(firstName(it.waiting_on))) : ""}
       ${ib("bot", "bot", `data-botitem="${it.id}"`, "Ask the bot")}
+      ${ib("edit", "file", `data-itedit="${it.id}"`, "Change the words")}
       ${!prop && window.calBtn ? calBtn(it) : ""}
       ${!prop ? ib("drop", "bad", `data-a="drop"`, "Drop – not needed") : ""}
     </div>
     <label class="fld"><span>Deal</span><select data-dealsel="${it.id}" aria-label="Deal this belongs to"><option value="">${deal ? "Remove from deal" : "Not linked – choose a deal…"}</option>${dealOpts.map(d => `<option value="${d.id}"${deal && deal.id === d.id ? " selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
     ${open ? panelHtml(it) : ""}</div>`;
 }
+// Change the words of a task (3 Oct 2026, Batch 2 Part A): what we wait for, the next step, what it blocks, who we wait on, the project.
+// Nothing else on the task changes; every changed field lands in the history. Database change 017 (edit_item).
+function itemEditHtml(it){
+  const f = (k, lbl, v, extra) => `<label class="fld"><span>${lbl}</span><input class="ie-${k}" value="${esc(v || "")}" maxlength="400" autocomplete="off"${extra || ""}></label>`;
+  const on = it._me ? "" : it.waiting_on;
+  return `<div class="row p${it.priority || 2} iedit" data-id="${it.id}">
+    <div class="lbl" style="margin-top:0">Change the words</div>
+    <label class="fld"><span>What (the task in one line)</span><textarea class="ie-waiting_for" rows="2" maxlength="400">${esc(it.waiting_for)}</textarea></label>
+    ${f("next_action", "Next step (e.g. Teams call instead of a meeting)", it.next_action)}
+    ${f("waiting_on", "Who we wait on (leave empty if it is our own job)", on, ' list="people" placeholder="Me = our own job"')}
+    ${f("blocks", "What it blocks (optional)", it.blocks)}
+    <label class="fld"><span>Project</span><select class="ie-project">${PROJECTS.map(p => `<option${it.project === p ? " selected" : ""}>${p}</option>`).join("")}${it.project && !PROJECTS.includes(it.project) ? `<option selected>${esc(it.project)}</option>` : ""}</select></label>
+    <div class="acts"><button class="primary" data-itsave="${it.id}">${ic("check")}Save</button><button data-itcancel="${it.id}">Cancel</button></div><div class="msg ie-msg"></div></div>`;
+}
+$("list").addEventListener("click", async e => {
+  const ed = e.target.closest("button[data-itedit]");
+  if (ed) { window._itEdit = window._itEdit === ed.dataset.itedit ? null : ed.dataset.itedit; render(); const t = document.querySelector(".iedit textarea"); if (t) t.focus(); return; }
+  const cn = e.target.closest("button[data-itcancel]");
+  if (cn) { window._itEdit = null; render(); return; }
+  const sv = e.target.closest("button[data-itsave]"); if (!sv) return;
+  const id = sv.dataset.itsave, box = sv.closest(".iedit"), g = k => (box.querySelector(".ie-" + k).value || "").trim();
+  const p = { waiting_for: g("waiting_for"), next_action: g("next_action"), waiting_on: g("waiting_on") || "Me", blocks: g("blocks"), project: g("project") };
+  if (!p.waiting_for) { box.querySelector(".ie-msg").textContent = "The task needs some words."; return; }
+  if (DEMO) { const it = (window._items || []).find(i => i.id === id); if (it) { Object.assign(it, p); it._me = isMe(it); } window._itEdit = null; toast("Changed (demo – not saved)."); render(); return; }
+  sv.disabled = true; sv.textContent = "…";
+  const { error } = await sb.rpc("edit_item", { p_id: id, p });
+  if (error) { sv.disabled = false; sv.textContent = "Save"; box.querySelector(".ie-msg").textContent = /edit_item|function/i.test(error.message) ? "Database change 017 is needed before words can be changed." : "Could not save: " + error.message; return; }
+  window._itEdit = null; toast("Saved."); load();
+});
 // One-line row that opens into the full row
 function miniHtml(it){
   const k = "mini:" + it.id, open = isOpen(k, false);
@@ -624,13 +657,38 @@ function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
   return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["twilight", "Twilight"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
     <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
-    <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(me) + " · " : ""}app v${APP_VERSION}</div></div>
+    <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(pname(me)) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
       <input id="botKey" type="password" placeholder="Paste your Anthropic API key (starts with sk-ant-)" autocomplete="off">
       <div class="acts"><button class="primary" data-bot="savekey">Save key</button></div>
       <div class="msg" id="keyMsg">The key is stored encrypted in the database. Only the bot can read it. Nobody, including Claude in chat, sees it.</div></details>
-    ${companyHtml()}${window.sigSettingsHtml ? sigSettingsHtml() : ""}${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
+    ${namesHtml()}${companyHtml()}${window.sigSettingsHtml ? sigSettingsHtml() : ""}${mapKeysHtml()}${window.bookingSettingsHtml ? bookingSettingsHtml() : ""}${window.pushSettingsHtml ? pushSettingsHtml() : ""}${window.googleSettingsHtml ? googleSettingsHtml() : ""}`;
 }
+// Names and greeting (3 Oct 2026, Batch 2 Part A): what each partner is called on screen, and the line at the top of Today.
+// Stored in app_settings (database change 017); the keys in the data stay "Chris" and "Annemarie".
+function namesHtml(){
+  if (!DEMO && window._settingsOk === false) return `<div class="card setc"><div class="lbl" style="margin-top:0">Names</div><div class="quiet">Database change 017 is not applied yet, so the names cannot be changed here.</div></div>`;
+  const f = (k, l, ph) => `<label class="fld"><span>${l}</span><input data-setting="${k}" value="${esc(setting(k))}" placeholder="${esc(ph)}" maxlength="40" autocomplete="off"></label>`;
+  return `<details class="card setc"><summary>Names and greeting – ${pname("Chris")} · ${pname("Annemarie")}</summary>
+    ${f("name:Chris", "Chris is shown as", "Chris")}${f("name:Annemarie", "Annemarie is shown as", "Annemarie")}${f("greeting", "Line at the top of Today (optional)", "e.g. Verve Africa · deals and loads")}
+    <div class="quiet" style="margin-top:6px">Changes what the app shows on every screen – the login and the history keep working as before.</div>
+    <div class="acts0"><button class="primary" data-setsave="1">${ic("check")}Save names</button></div><div class="msg" id="setMsg"></div></details>`;
+}
+// the two old drop-downs/buttons in the page itself carry the keys; show the chosen names on them
+function applyNames(){
+  document.querySelectorAll("#fOwner option, [data-towner]").forEach(el => { const k = el.value || el.dataset.towner; if (k === "Chris" || k === "Annemarie") el.textContent = pname(k); });
+  const c = $("cText"); if (c && me) c.placeholder = `Message ${pname(otherPartner(me))}…`;
+}
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-setsave]"); if (!b) return;
+  const rows = [...document.querySelectorAll("[data-setting]")].map(el => [el.dataset.setting, el.value.trim()]);
+  if (DEMO) { for (const [k, v] of rows) window._settings[k] = v; applyNames(); $("setMsg").textContent = "Demo mode — nothing saved"; render(); return; }
+  b.disabled = true; let err = null;
+  for (const [k, v] of rows) { if ((window._settings[k] || "") === v) continue; const { error } = await sb.rpc("set_setting", { p_key: k, p_value: v }); if (error) { err = error; break; } window._settings[k] = v; }
+  b.disabled = false;
+  if (err) { $("setMsg").textContent = /set_setting|function/i.test(err.message) ? "Database change 017 is needed first." : "Could not save: " + err.message; return; }
+  applyNames(); toast("Names saved."); render();
+});
 // Our company details (27 Sep 2026): printed at the top of every quote and statement. Stored in the database (change 009).
 const CO_F = [["legal_name", "Registered name", "e.g. Verve South Africa (Pty) Ltd"], ["trading_as", "Trading as", "optional"], ["reg_no", "Company registration number (CIPC)", "e.g. 2020/123456/07"],
   ["vat_no", "VAT number", "10 digits, starts with 4"], ["address", "Physical address", "Street, town, code"], ["phone", "Phone on documents", "e.g. 031 000 0000"], ["email", "Email on documents", "e.g. quotes@…"],
@@ -1462,7 +1520,10 @@ async function show(){
     if (signedIn) {
       const em = data.session.user.email || "";
       window._myEmail = em;
-      me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
+      // who am I: the name the database holds for this login (allowed_users, readable for your own row); the email guess is the fallback
+      // so a new login address (e.g. a Verve address) still lands on the right list (3 Oct 2026)
+      let who = ""; try { const r = await sb.from("allowed_users").select("display_name").eq("email", em).maybeSingle(); who = (r.data && r.data.display_name) || ""; } catch (x) {}
+      me = who || (/annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em);
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
     }
   } else { me = "Chris"; }
