@@ -785,6 +785,7 @@ function histLine(e){
   else if (f === "term:_q") t = "Question status updated (follow-ups)";
   else if (f === "term:_src") t = `Sourced: ${/"s":"ok"/.test(e.new_value || "") ? "confirmed" : /"s":"yes"/.test(e.new_value || "") ? "yes – Annemarie to confirm" : /"s":"notyet"/.test(e.new_value || "") ? "not yet" : "cleared"}`;
   else if (f === "term:_split" || f === "term:_split_t") t = "Commission split changed";
+  else if (f === "term:_trust") t = "Checks updated (buyer · stockpile · funds · red flags)";
   else if (f.startsWith("term:")) t = `${termLabel(f.slice(5))}: ${e.old_value || "—"} → ${e.new_value || "—"}`;
   else if (f.startsWith("doc:")) { const x = window.docDef && dealById(e.deal_id) ? docDef(dealById(e.deal_id).kind, f.slice(4)) : null; t = `${x ? x.l : f.slice(4).toUpperCase()}: ${e.old_value || "not yet"} → ${e.new_value || "not yet"}`; }
   else if (f === "step:plan") t = `Step planned: ${e.new_value || ""}`;
@@ -803,7 +804,7 @@ function dealCardHtml(d){
     <span class="dh"><span class="dn">${esc(d.name)}</span>
       <span class="ds">${esc(d.area)} · ${esc(d.status)}${waits.length ? ` · ${waits.length} waiting${stale ? `, ${stale} to chase` : ""}` : ""}</span>
       ${pg.total ? `<span class="dx">${pg.next ? `Next step: ${esc(pg.next.title)}` : "Checklist complete"}</span>` : (d.next_milestone ? `<span class="dx">Next: ${esc(d.next_milestone)}</span>` : "")}
-    </span>${pg.total ? ring(pg.done, pg.total) : ""}<span class="chev"></span></button></div>`;
+    </span>${pg.total ? ring(pg.done, pg.total) : ""}<span class="chev"></span></button>${window.gateRowHtml ? gateRowHtml(d) : ""}</div>`;
 }
 // The deal's ticket (Ion Rail, 27 Sep 2026): the one number that matters in big digits, the key terms in a line, and a stub
 // with three figures. Built only from the deal's own terms – the private target and walk-away limit never appear here.
@@ -1043,7 +1044,8 @@ function navSnap(){ return { view, dealPage, y: window.scrollY, keys: [...openKe
 function updBack(){ $("backBtn").classList.toggle("hidden", !navStack.length); document.body.classList.toggle("canback", navStack.length > 0); }
 // Open sheets (task, menu, add, chat import) own one history entry, so the phone's Back closes them instead of leaving the app.
 let sheetHist = false, ignorePop = false;
-const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("docSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet"), $("tplSheet"), $("stSheet")].filter(x => x && !x.classList.contains("hidden"));
+const openSheets = () => [$("chatSheet"), $("menuSheet"), $("addSheet"), $("taskSheet"), $("pickSheet"), $("vnSheet"), $("ckSheet"), $("docSheet"), $("ndSheet"), $("rdSheet"), $("rvSheet"), $("tplSheet"), $("stSheet"), $("flowDlg")].filter(x => x && (x.tagName === "DIALOG" ? x.open : !x.classList.contains("hidden")));
+const hideSheet = x => { if (x.tagName === "DIALOG") { if (x.open) x.close(); } else x.classList.add("hidden"); };   // the pull-up is a real <dialog> (3 Oct 2026)
 function syncSheetHist(){
   const any = openSheets().length > 0 || !!window._sheetItem;
   if (any && !sheetHist) { sheetHist = true; try { history.pushState({ db: navStack.length, sheet: 1 }, ""); } catch(e){} }
@@ -1064,7 +1066,7 @@ window.addEventListener("popstate", () => {
   // a small sheet opened on top of another (New deal over New task): Back closes only the top one
   const top = cs.length > 1 || window._sheetItem ? cs.find(x => x.id === "ndSheet") : null;
   if (top) { top.classList.add("hidden"); sheetHist = false; setTimeout(syncSheetHist, 0); return; }
-  cs.forEach(x => x.classList.add("hidden")); sheetHist = false;
+  cs.forEach(hideSheet); sheetHist = false;
   if (window._sheetItem) { window._sheetItem = null; if (had) render(); }
   if (had) return;
   const s = navStack.pop(); updBack(); if (!s) return;
@@ -1161,9 +1163,10 @@ $("list").addEventListener("click", async e => {
     // hard stop: a gated step is not Done while what it depends on is open (28 Sep night)
     if (ss.dataset.v === "done" && window.stepGateMissing) { const d0 = dealById(st.deal_id), miss = d0 ? stepGateMissing(d0, id) : []; if (miss.length) { toast("Not yet – first: " + miss.join(", ") + ".", 6000); return; } }
     if (ss.dataset.v === "skip") { if (!evidence) { toast("Write why it is skipped in the note box first.", 5000); if (evi) evi.focus(); return; } evidence = /^skipped/i.test(evidence) ? evidence : "Skipped: " + evidence; ss.dataset.v = "na"; }
-    if (DEMO) { Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence }); openStep = null; render(); return; }
+    if (DEMO) { Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence }); if (ss.dataset.v === "done" && window.stepBuzz) stepBuzz(); openStep = null; render(); return; }
     const before = { ...st };
     Object.assign(st, { status: ss.dataset.v, done_by: ss.dataset.v === "open" ? null : me, done_at: ss.dataset.v === "open" ? null : new Date().toISOString(), evidence: evidence || st.evidence });
+    if (ss.dataset.v === "done" && window.stepBuzz) stepBuzz();
     openStep = null; render();
     const { error } = await sb.rpc("set_step", { p_id: id, p_status: ss.dataset.v, p_evidence: evidence || null });
     if (error) { Object.assign(st, before); render(); toast("Could not save the tick: " + error.message, 6000); return; }
@@ -1493,6 +1496,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script src="reader.js?v=17"></script>
 <script src="sections.js?v=17"></script>
 <script src="bot.js?v=17"></script>
+<script src="flow.js?v=17"></script>
 <script src="motion.js?v=17"></script>
 <script>show(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>

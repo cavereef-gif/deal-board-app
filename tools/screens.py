@@ -111,6 +111,12 @@ async def run(p, dev, theme, results, errors, palette="ion"):
     await js("runReader({kind:'quote', text:'*LOADS AVAILABLE* 1) Rustenburg - RBay 10 x sidies R385/t chrome 2) Coal WTB to Maputo R620 per ton.... R600 if 34t payload', about:''})"); await pg.wait_for_timeout(600); await snap("review-loads")
     await js("document.querySelector('[data-rvfix=\"1\"]').click(); document.querySelector('[data-rvfix=\"1\"]').scrollIntoView()"); await snap("review-loads-fix"); await js("document.getElementById('rvClose').click()")
     await js("runReader({kind:'photo', file:{data:'x', media_type:'image/jpeg'}, about:''})"); await pg.wait_for_timeout(600); await snap("review-photo"); await js("document.querySelector('#rvSheet .sheet-b').scrollTop = 900"); await snap("review-photo-terms"); await js("document.getElementById('rvClose').click()")
+    # 3 Oct 2026 (flow.js): deals · next step on Today, the pull-up panel (next step, chase messages, a deal's checks), the checks on deal rows
+    await js("goView('worklist'); const s = document.querySelector('.dnxs'); if (s) s.scrollIntoView({block:'start'})"); await snap("home-deals-next")
+    await js("openNext('dm1')"); await snap("flow-next")
+    await js("flClose(); openChase('2')"); await snap("flow-chase")
+    await js("flClose(); openGate('dm1','buyer')"); await snap("flow-checks"); await js("flClose()")
+    await js("goView('deals'); const g = document.querySelector('.gates'); if (g) g.scrollIntoView({block:'center'})"); await snap("deals-checks")
     await b.close()
 
 async def main():

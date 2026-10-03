@@ -387,10 +387,10 @@ html[data-ion][data-palette] .sugg2 .ilab .ilab-x{height:24px;min-height:24px;pa
 html[data-ion][data-palette] .sugg2 .ilab .ilab-x svg.i{width:14px;height:14px;color:var(--ctext)}
 /* swipe actions behind a row */
 html[data-ion][data-palette] :is(.sw-done,.sw-confirm,.sw-ftdone){background:var(--ion)!important;color:var(--ctext)}
-html[data-ion][data-palette] :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop){background:var(--g3)!important;color:var(--text)}
+html[data-ion][data-palette] :is(.sw-chase,.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop){background:var(--g3)!important;color:var(--text)}
 html[data-ion][data-palette] .sact button,html[data-ion][data-palette] .sact button span{color:var(--on-ink);font-size:14px}
 html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone),html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone) span{color:var(--ctext)}
-html[data-ion][data-palette] .sact :is(.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop) svg.i{color:var(--on-ink)}
+html[data-ion][data-palette] .sact :is(.sw-chase,.sw-chased,.sw-tomorrow,.sw-fu3,.sw-urgent,.sw-normal,.sw-drop) svg.i{color:var(--on-ink)}
 html[data-ion][data-palette] .sact :is(.sw-done,.sw-confirm,.sw-ftdone) svg.i{color:var(--ctext)}
 html[data-ion][data-palette][data-theme="light"] .sact button,html[data-ion][data-palette][data-theme="light"] .sact button span,html[data-ion][data-palette][data-theme="light"] .sact button svg.i{color:var(--text)}
 /* status pills elsewhere (item sheet, hero) */
@@ -769,3 +769,27 @@ html[data-ion][data-palette] .addmore>summary{display:flex;align-items:center;ju
 html[data-ion][data-palette] .addmore>summary::-webkit-details-marker{display:none}
 html[data-ion][data-palette] .addmore>summary:after{content:"▾";color:var(--muted)}
 html[data-ion][data-palette] .addmore .addgrid{margin-top:8px}
+/* ================= phone flow, batch 1 (3 Oct 2026, flow.js): the new parts in Ion Rail and Twilight ================= */
+html[data-ion][data-palette] #flowDlg .sheet-h{height:auto;min-height:44px}
+html[data-ion][data-palette] :is(#_,#flowDlg .sheet-h button){height:44px;min-height:44px;padding:0 14px}
+html[data-ion][data-palette] :is(#_,.fd-acts>button){height:auto;min-height:48px;border-radius:10px;font-size:14px}
+html[data-ion][data-palette] .fd-chips>button{background:var(--g2);color:var(--text);box-shadow:none;border:0}
+html[data-ion][data-palette] .fd-chips>button.on{background:var(--ccard);color:var(--ctext)}
+html[data-ion][data-palette] .fd-tpl{background:var(--ccard2);color:var(--ctext);box-shadow:none;border:0}
+html[data-ion][data-palette] .fd-tpl b{color:var(--ctext)} html[data-ion][data-palette] .fd-tpl span{color:var(--cmuted)}
+html[data-ion][data-palette] .fd-gate{background:var(--g2);color:var(--text);box-shadow:none;border:0;border-radius:10px;font-size:14px}
+html[data-ion][data-palette] .fd-sub{font:400 14px/20px var(--mono);color:var(--cmuted)}
+html[data-ion][data-palette] .fd-card .nu-l{font:400 14px/20px var(--mono);color:var(--cmuted)}
+html[data-ion][data-palette] .fd-card .nu-t{font:400 18px/24px var(--font)}
+html[data-ion][data-palette] .trow.trust .tck small.fd-h{font-family:var(--font)}
+html[data-ion][data-palette] .dnx .nu-c .dot{width:10px;height:10px}
+html[data-ion][data-palette] .chsd{display:none}
+html[data-ion][data-palette] .irow.chs .chsd{display:inline;flex:none;white-space:pre}
+html[data-ion][data-palette] .irow.chs .hr-m{flex-wrap:nowrap;gap:0}
+html[data-ion][data-palette] .irow.chs .hr-mt{flex:1 1 auto;flex-basis:auto}
+html[data-ion][data-palette] .irow.chs .hr-main{padding-right:84px}
+html[data-ion][data-palette] .irow.chs .hr-main>.chip2{display:none}
+html[data-ion][data-palette] .irow .scont>.chsb{right:3px;top:2px;transform:none;padding:0 8px}   /* the pill ends 11 in, like Accept (docs/ION-GEOMETRY.md) */
+html[data-ion][data-palette] .gates{padding:0 14px 12px}
+html[data-ion][data-palette] .gate{background:var(--ccard2);color:var(--ctext);box-shadow:none;border:0;border-radius:10px}
+html[data-ion][data-palette] .gate .gs{color:var(--cmuted)}
