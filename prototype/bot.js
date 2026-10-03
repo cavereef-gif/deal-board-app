@@ -161,6 +161,7 @@ async function runAct(a) {
       if (!deal) throw new Error("deal not found");
       const m = v.match(/^([a-z_]+)\s*=\s*([\s\S]+)$/i); if (!m) throw new Error("the bot did not say which term");
       if (/^(target|limit)$/i.test(m[1])) throw new Error("the private target and walk-away numbers are only set by you, on the deal's Numbers tab");
+      if (/^_/.test(m[1])) throw new Error("the checks and the app's own notes on a deal are ticked by you, never by the bot");
       const params = { ...(deal.params || {}), [m[1]]: m[2].trim() };
       if (DEMO) { deal.params = params; return; }
       const { error } = await sb.rpc("save_deal", { p_id: deal.id, p_params: params }); if (error) throw error; return;
