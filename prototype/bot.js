@@ -154,6 +154,7 @@ async function runAct(a) {
       const st = (window._steps || []).filter(s => s.deal_id === d.id).find(s => s.id === a.step_id || s.title.toLowerCase() === want) || (window._steps || []).filter(s => s.deal_id === d.id).find(s => want && s.title.toLowerCase().includes(want.slice(0, 24)));
       if (!st) throw new Error("that step is not on the deal's checklist");
       const status = a.change === "tick_step" ? "done" : "open";
+      if (status === "done") { const miss = stepGateMissing(d, st.id); if (miss.length) throw new Error(miss.join(", ")); }
       if (DEMO) { Object.assign(st, { status, done_by: status === "done" ? me : null, done_at: status === "done" ? new Date().toISOString() : null }); return; }
       const { error } = await sb.rpc("set_step", { p_id: st.id, p_status: status, p_evidence: a.proof || null }); if (error) throw error; return;
     }
@@ -168,6 +169,7 @@ async function runAct(a) {
     }
     case "deal_status": {
       if (!deal) throw new Error("deal not found"); const s = ["Active", "On hold", "Won", "Lost"].find(x => x.toLowerCase() === v.toLowerCase()); if (!s) throw new Error("unknown status");
+      if (s === "Won") { const miss = DealControls.wonMissing(deal, controlState()); if (miss.length) throw new Error(miss.join(", ")); }
       if (DEMO) { deal.status = s; return; }
       const { error } = await sb.rpc("save_deal", { p_id: deal.id, p_status: s }); if (error) throw error; return;
     }

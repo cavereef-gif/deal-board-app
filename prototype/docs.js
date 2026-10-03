@@ -18,12 +18,16 @@ const DOCS = {
     { k: "poo", l: "Proof of ownership", sub: "the seller owns the material", kind: "get", side: "seller" },
     { k: "assay", l: "Assay", sub: "lab certificate", kind: "get", side: "seller" },
     { k: "pof", l: "Proof of funds", sub: "buyer's bank letter – before any LC", kind: "get", side: "buyer" },
+    { k: "security", l: "Payment-security evidence", sub: "funded escrow, TT received or operational LC", kind: "get", side: "buyer" },
+    { k: "pod", l: "POD", sub: "proof of delivery", kind: "get", side: "seller" },
+    { k: "tickets", l: "Weighbridge evidence", sub: "loading and delivery weights", kind: "get", side: "seller" },
     { k: "kyc", l: "KYC", sub: "company papers, both sides", kind: "get", side: "both", tpl: 1 },
     { k: "po", l: "Purchase order", sub: "buyer's order under the SPA", kind: "get", side: "buyer" },
     { k: "proforma", l: "Proforma invoice", sub: "before loading – we make it", kind: "get", side: "buyer", make: "proforma" },
     { k: "invoice", l: "Final invoice", sub: "after the test – we make it", kind: "get", side: "buyer", make: "invoice" },
   ],
   transport: [
+    { k: "ncnda", l: "NCNDA", sub: "signed non-circumvention agreement", kind: "sign", side: "both", tpl: 1 },
     { k: "quote", l: "Accepted quote", sub: "the client signs our quote", kind: "sign", side: "client", make: "quote" },
     { k: "contract", l: "Transport contract", sub: "signed with the client", kind: "sign", side: "client" },
     { k: "insurance", l: "Insurance certificate", sub: "goods in transit (GIT)", kind: "get", side: "transporter" },
@@ -68,7 +72,7 @@ window.docsTabHtml = function (d) {
   if (list.length) {
     const inN = list.filter(x => docIn(docRow(d.id, x.k))).length, reqN = list.filter(x => (docRow(d.id, x.k) || {}).status === "requested").length;
     h += rplain(`documents · ${d.kind === "transport" ? "transport" : "minerals"}`, `${inN} of ${list.length} in${reqN ? ` · ${reqN} asked` : ""}`, true);
-    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "in this order: check the buyer and the stockpile (proof of ownership, KYC) → NCNDA → IMFPA → LOI → ICPO → proof of funds → grade test (assay) → FCO → SPA → purchase order → proforma invoice → final invoice. Tap What is this? on any document.");
+    h += rfoot(d.kind === "transport" ? "in this order: accepted quote → contract and insurance → then per load the weighbridge tickets, the POD and the invoices. Tap What is this? on any document." : "Buyer intent can be an LOI, ICPO or signed SPA; the seller offer can be an FCO or signed SPA. Verification, commission protection, assay, SPA and Payment Secured remain mandatory before loading. Tap What is this? on any document.");
     h += list.map(x => docCardHtml(d, x)).join("");
     if (list.some(x => x.tpl)) h += rfoot("Make it fills a generic draft from this deal and our company details – have an SA commercial attorney check the NCNDA, IMFPA and SPA once before first use");
   }
@@ -93,6 +97,7 @@ async function saveDocRow(d, key, status, o) {
   const apply = id => {
     if (!status) { if (i >= 0) rows.splice(i, 1); return; }
     const cur = i >= 0 ? rows[i] : { id: id || "dd" + Date.now(), deal_id: d.id, doc: key, created_at: now };
+    if ((o.att && String(o.att) !== String(cur.att_id)) || ["draft", "requested"].includes(status)) cur.override_reason = null;
     Object.assign(cur, { status, updated_at: now, updated_by: me, item_id: o.item || cur.item_id || null, att_id: o.att || cur.att_id || null, note: o.note || cur.note || null });
     if (i < 0) rows.push(cur);
   };
@@ -105,13 +110,20 @@ window.saveDocRow = saveDocRow;
 async function setDoc(d, key, st) {
   const x = docDef(d.kind, key); if (!x) return;
   const r = docRow(d.id, key), cur = r ? r.status : "", next = cur === st ? "" : st;
+  if (DealControls.criticalDocs.includes(key) && ["signed", "received", "na"].includes(next)) {
+    if (next === "na" || !docAtt(r)) {
+      const reason = prompt(`${x.l}: attach the file first, or enter a deliberate evidence override reason.`);
+      if (!reason || !reason.trim()) return;
+      if (!(await controlDocOverride(d, key, next, reason.trim()))) return;
+    }
+  }
   let item = r && r.item_id && (window._items || []).some(i => i.id === r.item_id) ? r.item_id : null;
   try {
     if (next === "requested" && !item) item = await leanNewItem({ deal: d, on: docParty(d, x), what: `${x.l} (${dealHandle(d)})`, next: "Follow up", due: workDayPlus(2) });
-    else if (next !== "requested" && item) { await leanItemAct(item, "done"); }
+
     if (!(await saveDocRow(d, key, next, { item: next === "requested" ? item : null }))) return;
     let msg = next === "requested" ? `${x.l}: requested – follow-up on ${dayName(new Date(workDayPlus(2) + "T08:00:00+02:00"))}.` : next ? `${x.l}: ${DOC_WORD[next]}.` : `${x.l}: back to not yet.`;
-    if (next === "received" || next === "signed") { const n = await leanTickFromDoc(d, key, `${x.l} ${next}`); if (n) msg += " Its step is ticked."; if (item) msg += " Follow-up closed."; }
+    if (next === "received" || next === "signed") { if (item && DealControls.documentOK(d, key, controlState())) await leanItemAct(item, "done"); const n = await leanTickFromDoc(d, key, `${x.l} ${next}`); if (n) msg += " Its step is ticked."; if (item && DealControls.documentOK(d, key, controlState())) msg += " Follow-up closed."; }
     toast(msg + (DEMO ? " (demo)" : ""));
   } catch (e) { toast("Could not save: " + (e.message || e), 6000); }
   if (DEMO) render(); else load();
@@ -132,8 +144,8 @@ window.docFileSaved = async function (dealId, key, att) {
   const d = dealById(dealId), x = d && docDef(d.kind, key); if (!x) return;
   const r = docRow(dealId, key), cur = r ? r.status : "", got = x.kind === "sign" ? "signed" : "received";
   const next = cur === "requested" ? got : cur || (x.kind === "sign" ? "draft" : "received");
-  if (cur === "requested" && r.item_id) { try { await leanItemAct(r.item_id, "done"); } catch (e) {} }
-  await saveDocRow(d, key, next, { att: att.id });
+  if (!(await saveDocRow(d, key, next, { att: att.id }))) return;
+  if (cur === "requested" && r.item_id && DealControls.documentOK(d, key, controlState())) { try { await leanItemAct(r.item_id, "done"); } catch (e) {} }
   if (next === "received" || next === "signed") await leanTickFromDoc(d, key, `${x.l} ${next}`);
   toast(`${x.l} saved – marked ${DOC_WORD[next]}.${next === "draft" ? " Tap Signed when it comes back signed." : ""}`, 5000);
 };
@@ -330,7 +342,7 @@ async function tplMake() {
 
 // ---------- the deal status: a PDF like the quote, or a copy for WhatsApp ----------
 const statusOpt = {};   // deal id -> { comm, cuts, names }
-const ncndaSigned = d => { const r = docRow(d.id, "ncnda"); if (r && r.status === "signed") return true; return leanSteps(d, stepsOf(d.id)).some(s => s._lean && (s._lean.doc || []).includes("ncnda") && s.status === "done"); };
+const ncndaSigned = d => DealControls.documentOK(d, "ncnda", controlState());
 function statusModel(d, o) {
   const p = leanP(d), pg = dealProgress(d.id), T = tplTerms(d), mn = d.kind === "mineral", names = !!(o.names && ncndaSigned(d));
   const party = w => names ? w : w === "Me" ? "us" : "";
@@ -352,7 +364,7 @@ function statusModel(d, o) {
   if (o.cuts) terms.push(["Other parties' cuts", isUnset(p.other_cuts || p.cuts) ? "" : (p.other_cuts || p.cuts)]);
   if (names && mn) terms.push(["Seller", isUnset(p.seller) ? "" : p.seller], ["Buyer", isUnset(p.buyer) ? "" : p.buyer]);
   const docsIn = (DOCS[d.kind] || []).map(x => [x, docRow(d.id, x.k)]).filter(([, r]) => docIn(r)).map(([x, r]) => `${x.l} – ${DOC_WORD[r.status]} ${shortDate(saDayKey(r.updated_at || Date.now()))}`);
-  return { title, ref: dealRef(d), date: longDay(saDayPlus(0)), stage: pg.stages.length ? `Stage ${ci} of ${pg.stages.length}${pg.cur ? " – " + pg.cur.name.replace(/^\d+\.\s*/, "") : " – all steps done"} · ${pg.done} of ${pg.total} steps done` : d.status,
+  return { title, ref: dealRef(d), date: longDay(saDayPlus(0)), stage: DealControls.flags(d).length ? "Review Required" : pg.stages.length ? `Stage ${ci} of ${pg.stages.length}${pg.cur ? " – " + pg.cur.name.replace(/^\d+\.\s*/, "") : " – all steps done"} · ${pg.done} of ${pg.total} steps done` : d.status,
     done, next, waiting, terms: terms.filter(([, v]) => v && String(v).trim()), missing: terms.filter(([, v]) => !v || !String(v).trim()).map(([k]) => k), docsIn, status: d.status };
 }
 function statusText(m) {

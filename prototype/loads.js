@@ -66,6 +66,8 @@ document.addEventListener("click", async e => {
   if (q("button[data-ldsave]") && LD.f) {
     const f = LD.f, row = { deal_id: f.deal_id, n: +f.n || 1, load_date: f.load_date || null, truck_reg: String(f.truck_reg || "").trim().toUpperCase(), driver: String(f.driver || "").trim(), t_loaded: nz(f.t_loaded), t_delivered: nz(f.t_delivered), moisture: nz(f.moisture), grade: String(f.grade || "").trim(), notes: String(f.notes || "").trim(), invoiced: !!f.invoiced, paid: !!f.paid, updated_by: me || "", updated_at: new Date().toISOString() };
     if (row.t_loaded == null && row.t_delivered == null) { toast("Type the tons from the weighbridge ticket."); return; }
+    const d = dealById(row.deal_id), miss = d ? DealControls.loadingMissing(d, controlState()) : ["Deal not found"];
+    if (miss.length) { toast("Cannot log mineral loading: " + miss.join(", "), 8000); return; }
     const isNew = LD.edit === "new";
     if (DEMO) { if (isNew) (window._loads ||= []).push(Object.assign({ id: "ld" + Date.now() }, row)); else Object.assign((window._loads || []).find(x => x.id === LD.edit) || {}, row); }
     else {

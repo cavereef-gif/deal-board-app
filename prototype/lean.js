@@ -297,7 +297,7 @@ document.addEventListener("focusout", e => { const i = e.target.closest && e.tar
 
 // ---------- proof of funds (the LC waits for it) ----------
 function docRow(dealId, key) { return (window._docs || []).find(x => x.deal_id === dealId && x.doc === key); }
-function pofIn(d) { const r = docRow(d.id, "pof"); return !!(r && (r.status === "received" || r.status === "signed")); }
+function pofIn(d) { return DealControls.documentOK(d, "pof", controlState()); }
 window.docRow = docRow; window.pofIn = pofIn;
 
 // ---------- the short procedure ----------
@@ -312,16 +312,17 @@ const LEAN_STEPS = {
     { st: "1. Check both sides", t: "Stockpile checked", codes: ["v2.02", "5.1"], old: /site visit|stockpile checked/i, trust: "seller", doc: ["poo"] },
     { st: "1. Check both sides", t: "NCNDA signed", codes: ["v2.16", "1.4"], old: /\bNCNDA\b/i, doc: ["ncnda"] },
     { st: "1. Check both sides", t: "IMFPA signed", codes: ["v2.17", "2.1"], old: /IMFPA|commission agreement/i, doc: ["imfpa"] },
-    { st: "2. Buyer's offer", t: "LOI in", codes: ["v2.03", "4.1"], old: /\bLOI\b/i, doc: ["loi"] },
-    { st: "2. Buyer's offer", t: "ICPO in", codes: ["v2.04"], old: /\bICPO\b/i, doc: ["icpo"] },
+    { st: "2. Buyer's offer", t: "LOI in", codes: ["v2.03", "4.1"], old: /\bLOI\b/i, doc: ["loi", "icpo", "spa"] },
+    { st: "2. Buyer's offer", t: "ICPO in", codes: ["v2.04"], old: /\bICPO\b/i, doc: ["icpo", "loi", "spa"] },
     { st: "2. Buyer's offer", t: "Proof of funds", codes: ["v2.09", "3.7"], old: /proof of funds/i, doc: ["pof"] },
     { st: "3. Grade test", t: "Test paid (escrow or cash)", codes: ["v2.05"], old: /test paid/i },
     { st: "3. Grade test", t: "Grade test passed", codes: ["v2.10", "5.2"], old: /independent assay|assay 1|grade test passed/i, doc: ["assay"] },
-    { st: "4. Contract", t: "FCO in", codes: ["v2.11", "4.2"], old: /\bFCO\b/i, doc: ["fco"] },
+    { st: "4. Contract", t: "FCO in", codes: ["v2.11", "4.2"], old: /\bFCO\b/i, doc: ["fco", "spa"] },
     { st: "4. Contract", t: "SPA signed", codes: ["v2.12", "6.7"], old: /SPA signed/i, doc: ["spa"], gate: ["Buyer checked", "Stockpile checked", "Grade test passed"] },
     { st: "4. Contract", t: "Purchase order in", codes: ["v2.06"], old: /purchase order/i, doc: ["po"] },
     { st: "5. Invoice and load", t: "Proforma invoice sent", codes: ["v2.07"], old: /proforma/i, doc: ["proforma"] },
-    { st: "5. Invoice and load", t: "Loads delivered", codes: ["v2.13", "8.1", "8.2"], old: /loaded and weighed|trial/i, gate: ["SPA signed", "Grade test passed", "Proforma invoice sent"] },
+    { st: "5. Invoice and load", t: "Payment Secured", codes: ["v2.18", "7.1", "7.2"], old: /^Payment secured$/i, doc: ["security"] },
+    { st: "5. Invoice and load", t: "Loads delivered", codes: ["v2.13", "8.1", "8.2"], old: /loaded and weighed|trial/i, doc: ["pod", "tickets"], gate: ["SPA signed", "Grade test passed", "Proforma invoice sent"] },
     { st: "5. Invoice and load", t: "Final invoice sent", codes: ["v2.08", "11.3", "11.1"], old: /final invoice|tax invoice/i, doc: ["invoice"], gate: ["Loads delivered"] },
     { st: "6. Paid", t: "Seller paid", codes: ["v2.14", "11.5"], old: /buyer paid the seller|seller confirms/i },
     { st: "6. Paid", t: "Commission paid", codes: ["v2.15", "12.2"], old: /our commission received|commission received/i },
@@ -330,7 +331,7 @@ const LEAN_STEPS = {
     { st: "1. Qualify", t: "Client confirmed", codes: ["t1.1"], old: /client and receiver/i },
     { st: "1. Qualify", t: "Cargo and route", codes: ["t1.2"], old: /cargo, route/i },
     { st: "1. Qualify", t: "Trucks lined up", codes: ["t1.3"], old: /transporter lined up/i },
-    { st: "2. Protect", t: "NCNDA signed", codes: ["t2.1"], old: /NCNDA|non-circumvention/i },
+    { st: "2. Protect", t: "NCNDA signed", codes: ["t2.1"], old: /NCNDA|non-circumvention/i, doc: ["ncnda"] },
     { st: "2. Protect", t: "Split agreed", codes: ["t2.2"], old: /split per ton/i },
     { st: "3. Terms", t: "Client rate set", codes: ["t3.1"], old: /client rate agreed/i, doc: ["quote"] },
     { st: "3. Terms", t: "Payment terms", codes: ["t3.2"], old: /payment terms agreed/i },
@@ -360,7 +361,7 @@ function leanSteps(d, steps) {
   defs.forEach((def, i) => {
     const s = steps.find(x => !used.has(x.id) && ((x.code && def.codes.includes(x.code)) || (!x.code && !x.custom && def.old.test(x.title))));
     if (!s) { if (d.kind === "mineral" && /^v2\./.test(def.codes[0])) missing.push(def); return; } used.add(s.id);
-    out.push(Object.assign({}, s, { stage: def.st, title: def.t, sort: i + 1, _lean: def, _full: s.title }));
+    out.push(Object.assign({}, s, { stage: def.st, title: s.custom_label || def.t, sort: i + 1, _lean: def, _full: s.title }));
   });
   steps.filter(x => x.custom && !used.has(x.id)).forEach((s, j) => out.push(Object.assign({}, s, { stage: "Extra steps", sort: 900 + j })));
   if (missing.length) leanEnsure(d, missing);
@@ -375,6 +376,7 @@ window.leanStageOf = function (dealId, stepId) {
 };
 // a document came in or was signed: the step it closes is ticked (a person's own tap – never the bot)
 async function leanTickFromDoc(d, docKey, label) {
+  if (!DealControls.documentOK(d, docKey, controlState())) return 0;
   const hits = leanSteps(d, stepsOf(d.id)).filter(s => s._lean && (s._lean.doc || []).includes(docKey) && s.status === "open" && !(window.stepGateMissing && stepGateMissing(d, s.id).length));
   for (const h of hits) {
     const st = (window._steps || []).find(x => x.id === h.id); if (!st) continue;
@@ -408,11 +410,11 @@ $("list").addEventListener("click", async e => {
   const box = sv.closest(".sedit"), title = box.querySelector(".se-title").value.trim(), detail = box.querySelector(".se-detail").value.trim();
   if (!title) { toast("The step needs some words."); return; }
   const st = (window._steps || []).find(x => x.id === sv.dataset.sesave); if (!st) return;
-  if (DEMO) { Object.assign(st, { title, detail }); window._stepEdit = null; toast("Changed (demo – not saved)."); render(); return; }
+  if (DEMO) { Object.assign(st, { title, detail, custom_label: title }); window._stepEdit = null; toast("Changed (demo – not saved)."); render(); return; }
   sv.disabled = true;
   const { error } = await sb.rpc("edit_step", { p_id: st.id, p_title: title, p_detail: detail });
   if (error) { sv.disabled = false; toast(/edit_step|function/i.test(error.message) ? "Database change 017 is needed before a step's words can be changed." : "Could not save: " + error.message, 6000); return; }
-  Object.assign(st, { title, detail }); window._stepEdit = null; toast("Saved."); render();
+  Object.assign(st, { title, detail, custom_label: title }); window._stepEdit = null; toast("Saved."); render();
 });
 $("list").addEventListener("change", e => {
   const i = e.target.closest("input[data-plandue]"); if (!i) return;
@@ -703,7 +705,7 @@ window.STAGE_WHY = STAGE_WHY; window.STEP_WHY = STEP_WHY; window.DOC_WHY = DOC_W
 const whyLine = (k, v) => v ? `<div class="whyl"><b>${k}</b><span>${esc(v)}</span></div>` : "";
 // the explainer inside an open step (short procedure only – the full kit has its own detail text)
 window.stepWhyHtml = function (s) {
-  const w = s && s._lean && STEP_WHY[s.title]; if (!w) return "";
+  const w = s && s._lean && STEP_WHY[s._lean.t]; if (!w) return "";
   return `<div class="why">${whyLine("What", w.what)}${whyLine("Why", w.why)}${whyLine("Who", w.who)}${whyLine("Done when", w.done)}</div>`;
 };
 // "How this deal runs": one line per stage, folded under the procedure strip
@@ -750,12 +752,20 @@ window.dealSummaryHtml = function (d, pg) {
 };
 
 // ---------- hard stops (28 Sep 2026 night) ----------
-// A step with a gate cannot be ticked Done while the steps it depends on are still open ("don't let the deal jump over the
-// dangerous steps"). A step can instead be Not needed, or Skipped with a reason written down – both count as settled.
+// Critical progression uses stable codes and current accepted evidence. Missing controls fail closed.
+// A skip is recorded explicitly and never satisfies the payment/loading controls.
 function stepGateMissing(d, stepId) {
-  const all = leanSteps(d, stepsOf(d.id)), s = all.find(x => x.id === stepId), g = s && s._lean && s._lean.gate;
-  if (!Array.isArray(g)) return [];
-  return g.filter(t => { const x = all.find(y => y.title === t); return x && x.status === "open"; });
+  const s = stepsOf(d.id).find(x => x.id === stepId);
+  if (!s) return ["Step not found"];
+  const out = DealControls.stepMissing(d, s, controlState());
+  if (d.kind !== "mineral") {
+    const all = leanSteps(d, stepsOf(d.id)), l = all.find(x => x.id === stepId);
+    for (const title of (l && l._lean && l._lean.gate) || []) {
+      const def = LEAN_STEPS[d.kind].find(x => x.t === title);
+      if (!def || !all.some(x => def.codes.includes(x.code) && x.status === "done")) out.push(title);
+    }
+  }
+  return [...new Set(out)];
 }
 window.stepGateMissing = stepGateMissing;
 window.dealBlockers = function (d, pg) {
@@ -770,25 +780,11 @@ window.dealBlockers = function (d, pg) {
 // per side, ticked by a person (never the bot), kept in the deal (params._trust – app data, never sent out). When the must-haves
 // of a side are ticked, its step (Buyer checked / Stockpile checked) is ticked with that as the proof. A red flag shows on the
 // deal until it is cleared.
-const TRUST = {
-  buyer: { l: "Buyer", step: "Buyer checked", items: [
-    ["cipc", "Company found on CIPC – name, registration number, directors", 1],
-    ["bank", "Their bank confirmed them – we phoned the bank's own number, not the one on their letter", 1],
-    ["who", "The person signing is a director or has a signed mandate", 1],
-    ["refs", "References or past trades checked", 0],
-    ["before", "We have dealt with them before", 0]] },
-  seller: { l: "Stockpile", step: "Stockpile checked", items: [
-    ["cipc", "Seller's company found on CIPC", 1],
-    ["right", "Mining right or permit seen (with its number)", 1],
-    ["owner", "Proof the stockpile belongs to the seller", 1],
-    ["seen", "Stockpile seen – site visit, or dated photos with the location", 1],
-    ["assay", "Seller's own assay seen", 0],
-    ["access", "Access agreed for the buyer's sampling", 0]] },
-};
+const TRUST = DealControls.verification;
 const FLAGS = [["fee", "Asked for money up front (a 'fee', 'verification cost', 'bank charges')"], ["bg", "Offered a bank guarantee, SBLC or MT760 we could not confirm with the issuing bank"], ["pressure", "Pressure to sign today, or 'other buyers waiting'"], ["docs", "Documents that look edited, or names that don't match CIPC"]];
 window.TRUST = TRUST;
-const trustOf = d => leanP(d)._trust || {};
-function trustCount(d, side) { const t = trustOf(d)[side] || {}, it = TRUST[side].items; return { done: it.filter(([k]) => t[k]).length, all: it.length, must: it.filter(x => x[2]).every(([k]) => t[k]) }; }
+const trustOf = d => DealControls.trust(d);
+function trustCount(d, side) { const v = DealControls.verified(d, side, controlState()); return { ...v, must: v.ok }; }
 window.trustFlags = d => { const f = trustOf(d).flags || {}; return FLAGS.filter(([k]) => f[k]).map(([, l]) => "red flag: " + l.split(" (")[0].toLowerCase()); };
 window.trustLine = function (d) {
   if (d.kind !== "mineral") return "";
@@ -803,27 +799,6 @@ window.trustHtml = function (d) {
   return side("buyer") + side("seller")
     + `<div class="trow trust flags"><div class="k"><b>Red flags</b><span>${trustFlags(d).length || "none"}</span></div><div class="tlist">${FLAGS.map(([k, l]) => `<button type="button" class="tck flag${f[k] ? " on" : ""}" data-trust="${d.id}:flags:${k}" aria-pressed="${!!f[k]}"><i aria-hidden="true">${f[k] ? "!" : ""}</i><span>${esc(l)}</span></button>`).join("")}</div><div class="tnote">Never pay a fee to "verify" a deal. Confirm any bank guarantee or SBLC with the issuing bank yourself before you rely on it.</div></div>`;
 };
-document.addEventListener("click", async e => {
-  const b = e.target.closest && e.target.closest("button[data-trust]"); if (!b) return;
-  const [id, side, k] = b.dataset.trust.split(":"), d = dealById(id); if (!d) return;
-  const p = { ...leanP(d) }, t = JSON.parse(JSON.stringify(p._trust || {})); t[side] = t[side] || {};
-  if (t[side][k]) delete t[side][k]; else t[side][k] = side === "flags" ? { on: saDayPlus(0), by: me || "" } : { on: saDayPlus(0), by: me || "" };
-  p._trust = t;
-  await leanSaveParams(d, p, side === "flags" ? (t.flags[k] ? "Red flag noted." : "Red flag cleared.") : "Saved.");
-  // the must-haves of a side are all ticked: tick its step (a person's own tap made this happen)
-  if (side !== "flags") {
-    const c = trustCount(dealById(id) || d, side);
-    const step = leanSteps(d, stepsOf(d.id)).find(s => s.title === TRUST[side].step);
-    if (c.must && step && step.status === "open") {
-      const st = (window._steps || []).find(x => x.id === step.id), ev = `Trust check: ${c.done} of ${c.all} ticked`;
-      if (DEMO) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev });
-      else { const { error } = await sb.rpc("set_step", { p_id: st.id, p_status: "done", p_evidence: ev }); if (!error) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev }); }
-      if (window.stepBuzz) stepBuzz();
-      toast(`${TRUST[side].step} – ticked.`); render();
-    }
-  }
-});
-
 // ---------- the deal's money, on the deal (28 Sep 2026 night) ----------
 // Worked out from the saved terms – nothing typed twice. Minerals: our cut less the other parties' cuts, on the monthly volume.
 // Transport: client rate less transporter rate less cuts, per ton or per load (flat rates too), on the loads a month.

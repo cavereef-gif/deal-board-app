@@ -83,10 +83,15 @@ function flPaint() {
 // repaint after the data changes underneath (a save, a reload)
 (window._after ||= []).push(() => { const el = $("flowDlg"); if (FL && el && el.open) flPaint(); });
 
+// Signing an attached document is an explicit action; its own status is not a prior prerequisite.
+function flMissing(d, s) {
+  const x = flDoc(d, s), r = x && docRow(d.id, x.k), att = r && (window._atts || []).find(a => String(a.id) === String(r.att_id) && a.target_type === "deal" && String(a.target_id) === String(d.id) && a.path);
+  return stepGateMissing(d, s.id).filter(m => !(x && att && (!r.expires_on || r.expires_on >= saDayPlus(0)) && m === x.k + ": accepted evidence required"));
+}
 // ---------- 1 · the next step ----------
 function flStepHtml(d, s) {
   const x = flDoc(d, s), r = x ? docRow(d.id, x.k) : null, ours = x && (x.make === "proforma" || x.make === "invoice"), got = x ? (x.kind === "sign" ? "signed" : "received") : "";
-  const miss = window.stepGateMissing ? stepGateMissing(d, s.id) : [], du = flDue(s), pg = dealProgress(d.id), ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length;
+  const miss = window.stepGateMissing ? flMissing(d, s) : [], du = flDue(s), pg = dealProgress(d.id), ci = pg.cur ? pg.stages.indexOf(pg.cur) + 1 : pg.stages.length;
   const trust = s._lean && s._lean.trust;
   let h = `<div class="stepp fd-card"><div class="nu-l">stage ${ci} of ${pg.stages.length}${s.stage ? " · " + esc(s.stage.replace(/^\d+\.\s*/, "").toLowerCase()) : ""}</div><div class="nu-t">${esc(s.title)}</div>
     <div class="nu-c">${du.late ? `<i class="dot d-stale" aria-hidden="true"></i>` : ""}${esc([s.owner, du.text, flWait(d)].filter(Boolean).join(" · "))}</div>${x ? `<div class="nu-c">${esc(x.l)}: ${esc(docState(r))}</div>` : ""}${window.stepWhyHtml ? stepWhyHtml(s) : ""}</div>`;
@@ -130,7 +135,7 @@ window.openNext = openNext;
 // which ticks its step the way the Docs tab does. Hard stops stay: a gated step can't be Done here either.
 async function flDone(d) {
   const s = flStep(d); if (!s || s.status !== "open") return;
-  const miss = window.stepGateMissing ? stepGateMissing(d, s.id) : [];
+  const miss = window.stepGateMissing ? flMissing(d, s) : [];
   if (miss.length) { FL.msg = "Not yet – first: " + miss.join(", ") + "."; flPaint(); return; }
   const x = flDoc(d, s), st = (window._steps || []).find(z => z.id === s.id); if (!st) return;
   FL.msg = "";
@@ -175,7 +180,7 @@ function dnxCard(r) {
   const action = s ? s.title : pg.total ? "Send the status, or mark it Won" : (String(d.next_milestone || "").trim() || "No next step written yet");
   const meta = s ? [s.owner, du.text, flWait(d), req] : pg.total ? [] : [flWait(d)];
   const go = pg.total && !s ? "" : `<button type="button" class="primary" data-donext="${d.id}">${ic("check")}${s || String(d.next_milestone || "").trim() ? "Do next step" : "Set the next step"}</button>`;
-  return `<div class="nextup nextcard dnx" data-dnx="${d.id}"><div class="nu-l">${esc(label)}</div><div class="nu-t">${esc(action)}</div><div class="nu-c dnx-n">${esc(d.name)}${d.status === "On hold" ? " · on hold" : ""}</div>${meta.filter(Boolean).length ? `<div class="nu-c">${s && du.late ? `<i class="dot d-stale" aria-hidden="true"></i>` : ""}${esc(meta.filter(Boolean).join(" · "))}</div>` : ""}<div class="acts0 fd-acts">${go}<button type="button"${go ? "" : ` class="primary"`} data-tgo="deal:${d.id}">${ic("open")}Open deal</button></div></div>`;
+  return `<div class="nextup nextcard dnx" data-dnx="${d.id}"><div class="nu-l">${esc(label)}</div><div class="nu-t">${esc(action)}</div><div class="nu-c dnx-n">${esc(d.name)}${DealControls.flags(d).length ? " · Review Required" : d.status === "On hold" ? " · on hold" : ""}</div>${meta.filter(Boolean).length ? `<div class="nu-c">${s && du.late ? `<i class="dot d-stale" aria-hidden="true"></i>` : ""}${esc(meta.filter(Boolean).join(" · "))}</div>` : ""}<div class="acts0 fd-acts">${go}<button type="button"${go ? "" : ` class="primary"`} data-tgo="deal:${d.id}">${ic("open")}Open deal</button></div></div>`;
 }
 window.dealNextHtml = function () {
   const ds = liveDeals().filter(d => !window.inSecDeal || inSecDeal(d)); if (!ds.length) return "";
@@ -229,24 +234,20 @@ async function chaseSend(i) {
 }
 
 // ---------- 3 · the checks: Buyer · Stockpile · Funds ----------
-const GATES = [
-  { k: "buyer", l: "Buyer", side: "buyer", items: [["cipc", "Company registration checked (CIPC)", "trust"], ["dirid", "A director's ID seen"], ["contact", "Phone and email confirmed on our own – not taken from their letter"], ["nodnd", "Not on our Do not deal list"]] },
-  { k: "stock", l: "Stockpile", side: "seller", items: [["owner", "Proof of ownership, or a mandate, seen", "trust"], ["photos", "Dated site photos"], ["loc", "Location confirmed – a map pin or the address"]] },
-  { k: "funds", l: "Funds", side: "funds", items: [["pof", "Proof of funds seen"], ["how", "How it was verified", "choice"]] },
-];
+const GATES = Object.entries(DealControls.verification).map(([side, def]) => ({ k: side === "seller" ? "stock" : side, l: def.l, side,
+  items: def.items.map(([k, l, must]) => [k, l + (must ? "" : " (if you can)"), k === "how" ? "choice" : "trust"]) }));
 const GATE_BY = Object.fromEntries(GATES.map(g => [g.k, g]));
 const FUND_HOW = ["Phoned the bank on a number we found ourselves", "Our bank confirmed it with theirs", "An attorney or escrow confirmed it", "Only saw the letter – not confirmed"];
 window.GATES = GATES; window.FUND_HOW = FUND_HOW;
 function gateState(d, g) {
-  const t = ((leanP(d)._trust || {})[g.side]) || {};
-  const done = g.items.filter(([k, , typ]) => typ === "choice" ? !!(t[k] && t[k].v && t[k].v !== FUND_HOW[3]) : !!t[k]).length, all = g.items.length;
-  return { done, all, ok: done === all, word: done === all ? "verified" : done ? `${done} of ${all}` : "not checked", dot: done === all ? "d-ok" : done ? "d-prop" : "d-none" };
+  const v = DealControls.verified(d, g.side, controlState());
+  return { ...v, word: v.ok ? "verified" : v.done ? `${v.done} of ${v.all}` : "not checked", dot: v.ok ? "d-ok" : v.done ? "d-prop" : "d-none" };
 }
 window.gateState = gateState;
 // on a deal row: three buttons, each a dot with the words beside it (mineral deals – a transport deal has no stockpile)
 window.gateRowHtml = function (d) {
   if (d.kind !== "mineral") return "";
-  return `<div class="gates" role="group" aria-label="Checks on this deal">${GATES.map(g => { const s = gateState(d, g); return `<button type="button" class="gate" data-gate="${d.id}:${g.k}" aria-label="${g.l} check: ${s.word}. Tap for the list."><i class="dot ${s.dot}" aria-hidden="true"></i><span class="gt">${g.l}</span><span class="gs">${s.word}</span></button>`; }).join("")}</div>`;
+  return `<div class="gates" role="group" aria-label="Checks on this deal">${DealControls.flags(d).length ? `<span class="quiet"><i class="dot d-stale"></i> Review Required</span>` : ""}${GATES.map(g => { const s = gateState(d, g); return `<button type="button" class="gate" data-gate="${d.id}:${g.k}" aria-label="${g.l} check: ${s.word}. Tap for the list."><i class="dot ${s.dot}" aria-hidden="true"></i><span class="gt">${g.l}</span><span class="gs">${s.word}</span></button>`; }).join("")}</div>`;
 };
 const flNorm = s => String(s || "").toLowerCase().replace(/\((?:pty|demo)\)|\b(?:pty|ltd|limited|inc|llc|jsc|cc|co)\b|[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 function gateHint(d, k, ik) {
@@ -261,30 +262,19 @@ function gateHint(d, k, ik) {
   return "";
 }
 function flGateHtml(d, k) {
-  const g = GATE_BY[k], s = gateState(d, g), t = ((leanP(d)._trust || {})[g.side]) || {};
+  const g = GATE_BY[k], s = gateState(d, g), t = (DealControls.trust(d)[g.side]) || {};
   const who = v => v && (v.by || v.on) ? `<small>${esc([v.by, v.on ? shortDate(v.on) : ""].filter(Boolean).join(" · "))}</small>` : "";
   let h = `<div class="fd-ok"><i class="dot ${s.dot}" aria-hidden="true"></i><span>${esc(d.name)} · ${s.ok ? "verified" : s.done ? `${s.done} of ${s.all} ticked` : "not checked yet"}</span></div><div class="trow trust"><div class="tlist">`;
   for (const [ik, l, typ] of g.items) {
     if (typ === "choice") { h += `<div class="fd-sub">${esc(l)}</div>` + FUND_HOW.map((o, n) => { const on = !!(t[ik] && t[ik].v === o); return `<button type="button" class="tck${on ? " on" : ""}" data-gfund="${d.id}:${n}" aria-pressed="${on}"><i aria-hidden="true">${on ? "✓" : ""}</i><span>${esc(o)}${on ? who(t[ik]) : ""}</span></button>`; }).join(""); continue; }
-    const v = t[ik], hint = gateHint(d, k, ik), attr = typ === "trust" ? `data-trust="${d.id}:${g.side}:${ik}"` : `data-gtick="${d.id}:${g.side}:${ik}"`;
+    const v = g.side === "funds" && ik === "pof" ? DealControls.documentOK(d, "pof", controlState()) : t[ik], hint = gateHint(d, k, ik), attr = typ === "trust" ? `data-trust="${d.id}:${g.side}:${ik}"` : `data-gtick="${d.id}:${g.side}:${ik}"`;
     h += `<button type="button" class="tck${v ? " on" : ""}" ${attr} aria-pressed="${!!v}"><i aria-hidden="true">${v ? "✓" : ""}</i><span>${esc(l)}${who(v)}${hint ? `<small class="fd-h">${esc(hint)}</small>` : ""}</span></button>`;
   }
-  h += `</div></div><div class="quiet fd-note">Ticked by you or ${esc(pname(otherPartner(me)))} only – the bot never ticks these. They show where the deal stands; they don't stop any step.</div>`;
+  h += `</div></div><div class="quiet fd-note">Ticked by you or ${esc(pname(otherPartner(me)))} only – the bot never ticks these. These checks control critical progression. Funds also needs attached proof of funds.</div>`;
   return h + `<div class="acts0 fd-acts"><button type="button" data-fd="open">${ic("open")}Open the deal</button><button type="button" data-fd="close">Close</button></div>`;
 }
 function openGate(id, k) { if (dealById(id) && GATE_BY[k]) flOpen({ mode: "gate", dealId: id, gate: k }); }
 window.openGate = openGate;
-document.addEventListener("click", async e => {
-  const g = e.target.closest && e.target.closest("button[data-gtick],button[data-gfund]"); if (!g) return;
-  const tick = g.dataset.gtick, [id, side, k] = (tick || g.dataset.gfund).split(":"), d = dealById(id); if (!d) return;
-  if (tick && !["buyer", "seller", "funds"].includes(side)) return;
-  const p = { ...leanP(d) }, t = JSON.parse(JSON.stringify(p._trust || {})), stamp = { on: saDayPlus(0), by: me || "" };
-  if (tick) { t[side] = t[side] || {}; if (t[side][k]) delete t[side][k]; else t[side][k] = stamp; }
-  else { const o = FUND_HOW[+side]; if (!o) return; t.funds = t.funds || {}; if (t.funds.how && t.funds.how.v === o) delete t.funds.how; else t.funds.how = Object.assign({ v: o }, stamp); }
-  p._trust = t; g.disabled = true;
-  await leanSaveParams(d, p, "Saved.");
-});
-
 // ---------- the panel's buttons ----------
 async function flAct(e) {
   const b = e.target.closest("button"); if (!b || !FL) return;

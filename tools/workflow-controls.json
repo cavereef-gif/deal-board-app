@@ -1,0 +1,202 @@
+{
+ "label": "controls",
+ "jobs": {
+  "J1": {
+   "name": "Start a mineral deal",
+   "ok": true,
+   "taps": 4,
+   "typed": 1,
+   "info": {
+    "lands_on": "deal",
+    "title": "Chrome – Test stockpile → Test buyer"
+   }
+  },
+  "J2": {
+   "name": "Fill the 9 key terms of a mineral deal (incl. asking and agreed price, FOT or DAP)",
+   "ok": true,
+   "taps": 9,
+   "typed": 3,
+   "info": {
+    "form_rows": 17,
+    "form_height_px": 3201,
+    "asking": "R2,300 per t",
+    "agreed": "R2,250 per t",
+    "basis": "FOT"
+   }
+  },
+  "J3": {
+   "name": "Mark a question Requested (auto follow-up), then Still awaiting",
+   "ok": true,
+   "taps": 5,
+   "typed": 0,
+   "info": {
+    "task": {
+     "n": 7,
+     "what": "Grade (Pat stockpile)",
+     "on": "Seller",
+     "due": "2026-10-06",
+     "deal": "dm1"
+    },
+    "still_awaiting": {
+     "n": 7,
+     "prio": 1,
+     "due": "2026-10-05",
+     "chased": "2026-10-03T19:25:54.887Z"
+    }
+   }
+  },
+  "J4": {
+   "name": "Sourced – yes, Annemarie to confirm (task for Annemarie)",
+   "ok": true,
+   "taps": 2,
+   "typed": 0,
+   "info": {
+    "what": "Confirm the material is sourced (Pat stockpile) – Chris says yes",
+    "owner": "Annemarie",
+    "deal": "dm1"
+   }
+  },
+  "J5": {
+   "name": "Give a task to Both – it shows on both lists",
+   "ok": true,
+   "taps": 4,
+   "typed": 1,
+   "info": {
+    "on_chris": true,
+    "on_annemarie": true
+   }
+  },
+  "J6": {
+   "name": "Tick the next procedure step (and count the steps)",
+   "ok": true,
+   "taps": 2,
+   "typed": 0,
+   "info": {
+    "mineral_steps": 18,
+    "mineral_stages": 6,
+    "transport_steps": 5,
+    "transport_stages": 2,
+    "ticked": "Buyer checked"
+   }
+  },
+  "J7": {
+   "name": "Send the deal status as a PDF and a WhatsApp copy (no target or limit)",
+   "ok": true,
+   "taps": 3,
+   "typed": 0,
+   "info": {
+    "pdf_bytes": 3268,
+    "copy_chars": 371,
+    "copy_start": "*Deal status – Chrome deal – 20,000–50,000 t per month*\nRef CHR-261003-DM1 · 3 O"
+   }
+  },
+  "J8": {
+   "name": "Documents: NCNDA requested (auto follow-up), then signed (follow-up closes)",
+   "ok": true,
+   "taps": 4,
+   "typed": 0,
+   "info": {
+    "follow_up": "made then closed",
+    "mineral": 16,
+    "transport": "ncnda,quote,contract,insurance,tickets,pod,invoices"
+   }
+  },
+  "J9": {
+   "name": "Add a signed contract (file) to the deal – taps to the file picker",
+   "ok": true,
+   "taps": 2,
+   "typed": 0,
+   "info": {
+    "way": "button[data-docup='dm1:spa']"
+   }
+  },
+  "J10": {
+   "name": "Split the commission 40/40/20 (checked to 100%, Rand per ton and per load)",
+   "ok": true,
+   "taps": 4,
+   "typed": 6,
+   "info": {
+    "split": [
+     {
+      "n": "Chris",
+      "p": 40
+     },
+     {
+      "n": "Annemarie",
+      "p": 40
+     },
+     {
+      "n": "Partner (demo)",
+      "p": 20
+     }
+    ],
+    "shows_rand": true
+   }
+  },
+  "J11": {
+   "name": "See the chrome and manganese market price",
+   "ok": true,
+   "taps": 1,
+   "typed": 0,
+   "info": {
+    "card": "market price\nupdated today\nchrome · CIF China · suggested\n42–44% concentrate\nUS$320/t ≈ R 5 600 · 2 Oct\nAccept\nDrop\n40–42% concentrate\nUS$30"
+   }
+  },
+  "J12": {
+   "name": "Make an NCNDA from the template (names punched in, PDF saved to the deal)",
+   "ok": true,
+   "taps": 3,
+   "typed": 0,
+   "info": {
+    "fields": [
+     "a",
+     "b"
+    ],
+    "pdf_bytes": 7865,
+    "saved_to_deal": true
+   }
+  },
+  "J13": {
+   "name": "Make the transport quote PDF",
+   "ok": true,
+   "taps": 3,
+   "typed": 0,
+   "info": {}
+  },
+  "J14": {
+   "name": "Deal ticket: a long volume does not print over the terms line",
+   "ok": true,
+   "taps": 0,
+   "typed": 0,
+   "info": {
+    "over": false,
+    "odH": 32,
+    "lineTop": 285,
+    "odBottom": 279,
+    "emLines": 1
+   }
+  },
+  "J15": {
+   "name": "Deals tab shows only deals (no Buyer search / Verve admin)",
+   "ok": true,
+   "taps": 1,
+   "typed": 0,
+   "info": {
+    "groups": [
+     "minerals1 deal",
+     "transport1 deal"
+    ]
+   }
+  },
+  "J16": {
+   "name": "Ask page examples are built from the real deals (no made-up names in the code)",
+   "ok": true,
+   "taps": 1,
+   "typed": 0,
+   "info": {
+    "uses_real_names": true
+   }
+  }
+ },
+ "errors": []
+}

@@ -1,0 +1,14 @@
+{
+  "name": "deal-board-controls-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/controls.test.cjs tests/database.test.cjs",
+    "test:browser": "node tests/browser.cjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@fontsource/inter": "5.3.0",
+    "@supabase/supabase-js": "2.117.2",
+    "playwright": "1.60.0"
+  }
+}
