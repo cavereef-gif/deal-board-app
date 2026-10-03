@@ -189,13 +189,13 @@ function sourcedHtml(d) {
   let state = "not set", ctl;
   if (!s || s.s === "notyet") {
     state = s ? `not yet ${shortDate(s.on)}` : "not set";
-    ctl = `<div class="tchips"><button type="button" data-src="${d.id}" data-v="notyet" class="${s ? "on" : ""}" aria-pressed="${!!s}">Not yet</button><button type="button" data-src="${d.id}" data-v="yes" class="go">${am ? "Yes – sourced" : "Yes – Annemarie to confirm"}</button></div>`;
+    ctl = `<div class="tchips"><button type="button" data-src="${d.id}" data-v="notyet" class="${s ? "on" : ""}" aria-pressed="${!!s}">Not yet</button><button type="button" data-src="${d.id}" data-v="yes" class="go">${am ? "Yes – sourced" : `Yes – ${esc(pname("Annemarie"))} to confirm`}</button></div>`;
   } else if (s.s === "yes") {
-    state = `annemarie to confirm · ${shortDate(s.on)}`;
+    state = `${pname("Annemarie").toLowerCase()} to confirm · ${shortDate(s.on)}`;
     ctl = `<div class="tchips"><button type="button" class="on" aria-pressed="true" disabled>Sourced · ${esc(s.by || "")}</button>${am ? `<button type="button" data-src="${d.id}" data-v="confirm" class="go">Confirm</button>` : ""}<button type="button" data-src="${d.id}" data-v="undo">Not sourced</button></div>`;
   } else {
     state = `confirmed ${shortDate(s.on)}`;
-    ctl = `<div class="tchips"><button type="button" class="on" aria-pressed="true" disabled>Confirmed by ${esc(s.by || "Annemarie")}</button><button type="button" data-src="${d.id}" data-v="undo">Undo</button></div>`;
+    ctl = `<div class="tchips"><button type="button" class="on" aria-pressed="true" disabled>Confirmed by ${esc(pname(s.by || "Annemarie"))}</button><button type="button" data-src="${d.id}" data-v="undo">Undo</button></div>`;
   }
   return `<div class="trow" data-termrow="_src"><div class="k"><b>Sourced</b><span>${esc(state)}</span></div>${ctl}</div>`;
 }
@@ -263,8 +263,8 @@ async function setSourced(d, v) {
     if (v === "yes" && me === "Annemarie") { if (cur && cur.id) await leanItemAct(cur.id, "done"); p._src = { s: "ok", on: saDayPlus(0), by: "Annemarie" }; return leanSaveParams(d, p, "Sourced – confirmed."); }
     if (v === "yes") {
       if (cur && cur.id) await leanItemAct(cur.id, "done");
-      const id = await leanNewItem({ deal: d, on: "Me", owner: "Annemarie", what: `Confirm the material is sourced (${tag}) – ${me || "Chris"} says yes`, next: "Open the deal and tap Confirm", due: workDayPlus(1) });
-      p._src = { s: "yes", on: saDayPlus(0), id, by: me || "Chris" }; return leanSaveParams(d, p, "Sourced – sent to Annemarie to confirm.");
+      const id = await leanNewItem({ deal: d, on: "Me", owner: "Annemarie", what: `Confirm the material is sourced (${tag}) – ${pname(me || "Chris")} says yes`, next: "Open the deal and tap Confirm", due: workDayPlus(1) });
+      p._src = { s: "yes", on: saDayPlus(0), id, by: me || "Chris" }; return leanSaveParams(d, p, `Sourced – sent to ${pname("Annemarie")} to confirm.`);
     }
     if (v === "confirm") { if (cur && cur.id) await leanItemAct(cur.id, "done"); p._src = { s: "ok", on: saDayPlus(0), by: me || "Annemarie" }; return leanSaveParams(d, p, "Sourced – confirmed."); }
   } catch (e) { toast("Could not save: " + (e.message || e), 6000); }
@@ -401,6 +401,19 @@ $("list").addEventListener("click", e => {
   const [sid, v] = [b.dataset.plan, b.dataset.v], st = (window._steps || []).find(x => x.id === sid); if (!st) return;
   planStep(sid, st.owner === v ? "" : v, st.due_on || "");
 });
+$("list").addEventListener("click", async e => {
+  const ed = e.target.closest("button[data-seedit]");
+  if (ed) { window._stepEdit = window._stepEdit === ed.dataset.seedit ? null : ed.dataset.seedit; render(); const t = document.querySelector(".sedit .se-title"); if (t) t.focus(); return; }
+  const sv = e.target.closest("button[data-sesave]"); if (!sv) return;
+  const box = sv.closest(".sedit"), title = box.querySelector(".se-title").value.trim(), detail = box.querySelector(".se-detail").value.trim();
+  if (!title) { toast("The step needs some words."); return; }
+  const st = (window._steps || []).find(x => x.id === sv.dataset.sesave); if (!st) return;
+  if (DEMO) { Object.assign(st, { title, detail }); window._stepEdit = null; toast("Changed (demo – not saved)."); render(); return; }
+  sv.disabled = true;
+  const { error } = await sb.rpc("edit_step", { p_id: st.id, p_title: title, p_detail: detail });
+  if (error) { sv.disabled = false; toast(/edit_step|function/i.test(error.message) ? "Database change 017 is needed before a step's words can be changed." : "Could not save: " + error.message, 6000); return; }
+  Object.assign(st, { title, detail }); window._stepEdit = null; toast("Saved."); render();
+});
 $("list").addEventListener("change", e => {
   const i = e.target.closest("input[data-plandue]"); if (!i) return;
   const st = (window._steps || []).find(x => x.id === i.dataset.plandue); if (!st) return;
@@ -409,8 +422,13 @@ $("list").addEventListener("change", e => {
 // the step panel: who and by when, the document that closes it, what must come first
 window.stepPlanHtml = function (s) {
   const d = dealById(s.deal_id); if (!d || s.status !== "open") return "";
-  let h = `<div class="lbl">Who does it</div><div class="tchips">${["Chris", "Annemarie", "Both", d.kind === "transport" ? "Client" : "Seller", d.kind === "transport" ? "Transporter" : "Buyer"].map(n => `<button type="button" data-plan="${s.id}" data-v="${n}" class="${s.owner === n ? "on" : ""}" aria-pressed="${s.owner === n}">${n}</button>`).join("")}</div>
+  let h = `<div class="lbl">Who does it</div><div class="tchips">${["Chris", "Annemarie", "Both", d.kind === "transport" ? "Client" : "Seller", d.kind === "transport" ? "Transporter" : "Buyer"].map(n => `<button type="button" data-plan="${s.id}" data-v="${n}" class="${s.owner === n ? "on" : ""}" aria-pressed="${s.owner === n}">${pname(n)}</button>`).join("")}</div>
     <label class="fld"><span>By when</span><input type="date" data-plandue="${s.id}" value="${esc(s.due_on || "")}"></label>`;
+  // 3 Oct 2026 (Batch 2): the words of a step can be changed – title and the plain-words detail (database change 017, edit_step)
+  if (window._stepEdit === s.id) h += `<div class="step-p sedit" data-sedit="${s.id}"><label class="fld" style="margin-top:0"><span>Step (one line)</span><input class="se-title" value="${esc(s.title)}" maxlength="200"></label>
+    <label class="fld"><span>Detail (plain words, optional)</span><textarea class="se-detail" rows="2" maxlength="600">${esc(s.detail || "")}</textarea></label>
+    <div class="tacts"><button type="button" class="primary" data-sesave="${s.id}">${ic("check")}Save</button><button type="button" data-seedit="${s.id}">Cancel</button></div></div>`;
+  else h += `<div class="acts0"><button type="button" data-seedit="${s.id}">${ic("edit")}Change the words</button></div>`;
   const L = s._lean;
   if (L && L.needs === "pof" && !pofIn(d)) h += `<div class="tnote">Only after proof of funds – it is not in yet (Docs).</div>`;
   if (L && L.doc && window.docMiniHtml) h += docMiniHtml(d, L.doc);

@@ -47,7 +47,7 @@ function tsWeekHtml() {
   const key = tsDue === "pick" ? $("tsDate").value : tsDue === "" ? "" : saDayPlus(+tsDue);
   const cnt = {}; for (const it of (window._items || [])) { const d = it.due_on || (typeof dueDate === "function" && dueDate(it) ? saKey(dueDate(it)) : ""); if (d) cnt[d] = (cnt[d] || 0) + 1; }
   const what = tsParse($("tsWhat").value).clean || "This job", dn = dealById($("tsDeal").value);
-  const who = [tsKind === "wait" && $("tsFrom").value ? "Waiting on " + $("tsFrom").value : tsOwner, dn ? dn.name : ""].filter(Boolean).join(" · ");
+  const who = [tsKind === "wait" && $("tsFrom").value ? "Waiting on " + $("tsFrom").value : pname(tsOwner), dn ? dn.name : ""].filter(Boolean).join(" · ");
   // Ion Rail: the week as stations left of the groove; the job is the ion card on the day it lands (tap another day to move it)
   const rows = [...Array(7)].map((_, i) => { const k = saDayPlus(i), d = new Date(k + "T08:00:00+02:00"), on = k === key, n = cnt[k] || 0;
     const stn = `<span class="istn${on ? "" : n ? "" : " dim"}"><b>${i === 0 ? "Today" : WDAY[d.getUTCDay()] + " " + d.getUTCDate()}</b>${n ? n + " job" + (n > 1 ? "s" : "") : "—"}</span>`;
@@ -120,15 +120,19 @@ $("tsAdd").onclick = async () => {
   if (error && /p_due|function/i.test(error.message)) { const b2 = { ...body }; delete b2.p_due; ({ error } = await sb.rpc("add_item", b2)); if (!error && due) toast("Saved without the due date (the database is not updated yet)."); }
   $("tsAdd").disabled = false;
   if (error) { $("tsMsg").textContent = "Could not save: " + error.message; return; }
-  closeTaskSheet(); toast(tsOwner === "Both" ? "Added for both of you." : `Added for ${tsOwner}.`); load();
+  closeTaskSheet(); toast(tsOwner === "Both" ? "Added for both of you." : `Added for ${pname(tsOwner)}.`); load();
 };
 
 // ---------- "Due" on a task (in the task sheet) ----------
+// next Monday (strictly after today) – the "Postpone" chip (3 Oct 2026, Batch 2)
+function nextMondayKey() { let k = saDayPlus(1); for (let i = 0; i < 7 && new Date(k + "T12:00:00Z").getUTCDay() !== 1; i++) k = new Date(Date.parse(k + "T12:00:00Z") + 864e5).toISOString().slice(0, 10); return k; }
 function dueRowHtml(it) {
-  const d = it.due_on || "", t0 = saDayPlus(0), t1 = saDayPlus(1), other = d && d !== t0 && d !== t1;
+  const d = it.due_on || "", t0 = saDayPlus(0), t1 = saDayPlus(1), w1 = saDayPlus(7), w2 = saDayPlus(14), mon = nextMondayKey(), other = d && d !== t0 && d !== t1;
   const b = (v, label) => `<button type="button"${d === v ? ' class="on" aria-pressed="true"' : ` data-a="due" data-v="${v}" aria-pressed="false"`}>${label}</button>`;
+  // the Due bar is the locked 40 px box (four choices); Postpone is its own bar underneath (3 Oct 2026, Batch 2)
   return `<div class="lbl">Due</div><div class="seg2 dr-b" role="group" aria-label="Due">${b("", "No date")}${b(t0, "Today")}${b(t1, "Tomorrow")}
     <label class="datepick${other ? " on" : ""}"><span>${other ? esc(dayName(dueDate(it))) : "Pick date"}</span><input type="date" data-duepick="${it.id}" value="${esc(d)}" aria-label="Pick a due date"></label></div>
+    <div class="lbl">Postpone to</div><div class="seg2 dr-p" role="group" aria-label="Postpone">${b(mon, "Next Mon")}${b(w1, "+1 week")}${b(w2, "+2 weeks")}</div>
     <div class="dr-t">${d ? "Due " + dayWords(dueDate(it)) : dayDiff(dueDate(it)) < 0 ? `No due date – the chase was due ${dayWords(dueDate(it))}` : `No due date – we chase it ${dayWords(dueDate(it))}`}</div>`;
 }
 window.dueRowHtml = dueRowHtml;

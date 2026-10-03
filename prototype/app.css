@@ -657,6 +657,7 @@ body.canback header.appbar .brand{order:3;flex-basis:100%}
 .duerow .dr-t{font-size:16px;margin-bottom:8px}
 .duerow .dr-b{display:flex;flex-wrap:wrap;gap:8px}
 .duerow .dr-b button{min-height:44px}
+.iedit .fld,.sedit .fld,.tedit .fld{margin-top:8px}
 .datepick{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:var(--r3);background:var(--raise);font-weight:500;font-size:16px;overflow:hidden}
 .datepick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 .pkres{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:60vh;overflow:auto}

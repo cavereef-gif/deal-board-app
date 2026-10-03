@@ -4,7 +4,7 @@ let composerFile = null;         // File waiting to be sent with the next messag
 function setComposerMode(m) {
   composerMode = m === "check" ? "check" : "post";
   document.querySelectorAll("#composer [data-cmode]").forEach(b => b.classList.toggle("on", b.dataset.cmode === composerMode));
-  $("cText").placeholder = composerMode === "check" ? "What you checked + the result" : `Message ${me === "Annemarie" ? "Chris" : "Annemarie"}…`;
+  $("cText").placeholder = composerMode === "check" ? "What you checked + the result" : `Message ${pname(otherPartner(me))}…`;
 }
 window.setComposerMode = setComposerMode;
 const seenKey = () => "boardSeen:" + (me || "x");
@@ -38,7 +38,7 @@ function boardHtml() {
   const pinned = P.filter(p => p.pinned && !p.done);
   let h = portsCardHtml();
   if (pinned.length) h += `<div class="sech pinned-h"><h3>Pinned</h3></div><div class="feed">${pinned.map(postHtml).join("")}</div>`;
-  h += `<div class="sech"><h3>Between Chris and Annemarie</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
+  h += `<div class="sech"><h3>Between ${esc(pname("Chris"))} and ${esc(pname("Annemarie"))}</h3><span class="sc">${P.length} message${P.length === 1 ? "" : "s"}</span></div>`;
   // 28 Sep 2026 evening (Chris: "i cant clear the board"): clear every message except the pinned ones, after a second tap
   if (P.length) h += `<div class="acts0 bclr"><button type="button" data-boardclear="1">${ic("drop")}${window._boardRm ? "Tap again – clear the board" : "Clear the board"}</button>${window._boardRm ? `<span class="quiet">Pinned messages stay.</span>` : ""}</div>`;
   if (!P.length) return h + `<div class="empty">${typeof section !== "undefined" && section !== "All" ? `No messages about ${esc(section)} yet. Pick All to see every message.` : "No messages yet. Write the first one below – you can attach photos or files, and log checks."}</div>`;

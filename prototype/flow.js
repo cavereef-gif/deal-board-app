@@ -109,7 +109,7 @@ function flAfterHtml(d) {
   const du = flDue(nx), sides = d.kind === "transport" ? ["Client", "Transporter"] : ["Seller", "Buyer"];
   const days = [["Today", saDayPlus(0)], ...[1, 3, 5].map(n => [flDay(workDayPlus(n)), workDayPlus(n)])];
   h += `<div class="stepp fd-card"><div class="nu-l">next step · ${esc(nx.stage.replace(/^\d+\.\s*/, "").toLowerCase())}</div><div class="nu-t">${esc(nx.title)}</div><div class="nu-c">${esc(nx.owner || nx.due_on ? [nx.owner, nx.due_on ? du.text : ""].filter(Boolean).join(" · ") : "Who does it, and by when?")}</div></div>`;
-  h += `<div class="lbl">Who does it</div><div class="fd-chips">${["Chris", "Annemarie", "Both", ...sides].map(n => `<button type="button" data-fdown="${n}" class="${nx.owner === n ? "on" : ""}" aria-pressed="${nx.owner === n}">${n}</button>`).join("")}</div>`;
+  h += `<div class="lbl">Who does it</div><div class="fd-chips">${["Chris", "Annemarie", "Both", ...sides].map(n => `<button type="button" data-fdown="${n}" class="${nx.owner === n ? "on" : ""}" aria-pressed="${nx.owner === n}">${esc(pname(n))}</button>`).join("")}</div>`;
   h += `<div class="lbl">By when</div><div class="fd-chips">${days.map(([w, k]) => `<button type="button" data-fddue="${k}" class="${nx.due_on === k ? "on" : ""}" aria-pressed="${nx.due_on === k}">${esc(w)}</button>`).join("")}</div><label class="fld"><span>Or pick a date</span><input type="date" data-fddate="1" value="${esc(nx.due_on || "")}"></label>`;
   return h + `<div class="acts0 fd-acts"><button type="button" class="primary" data-fd="now">${ic("check")}Do it now</button><button type="button" data-fd="close">Later</button></div>`;
 }
@@ -269,7 +269,7 @@ function flGateHtml(d, k) {
     const v = t[ik], hint = gateHint(d, k, ik), attr = typ === "trust" ? `data-trust="${d.id}:${g.side}:${ik}"` : `data-gtick="${d.id}:${g.side}:${ik}"`;
     h += `<button type="button" class="tck${v ? " on" : ""}" ${attr} aria-pressed="${!!v}"><i aria-hidden="true">${v ? "✓" : ""}</i><span>${esc(l)}${who(v)}${hint ? `<small class="fd-h">${esc(hint)}</small>` : ""}</span></button>`;
   }
-  h += `</div></div><div class="quiet fd-note">Ticked by you or Annemarie only – the bot never ticks these. They show where the deal stands; they don't stop any step.</div>`;
+  h += `</div></div><div class="quiet fd-note">Ticked by you or ${esc(pname(otherPartner(me)))} only – the bot never ticks these. They show where the deal stands; they don't stop any step.</div>`;
   return h + `<div class="acts0 fd-acts"><button type="button" data-fd="open">${ic("open")}Open the deal</button><button type="button" data-fd="close">Close</button></div>`;
 }
 function openGate(id, k) { if (dealById(id) && GATE_BY[k]) flOpen({ mode: "gate", dealId: id, gate: k }); }

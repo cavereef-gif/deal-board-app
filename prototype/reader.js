@@ -101,7 +101,7 @@ async function runReader(req, msgEl, onDone, ctx) {
 window.runReader = runReader;
 
 // ---------- the review sheet: every line ticked or not, words can be fixed ----------
-const rvWho = o => ["Chris", "Annemarie", "Both"].map(n => `<option${o === n ? " selected" : ""}>${n}</option>`).join("");
+const rvWho = o => ["Chris", "Annemarie", "Both"].map(n => `<option value="${n}"${o === n ? " selected" : ""}>${esc(pname(n))}</option>`).join("");
 function quoteText(q) {
   const L = [];
   const add = (k, v) => { if (v && String(v).trim()) L.push(`${k}: ${v}`); };
