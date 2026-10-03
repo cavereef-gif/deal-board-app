@@ -1073,6 +1073,7 @@ async function show(){
     const { data } = await sb.auth.getSession(); signedIn = !!data.session;
     if (signedIn) {
       const em = data.session.user.email || "";
+      window._myEmail = em;
       me = /annemarie/i.test(em) ? "Annemarie" : /cavereef/i.test(em) ? "Chris" : em;
       $("menuBtn").textContent = (me || "D").slice(0, 1).toUpperCase();
       $("fOwner").value = me === "Annemarie" ? "Annemarie" : "Chris";
