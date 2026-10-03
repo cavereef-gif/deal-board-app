@@ -793,3 +793,74 @@ html[data-ion][data-palette] .irow .scont>.chsb{right:3px;top:2px;transform:none
 html[data-ion][data-palette] .gates{padding:0 14px 12px}
 html[data-ion][data-palette] .gate{background:var(--ccard2);color:var(--ctext);box-shadow:none;border:0;border-radius:10px}
 html[data-ion][data-palette] .gate .gs{color:var(--cmuted)}
+
+/* ================= "Verve" – the Verve Africa website look on the Ion Rail structure (3 Oct 2026, Batch 2 Part B) =================
+   Colours come from the website's recorded design system "Nightshift→Steel" (HANDOVER-verve-website-18sep2026.md: ground #0B0E10,
+   pitch #12161A, steels #1C2124 / #4C555B / #8C979E, slab #878B91, cream #F4F4F2, bone #E6E9EA; polished-chrome gradients on the
+   hardware; burnt orange #D2621E on the plexus only) and from the logo file (VERVE-GLOBE-512.png: warm-silver monogram #B8B2A8 on a
+   warm near-black #1B1916). Chris, 3 Oct: chrome lettering in headings is allowed, muted – dark silver on light, light silver on dark,
+   no bright glare. The Ion Rail geometry is untouched; only colours and finishes change. Settings › Look › Verve.
+   Letters: every chrome heading keeps a solid colour underneath (that is what the readability check measures); the gradient only
+   moves within a narrow band around it. Never pure white. Burnt orange is the live dot only, never a letter. */
+html[data-ion="verve"][data-palette]{
+  --ion:#B8B2A8; --ion-deep:#8C979E; --ion-a:rgba(184,178,168,.22); --live:#D2621E; --coral:#EE9C88; --coral-1:#F6C0B2;
+  --ion-glow:rgba(184,178,168,.2); --ion-glow2:rgba(184,178,168,.24); --ion-ring:rgba(184,178,168,.4); --ion-line:rgba(184,178,168,.7); --ion-soft:rgba(184,178,168,.16); --ion-edge:rgba(184,178,168,.55);
+  --g0a:#12161A; --g0b:#0B0E10; --g1:#1C2124; --g1b:#171B1F; --g2:#22272B; --g3:#2B3135; --g4:#343A3F; --groove:#070909; --bay:#15191C; --navc:#15191C; --plate:#1C2124;
+  --ctext:#12161A; --cmuted:#4C555B; --ccard:#F4F4F2; --ccard2:#E6E9EA; --cfield:#DCE0E2; --cline:rgba(18,22,26,.14); --cline2:rgba(18,22,26,.32); --ink:#1C2124; --rail:#8C979E; --craise2:#E6E9EA;
+  --on-ink:#E6E9EA; --on-ink-muted:#B5BCC1; --node-dim:#4C555B; --ck:#878B91; --ck-na:#C3C8CC; --meter-off:#C3C8CC; --handle:#4C555B;
+  --edge:rgba(230,233,234,.09); --edge2:rgba(230,233,234,.22); --dots:rgba(230,233,234,.05); --tick:rgba(230,233,234,.16);
+  --bg:#0B0E10; --bg-a:rgba(11,14,16,.9); --text:#D6D9DB; --muted:#B5BCC1; --ivory:#E6E9EA;
+  --line:rgba(230,233,234,.09); --line2:rgba(230,233,234,.2);
+  --primary:#C9CED2; --primary-2:#DCE0E2; --on-primary:#12161A; --accent:#B5BCC1; --accent2:#D6D9DB;
+  /* polished chrome: a multi-stop gradient, a bright seam just above the middle, dark letters on it */
+  --chrome:linear-gradient(180deg,#E6E9EA 0%,#CDD2D5 42%,#AEB5BA 50%,#C9CED2 58%,#DCE0E2 100%);
+  --chrome-dark:linear-gradient(180deg,#3A4146 0%,#22272B 45%,#1C2124 52%,#2B3135 100%);
+  --chrome-seam:linear-gradient(90deg,rgba(230,233,234,0) 0%,rgba(230,233,234,.55) 50%,rgba(230,233,234,0) 100%);
+  --grad:var(--chrome); --btn-primary:var(--chrome);
+  --btn-primary-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(0,0,0,.25),0 6px 14px -8px rgba(0,0,0,.9);
+  --ok:#8FD3B0; --prop:#878B91; --low:#4C555B; --rail-normal:#8C979E;
+  --g-today:#B8B2A8; --g-tmrw:#B5BCC1; --g-week:#878B91; --g-later:#4C555B; --g-prop:#878B91;
+  --sw-done:#B8B2A8; --sw-wait:#2B3135; --sw-rest:#22272B; --sw-ink:#12161A;
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 6px 14px -10px rgba(0,0,0,.8);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B5BCC1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+/* Day: bone page, light brushed-steel frame, cream reading cards, dark-steel letters */
+html[data-ion="verve"][data-palette][data-theme="light"]{
+  --g0a:#D9DDE0; --g0b:#E6E9EA; --g1:#C9CED2; --g1b:#C1C7CB; --g2:#D3D7DA; --g3:#DCE0E2; --g4:#E3E6E8; --groove:#8C979E; --bay:#CDD2D5; --navc:#D3D7DA; --plate:#C9CED2; --rail:#4C555B;
+  --node-dim:#AEB5BA; --handle:#AEB5BA;
+  --edge:rgba(18,22,26,.1); --edge2:rgba(18,22,26,.24); --dots:rgba(18,22,26,.06); --tick:rgba(18,22,26,.18);
+  --bg:#E6E9EA; --bg-a:rgba(230,233,234,.92); --text:#12161A; --muted:#3E464B; --ivory:#12161A; --field:#F4F4F2; --well:#F4F4F2;
+  --line:rgba(18,22,26,.12); --line2:rgba(18,22,26,.26); --accent:#3E464B; --accent2:#12161A;
+  --ccard:#F4F4F2; --ccard2:#E6E9EA; --cfield:#DCE0E2;
+  --chrome-seam:linear-gradient(90deg,rgba(18,22,26,0) 0%,rgba(18,22,26,.35) 50%,rgba(18,22,26,0) 100%);
+  --soft-up:inset 0 1px 0 rgba(255,255,255,.5),0 14px 30px -22px rgba(18,22,26,.45);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 1px rgba(18,22,26,.12);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -10px rgba(18,22,26,.35);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233E464B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+/* chrome hardware: the header plate, the sheet bays and the rail blocks get a brushed-steel face and a bright seam on top */
+html[data-ion="verve"][data-palette] .plate{background:var(--chrome-dark);border-color:var(--edge2);box-shadow:inset 0 1px 0 rgba(230,233,234,.22),inset 0 -1px 0 rgba(0,0,0,.4),0 10px 24px -16px rgba(0,0,0,.9)}
+html[data-ion="verve"][data-palette][data-theme="light"] .plate{background:linear-gradient(180deg,#DCE0E2 0%,#CDD2D5 45%,#C1C7CB 52%,#D3D7DA 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(18,22,26,.18)}
+html[data-ion="verve"][data-palette] .iblk{background-image:radial-gradient(var(--dots) 1px,transparent 1.2px),linear-gradient(180deg,rgba(230,233,234,.05),rgba(0,0,0,0) 40%)}
+html[data-ion="verve"][data-palette] .tabs{background:var(--chrome-dark);border-color:var(--edge2)}
+html[data-ion="verve"][data-palette][data-theme="light"] .tabs{background:linear-gradient(180deg,#DCE0E2 0%,#C9CED2 100%)}
+html[data-ion="verve"][data-palette] .logo{background:var(--chrome);color:#12161A;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.25),0 0 0 1px rgba(0,0,0,.5)}
+/* the main button, the now line and the nodes are polished chrome with dark letters; nothing blue */
+html[data-ion="verve"][data-palette] :is(#_,button.primary,.nowtag,.nexttag,.calcacts button.primary){background:var(--chrome);background-image:var(--chrome);background-color:#C9CED2;color:#12161A;box-shadow:var(--btn-primary-shadow)}
+html[data-ion="verve"][data-palette] .inow>span{background:var(--chrome);color:#12161A}
+html[data-ion="verve"][data-palette] .inow:before{background:linear-gradient(90deg,#B8B2A8,#E6E9EA 40%,#B8B2A8)}
+html[data-ion="verve"][data-palette] .irow>.in{background:linear-gradient(180deg,#D6D9DB,#8C979E)}
+/* a hairline chrome seam under every section title and over each rail block, as on the website's bands */
+html[data-ion="verve"][data-palette] :is(.tsh,.sech){position:relative}
+html[data-ion="verve"][data-palette] :is(.tsh,.sech):after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:1px;background:var(--chrome-seam);pointer-events:none}
+html[data-ion="verve"][data-palette] .iblk:before{content:"";position:absolute;left:12px;right:12px;top:0;height:1px;background:var(--chrome-seam);pointer-events:none}
+/* chrome lettering (muted): light silver on the dark frame, dark silver on cream cards and in day mode.
+   The solid colour stays underneath; the gradient moves only within a narrow band around it. */
+html[data-ion="verve"][data-palette] :is(.plate .pl-t,#pageTitle,h2,.tsh .tht,.sech h3){color:#C9CED2;background-color:var(--plate);background-image:linear-gradient(180deg,#E6E9EA 0%,#CDD2D5 45%,#AEB5BA 55%,#DCE0E2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.01em}
+html[data-ion="verve"][data-palette] :is(.card,.deal,.ccard,.lead,.icard,.hero2,.nextup,.post,.stepp,.pcard,.dcard) :is(h2,.sech h3,.tsh .tht),
+html[data-ion="verve"][data-palette][data-theme="light"] :is(.plate .pl-t,#pageTitle,h2,.tsh .tht,.sech h3){color:#3A4146;background-color:var(--plate);background-image:linear-gradient(180deg,#5B646A 0%,#3A4146 45%,#22272B 55%,#4C555B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+html[data-ion="verve"][data-palette] :is(.card,.deal,.ccard,.lead,.icard,.hero2,.nextup,.post,.stepp,.pcard,.dcard) :is(h2,.sech h3,.tsh .tht){background-color:var(--ccard)}
+/* the solid colour under each chrome heading is what the readability check measures (background-clip keeps it inside the letters, under the gradient) */
+html[data-ion="verve"][data-palette] .plate .pl-t{font-weight:500}
+/* the live dot is the one spark of burnt orange (as the plexus on the website); late stays coral */
+html[data-ion="verve"][data-palette] .live i{background:#D2621E;box-shadow:0 0 0 3px rgba(210,98,30,.25)}

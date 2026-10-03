@@ -7,6 +7,17 @@ Date · version · batch · what changed (plain words, 3–6 lines) · checks ru
 
 ---
 
+## 3 Oct 2026 (night) – v17 prototype: Batch 2 Part B – the "Verve" look (fifth look, not live) · Part C – the audit (report only)
+- Chris (3 Oct): "give me another palette colour like the Verve website … polished and modern … letters shining in headings with chrome finishes … not a darkish silver on a light background or light silver on a dark background" (i.e. muted chrome lettering is allowed; no glare).
+- **Verve** (Settings › Look › Verve; html[data-ion="verve"] in ion.css): the Ion Rail structure untouched, colours and finishes from the Verve Africa website's recorded design system "Nightshift→Steel" (ground #0B0E10, pitch #12161A, steels #1C2124 / #4C555B / #8C979E, cream #F4F4F2, bone #E6E9EA; chrome gradients on the hardware; burnt orange #D2621E on the plexus only) and the logo (warm-silver monogram #B8B2A8). The website itself could not be fetched from the build sandbox; the colours come from the handover file on Drive (HANDOVER-verve-website-18sep2026.md) and the logo file VERVE-GLOBE-512.png. Night: near-black page, brushed-steel header plate and tab bar, cream reading cards, polished-chrome main buttons with dark letters, warm-silver now line and nodes, burnt orange only as the live dot. Day: bone page, light steel frame, cream cards.
+- **Chrome lettering, muted**: the plate title, page title, section titles and h2 – light silver on the dark frame, dark silver on cream cards and in day mode. Every chrome heading keeps a solid colour underneath (what the readability check measures); the gradient stays within a narrow band around it. Never pure white, never bold at 22 px.
+- Ion Rail, Twilight, Graphite and Velvet are unchanged (their rules are untouched; Verve is appended after them).
+- Checks: PALETTES=verve tools/screens.py – 268 screens, both sizes, dark and light: no coloured letters, no low contrast (lowest 5.12), no heavy large text; geometry 1,048 PASS · 0 FAIL; flows 98 PASS; looked at Today, a deal, Deals, People and the task sheet in Verve, dark and light.
+- **Part C – audit**: docs/AUDIT-2026-10-03.md – what works (16 of 16 jobs, 98 checks), what is broken or clumsy with the numbers (deal page five to six screens tall, the 17-row terms form, older small controls, Graphite/Velvet contrast, two overlapping check lists, made-up words, the eleven-control task sheet, Google meetings not movable, no keep-alive), and twelve proposed fixes C1–C12 in a recommended order. Nothing from the audit is built.
+- Prototype link: the same pull request as Part A (#6), rebuilt with Parts B and C.
+
+---
+
 ## 3 Oct 2026 (evening) – v17 prototype: Batch 2 Part A – everything changeable (words, dates, names), built from the Claude project (not live)
 - Chris (3 Oct, after Batch 1): "there's things I can't change, like Annemarie's name on the first page, and Kobus is in Pretoria – I'm not going there, so the only option on the app is to postpone the meeting … make everything changeable for me." Built here in the Claude project (which has database access), not in Claude Code.
 - **Change the words of any task.** Every task (the sheet on Today, Waits, a deal's waits) has a "Change the words" button: what we wait for, the next step (e.g. "Teams call instead of a meeting"), who we wait on (empty = our own job), what it blocks, the project. Save writes each changed field to the history. Database change 017 (edit_item) – applied 3 Oct 2026.
