@@ -1,11 +1,11 @@
-// Deal Board v11 — Directory (leads), NEXT queue, gates, library, WhatsApp chat import, Email me.
+// Deal Board v11 — Directory (South Africa tab grouped by date added, 3 Oct 2026) (leads), NEXT queue, gates, library, WhatsApp chat import, Email me.
 const ST = {
   new: ["Not contacted", "#8A8A92"], ready: ["Ready to send", "#5C7FB8"], contacted: ["Contacted", "#3E9BA6"], replied: ["Replied", "#4FA88A"],
   qualified: ["Qualified", "#8E7CC3"], deal: ["In a deal", "#D9A03F"], parked: ["Parked", "#6B6B72"], bounced: ["Bounced / wrong contact", "#C45C5C"],
   skip: ["Not a target", "#55555C"], dnd: ["Do not deal", "#C45C5C"],
 };
 const SEGS = [
-  ["all", "All"], ["fbuy", "Foreign buyers"], ["sabuy", "SA buyers"], ["sup", "Suppliers"], ["brok", "Brokers"], ["serv", "Services & network"], ["notbuy", "Not buyers"], ["dnd", "Do not deal"],
+  ["all", "All"], ["sa", "South Africa"], ["fbuy", "Foreign buyers"], ["sabuy", "SA buyers"], ["sup", "Suppliers"], ["brok", "Brokers"], ["serv", "Services & network"], ["notbuy", "Not buyers"], ["dnd", "Do not deal"],
 ];
 const SIDE_COL = { buyer: "#5C7FB8", supplier: "#4FA88A", broker: "#D9A03F", service: "#8E7CC3", network: "#8E7CC3", competitor: "#6B6B72", other: "#6B6B72" };
 const PRIO_W = ["Top", "High", "Medium", "Low", "—"];
@@ -19,7 +19,7 @@ const inSeg = (l, s) => {
   if (s === "dnd") return dnd;
   if (s === "all") return true;
   if (dnd) return false;
-  return s === "fbuy" ? l.side === "buyer" && l.market === "Foreign" : s === "sabuy" ? l.side === "buyer" && l.market === "SA"
+  return s === "sa" ? l.market === "SA" : s === "fbuy" ? l.side === "buyer" && l.market === "Foreign" : s === "sabuy" ? l.side === "buyer" && l.market === "SA"
     : s === "sup" ? l.side === "supplier" : s === "brok" ? l.side === "broker" : s === "serv" ? (l.side === "service" || l.side === "network")
     : s === "notbuy" ? (l.side === "competitor" || l.side === "other") : true;
 };
@@ -158,6 +158,17 @@ function dirHtml() {
   if (dNewLead) h += `<div class="deal"><div class="sec-b">${leadFormHtml({ side: "buyer", country: "", priority: 2 })}</div></div>`;
   if (dCountry) { const cn = (window._library || []).find(x => x.kind === "country" && (x.title === dCountry || x.title.split(/ \/ /).includes(dCountry))); if (cn) h += `<div class="cnote"><div class="lbl" style="margin-top:0">Country notes · ${esc(cn.title)}</div>${esc(cn.body)}${cn.meta && cn.meta.key ? `<div class="gs">Key names: ${esc(cn.meta.key)}</div>` : ""}</div>`; }
   h += `<div class="lcount">${list.length} shown</div><div class="llist">`;
+  if (dSeg === "sa") {
+    // South Africa tab: grouped by the day each contact was added, newest first
+    const dayKey = l => (l.created_at ? new Date(l.created_at).toLocaleDateString("en-CA", { timeZone: "Africa/Johannesburg" }) : "0000-00-00");
+    const shown = list.slice().sort((a, b) => dayKey(b).localeCompare(dayKey(a)) || a.priority - b.priority || a.name.localeCompare(b.name)).slice(0, dLimit);
+    const days = [...new Set(shown.map(dayKey))];
+    const fullCount = k => list.filter(l => dayKey(l) === k).length;
+    h += days.map(k => { const g = shown.filter(l => dayKey(l) === k); const from = [...new Set(g.map(l => l.origin).filter(Boolean))].join(" · ");
+      const label = k === "0000-00-00" ? "Date not recorded" : "Added " + new Date(k + "T12:00:00").toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+      return `<div class="dgrp"><span>${label}</span><span class="pill">${fullCount(k)}</span>${from ? `<span class="dgrp-from">${esc(from)}</span>` : ""}</div>` + g.map(leadRowHtml).join(""); }).join("")
+      || `<div class="empty">Nothing matches. Clear the search or pick another group.</div>`;
+  } else
   h += list.slice(0, dLimit).map(leadRowHtml).join("") || `<div class="empty">Nothing matches. Clear the search or pick another group.</div>`;
   h += `</div>${list.length > dLimit ? `<button class="wide" data-dmore="1">Show ${Math.min(40, list.length - dLimit)} more (${list.length - dLimit} left)</button>` : ""}`;
   h += libraryHtml();
