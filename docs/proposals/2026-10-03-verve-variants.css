@@ -1,0 +1,82 @@
+/* Verve variants for the 3 Oct 2026 colour proposal – mock-up only, switched with html[data-v="2"|"3"] on top of the Verve look.
+   All colours are the website's recorded tokens and the logo's: ground #0B0E10 · pitch #12161A · steels #1C2124 / #4C555B / #8C979E ·
+   slab #878B91 · cream #F4F4F2 · bone #E6E9EA · khaki (logo monogram) #B8B2A8 / #A29C94 · logo near-black #1B1916 / #26231F ·
+   burnt orange #D2621E (live dot only). */
+
+/* ===== V2 "Khaki" – the logo's warm near-black frame, khaki hardware, cool cream cards on bone ===== */
+html[data-ion="verve"][data-palette][data-v="2"]{
+  --ion:#B8B2A8; --ion-deep:#A29C94; --ion-a:rgba(184,178,168,.22);
+  --g0a:#1B1916; --g0b:#141210; --g1:#26231F; --g1b:#211E1A; --g2:#2E2A25; --g3:#38332D; --g4:#413B34; --groove:#0C0B0A; --bay:#1F1C18; --navc:#1F1C18; --plate:#26231F;
+  --text:#D9D4CC; --muted:#B5AFA5; --ivory:#E6E1D8; --bg:#141210; --bg-a:rgba(20,18,16,.9);
+  --edge:rgba(230,225,216,.09); --edge2:rgba(230,225,216,.22); --dots:rgba(230,225,216,.05); --tick:rgba(230,225,216,.16);
+  --line:rgba(230,225,216,.09); --line2:rgba(230,225,216,.2); --accent:#B5AFA5; --accent2:#D9D4CC;
+  --rail:#A29C94; --node-dim:#5C564E; --handle:#5C564E; --low:#5C564E; --prop:#878B91; --rail-normal:#A29C94;
+  --g-today:#B8B2A8; --g-tmrw:#B5AFA5; --g-week:#878B91; --g-later:#5C564E; --g-prop:#878B91;
+  --primary:#B8B2A8; --primary-2:#C9C3B9; --on-primary:#1B1916;
+  --chrome:linear-gradient(180deg,#E1DCD3 0%,#C9C3B9 42%,#A29C94 50%,#BDB7AD 58%,#D6D0C6 100%);
+  --chrome-dark:linear-gradient(180deg,#3E3831 0%,#2A2622 45%,#221F1B 52%,#312C27 100%);
+  --chrome-seam:linear-gradient(90deg,rgba(225,220,211,0) 0%,rgba(225,220,211,.55) 50%,rgba(225,220,211,0) 100%);
+  --grad:var(--chrome); --btn-primary:var(--chrome); --sw-done:#B8B2A8; --sw-wait:#38332D; --sw-rest:#2E2A25; --sw-ink:#1B1916;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B5AFA5' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+html[data-ion="verve"][data-palette][data-v="2"] .inow:before{background:linear-gradient(90deg,#A29C94,#E1DCD3 40%,#A29C94)}
+html[data-ion="verve"][data-palette][data-v="2"] .irow>.in{background:linear-gradient(180deg,#D6D0C6,#A29C94)}
+html[data-ion="verve"][data-palette][data-v="2"] :is(#_,button.primary,.nowtag,.nexttag,.calcacts button.primary){background:var(--chrome);background-image:var(--chrome);background-color:#B8B2A8;color:#1B1916}
+html[data-ion="verve"][data-palette][data-v="2"] .inow>span{background:var(--chrome);color:#1B1916}
+html[data-ion="verve"][data-palette][data-v="2"] .logo{background:var(--chrome);color:#1B1916}
+html[data-ion="verve"][data-palette][data-v="2"] :is(.plate .pl-t,#pageTitle,h2,.tsh .tht,.sech h3){color:#C9C3B9;background-color:#26231F;background-image:linear-gradient(180deg,#E1DCD3 0%,#C9C3B9 45%,#A29C94 55%,#D6D0C6 100%)}
+/* chips and fields on a cream card sit on bone – off-white on a lighter white */
+html[data-ion="verve"][data-palette][data-v="2"]{--ccard:#F4F4F2;--ccard2:#E6E9EA;--cfield:#DCE0E2}
+/* day: bone page, a khaki frame, cream cards, warm near-black letters */
+html[data-ion="verve"][data-palette][data-v="2"][data-theme="light"]{
+  --g0a:#D6D0C6; --g0b:#E6E9EA; --g1:#CFC9BF; --g1b:#C9C3B9; --g2:#D6D0C6; --g3:#DED9D0; --g4:#E5E0D8; --groove:#A29C94; --bay:#D1CBC1; --navc:#D6D0C6; --plate:#CFC9BF; --rail:#5C564E;
+  --node-dim:#B5AFA5; --handle:#B5AFA5;
+  --edge:rgba(27,25,22,.1); --edge2:rgba(27,25,22,.24); --dots:rgba(27,25,22,.06); --tick:rgba(27,25,22,.18);
+  --bg:#E6E9EA; --bg-a:rgba(230,233,234,.92); --text:#1B1916; --muted:#3E464B; --ivory:#1B1916; --field:#F4F4F2; --well:#F4F4F2;
+  --line:rgba(27,25,22,.12); --line2:rgba(27,25,22,.26); --accent:#3E464B; --accent2:#1B1916;
+  --chrome-seam:linear-gradient(90deg,rgba(27,25,22,0) 0%,rgba(27,25,22,.35) 50%,rgba(27,25,22,0) 100%);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234C555B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+html[data-ion="verve"][data-palette][data-v="2"][data-theme="light"] .plate{background:linear-gradient(180deg,#E1DCD3 0%,#CFC9BF 45%,#C0BAB0 52%,#D6D0C6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(27,25,22,.18)}
+html[data-ion="verve"][data-palette][data-v="2"][data-theme="light"] .tabs{background:linear-gradient(180deg,#DED9D0 0%,#CFC9BF 100%)}
+html[data-ion="verve"][data-palette][data-v="2"][data-theme="light"] :is(.plate .pl-t,#pageTitle,h2,.tsh .tht,.sech h3){color:#3A4146;background-color:#CFC9BF;background-image:linear-gradient(180deg,#5B646A 0%,#3A4146 45%,#22272B 55%,#4C555B 100%)}
+
+/* ===== V3 "Slab and steel" – every grey in use: slab plate, steel buttons, khaki for the one accent, cream on bone ===== */
+html[data-ion="verve"][data-palette][data-v="3"]{
+  --ion:#B8B2A8; --ion-deep:#A29C94;
+  --g3:#4C555B; --g4:#565F65; --raise:#4C555B; --raise-2:#565F65; --btn:#4C555B; --seg-on:#B8B2A8;
+  --plate:#878B91; --rail:#878B91; --node-dim:#4C555B;
+  --g-today:#B8B2A8; --g-week:#878B91; --g-later:#4C555B; --prop:#8C979E; --low:#4C555B;
+  --primary:#B8B2A8; --on-primary:#12161A; --muted:#CDD2D5;
+  --chrome:linear-gradient(180deg,#E1DCD3 0%,#C9C3B9 42%,#A29C94 50%,#BDB7AD 58%,#D6D0C6 100%);
+  --grad:var(--chrome); --btn-primary:var(--chrome); --sw-done:#B8B2A8; --sw-wait:#4C555B; --sw-rest:#2B3135;
+}
+/* the header plate is slab (mid grey) with dark-steel letters; the tab bar is steel with bone letters */
+html[data-ion="verve"][data-palette][data-v="3"] .plate{background:linear-gradient(180deg,#9AA0A6 0%,#878B91 45%,#767C83 52%,#8F959B 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.3)}
+html[data-ion="verve"][data-palette][data-v="3"] .plate{--text:#12161A;--muted:#22272B;--on-ink:#12161A;color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .plate :is(.pl-s,.meter,.meter *){color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .plate .ring text{fill:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .plate .ring .rv{stroke:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .plate .ring .rt{stroke:rgba(18,22,26,.22)}
+html[data-ion="verve"][data-palette][data-v="3"] .plate .meter .dots i.on{background:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .plate .meter .dots i{background:#A4AAB0}
+html[data-ion="verve"][data-palette][data-v="3"] :is(.plate .pl-t,#pageTitle.pl-t){color:#12161A;background-color:#878B91;background-image:linear-gradient(180deg,#2B3135 0%,#12161A 45%,#0B0E10 55%,#22272B 100%)}
+html[data-ion="verve"][data-palette][data-v="3"] :is(#pageTitle,h2,.tsh .tht,.sech h3){background-color:var(--g0b)}
+html[data-ion="verve"][data-palette][data-v="3"] .tabs{background:linear-gradient(180deg,#565F65 0%,#4C555B 50%,#3E464B 100%);border-color:rgba(230,233,234,.25)}
+html[data-ion="verve"][data-palette][data-v="3"] .tabs button{color:#E6E9EA}
+html[data-ion="verve"][data-palette][data-v="3"] :is(#_,button.primary,.nowtag,.nexttag,.calcacts button.primary){background:var(--chrome);background-image:var(--chrome);background-color:#B8B2A8;color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .inow>span{background:var(--chrome);color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .inow:before{background:linear-gradient(90deg,#A29C94,#E1DCD3 40%,#A29C94)}
+html[data-ion="verve"][data-palette][data-v="3"] .irow>.in{background:linear-gradient(180deg,#B5BCC1,#878B91)}
+/* the selected segment is khaki with dark letters; other segments steel */
+html[data-ion="verve"][data-palette][data-v="3"] :is(#_,.seg2>button.on,.seg2>label.on,.segbar>button.on,.dtabs4>.dtab.on){background:#B8B2A8;background-color:#B8B2A8;color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] :is(.seg2>button.on,.segbar>button.on) span{color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"] .logo{background:linear-gradient(180deg,#9AA0A6,#767C83);color:#12161A}
+html[data-ion="verve"][data-palette][data-v="3"]{--ccard:#F4F4F2;--ccard2:#E6E9EA;--cfield:#DCE0E2}
+/* day: bone page, slab plate stays, steel tab bar stays, light steel frame */
+html[data-ion="verve"][data-palette][data-v="3"][data-theme="light"]{
+  --g3:#C9CED2; --g4:#D3D7DA; --raise:#C9CED2; --raise-2:#D3D7DA; --btn:#C9CED2; --plate:#878B91; --muted:#3E464B;
+}
+html[data-ion="verve"][data-palette][data-v="3"][data-theme="light"] .plate{background:linear-gradient(180deg,#9AA0A6 0%,#878B91 45%,#767C83 52%,#8F959B 100%)}
+html[data-ion="verve"][data-palette][data-v="3"][data-theme="light"] .tabs{background:linear-gradient(180deg,#DCE0E2 0%,#C9CED2 100%)}
+html[data-ion="verve"][data-palette][data-v="3"][data-theme="light"] .tabs button{color:#12161A}
