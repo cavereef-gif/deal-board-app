@@ -56,8 +56,11 @@ const ICON = {
 };
 const ic = (n, cls) => `<svg class="i${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ""}</svg>`;
 // Icon button. tone: wa | mail | call | me | bot | note | file | ok | warn | bad | link | mute
+// Every icon button also shows one short word (Chris reads words, not pictures).
+const IB_WORD = { copy: "Copy", check: "Done", undo: "Reopen", chatin: "Add chat", edit: "Edit", phone: "Call", chat: "WhatsApp", mail: "Email", me: "Email me", drop: "Drop", clock: "Chased", flag: "Urgent", note: "Notes", bot: "Ask", clip: "Files", refresh: "Refresh", send: "Send", pin: "Pin" };
+const ibWord = (n, label) => /^Close/.test(label) ? "Close" : /^Remove/.test(label) ? "Remove" : /^Unpin/.test(label) ? "Unpin" : IB_WORD[n] || label;
 const ib = (n, tone, attrs, label, badge) => { let a = attrs || "", on = ""; if (a.includes(' class="on"')) { a = a.replace(' class="on"', ""); on = " on"; }
-  return `<button type="button" class="ib t-${tone}${on}" ${a} aria-label="${label}" title="${label}">${ic(n)}${badge ? `<span class="bdg">${badge}</span>` : ""}</button>`; };
+  return `<button type="button" class="ib t-${tone}${on}" ${a} aria-label="${label}" title="${label}">${ic(n)}<span class="ibw">${ibWord(n, label)}</span>${badge ? `<span class="bdg">${badge}</span>` : ""}</button>`; };
 // Big icon tile with a small caption (quick-action rows)
 const tile = (n, tone, attrs, label) => `<button type="button" class="qa t-${tone}" ${attrs || ""} aria-label="${label}"><span class="qi">${ic(n)}</span><span class="ql">${label}</span></button>`;
 // Progress ring for a deal
@@ -66,3 +69,26 @@ function ring(done, total) {
   return `<span class="ring" role="img" aria-label="${done} of ${total} steps done"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="rt"/><circle cx="18" cy="18" r="15.5" class="rv" stroke-dasharray="${(pct * c / 100).toFixed(1)} ${c.toFixed(1)}"/></svg><span class="rn">${pct}<small>%</small></span></span>`;
 }
 function fillIcons(root) { (root || document).querySelectorAll("[data-ico]").forEach(el => { if (!el.querySelector("svg.i")) el.insertAdjacentHTML("afterbegin", ic(el.dataset.ico)); }); }
+
+// ---------- Dates in words (South African time) ----------
+const WDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const saDate = d => new Date(new Date(d).getTime() + 2 * 3600e3);
+const saDayKey = d => saDate(d).toISOString().slice(0, 10);
+// Whole days from today to d (0 = today, 1 = tomorrow, -1 = yesterday)
+const dayDiff = d => Math.round((Date.parse(saDayKey(d)) - Date.parse(saDayKey(Date.now()))) / 864e5);
+// "Sat 26 Sep"
+const dayName = d => { const x = saDate(d); return `${WDAY[x.getUTCDay()]} ${x.getUTCDate()} ${MON[x.getUTCMonth()]}`; };
+// "today" · "tomorrow" · "yesterday" · "Sat 26 Sep"
+const dayWords = d => { const n = dayDiff(d); return n === 0 ? "today" : n === 1 ? "tomorrow" : n === -1 ? "yesterday" : dayName(d); };
+// "Asked today" · "Asked yesterday" · "Asked 4 days ago"
+const agoWords = (d, verb) => { const n = -dayDiff(d); return `${verb} ${n <= 0 ? "today" : n === 1 ? "yesterday" : n + " days ago"}`; };
+// When a task is next due: last asked (or added) + the nudge days
+const dueDate = it => new Date(new Date(it.last_chased || it.created_at).getTime() + (it.nudge_after_days || 3) * 864e5);
+// "Overdue" · "Due today" · "Due tomorrow" · "Due Sat 26 Sep"
+const dueWords = it => { const n = dayDiff(dueDate(it)); return n < 0 ? "Overdue" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + dayName(dueDate(it)); };
+// What kind of task, in words: "Suggested" · "Our job" · "Waiting on them"
+const kindWords = it => it.state === "Proposed" ? "Suggested" : it._me ? "Our job" : "Waiting on them";
+// "Asked 4 days ago" for waits, "Added today" for our own jobs
+const sinceWords = it => it._me ? agoWords(it.created_at, "Added") : agoWords(it.last_chased || it.created_at, "Asked");
+// Buyer-search task kinds in plain words (the data stores GATE, BUYER, SUPPLY, SEND-Mn …)
+const kindName = k => { const u = String(k || "").toUpperCase(); return u === "GATE" ? "Check first" : u === "BUYER" ? "Buyer" : u === "SUPPLY" ? "Supplier" : u.startsWith("SEND") ? "Send" : String(k || "").charAt(0) + String(k || "").slice(1).toLowerCase(); };

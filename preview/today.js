@@ -27,10 +27,10 @@ const DOT = { high: "var(--bad)", stale: "var(--warn)", ok: "var(--ok)", prop: "
 function itemRow(it, why) {
   const k = "ti:" + it.id, open = isOpen(k, false);
   const who = it._me ? "" : esc(it.waiting_on) + ": ";
-  const sub = [why, it.next_action ? "Next: " + esc(it.next_action) : "", it.blocks ? "Blocks " + esc(it.blocks) : ""].filter(Boolean).join(" · ");
+  const sub = [why, sinceWords(it), it.next_action ? "Next: " + esc(it.next_action) : "", it.blocks ? "Blocks " + esc(it.blocks) : ""].filter(Boolean).join(" · ");
   const hasDraft = draftsFor("item", it.id).length;
   return tRow({ go: "item:" + it.id, dot: it.state === "Proposed" ? DOT.prop : it.priority === 1 ? DOT.high : it._stale ? DOT.stale : DOT.ok, rail: "p" + (it.priority || 2),
-    title: who + esc(it.waiting_for), sub: sub + (hasDraft ? `${sub ? " · " : ""}WhatsApp draft ready` : ""), right: `${it._days}d`, open, body: rowHtml(it, 0) });
+    title: who + esc(it.waiting_for), sub: sub + (hasDraft ? `${sub ? " · " : ""}WhatsApp draft ready` : ""), right: it.state === "Proposed" ? "" : dueWords(it), open, body: rowHtml(it, 0) });
 }
 
 // ---------- Home: greeting, focus cards, progress rings, deal tiles, week schedule ----------
@@ -38,9 +38,9 @@ const SA = () => new Date(Date.now() + 2 * 3600e3);
 const saKey = d => new Date(new Date(d).getTime() + 2 * 3600e3).toISOString().slice(0, 10);
 function dueOf(it) { const base = new Date(it.last_chased || it.created_at); return new Date(base.getTime() + (it.nudge_after_days || 3) * 864e5); }
 function fcard(it, hot) {
-  const due = saKey(dueOf(it)), td = saKey(Date.now());
-  const tag = it.state === "Proposed" ? ["confirm", "CONFIRM"] : it._me ? ["ours", "OUR TASK"] : it._stale ? ["chase", "CHASE"] : due === td ? ["today", "TODAY"] : ["ok", "ON TRACK"];
-  return `<button class="fcard${hot ? " hot" : ""}" data-tgo="item:${it.id}"><span class="fc-top"><span>${it._me ? esc(it.owner || "Chris") : esc(it.waiting_on)}</span>${ic("more")}</span><span class="fc-t">${esc(it.waiting_for)}</span><span class="fc-b"><span class="tag ${tag[0]}">${tag[1]}</span><span class="fc-d">${it._days} day${it._days === 1 ? "" : "s"}</span></span></button>`;
+  const dw = dueWords(it);
+  const tag = it.state === "Proposed" ? ["confirm", "Suggested"] : dw === "Overdue" ? ["chase", "Overdue"] : dw === "Due today" ? ["today", "Due today"] : it._me ? ["ours", "Our job"] : ["ok", "Waiting on them"];
+  return `<button class="fcard${hot ? " hot" : ""}" data-tgo="item:${it.id}"><span class="fc-top"><span>${it._me ? esc(it.owner || "Chris") : esc(it.waiting_on)}</span>${ic("more")}</span><span class="fc-t">${esc(it.waiting_for)}</span><span class="fc-b"><span class="tag ${tag[0]}">${tag[1]}</span><span class="fc-d">${it.state === "Proposed" || dw === "Overdue" || dw === "Due today" ? sinceWords(it) : dw}</span></span></button>`;
 }
 function ringsSvg(vals) {
   const R = [52, 41, 30], cols = ["url(#velvetGrad)", "#FF7BBF", "#5FD9C9"];
@@ -55,10 +55,9 @@ function dtile(d) {
   return `<button class="dtile" data-tgo="deal:${d.id}${pg.next ? ":" + pg.next.id : ""}"><span class="dt-top"><span class="dt-ic" style="--c:${kindIc[1]}">${ic(kindIc[0])}</span><span class="avs">${av}</span></span><span class="dt-n">${esc(d.name)}</span><span class="dt-p"><span class="pbar"><i style="width:${pct(pg.done, pg.total)}%"></i></span><span class="dt-c">${pg.done}/${pg.total}</span></span></button>`;
 }
 function srow(it) {
-  const due = dueOf(it), dk = saKey(due), td = saKey(Date.now());
-  const late = it._days - (it.nudge_after_days || 3), when = it._stale ? (late > 0 ? `overdue ${late} day${late === 1 ? "" : "s"}` : "due today") : dk === td ? "due today" : "due " + fmtDay(due);
+  const when = it.state === "Proposed" ? "Suggested" : dueWords(it);
   const c = it.priority === 1 ? "var(--bad)" : it.state === "Proposed" ? "var(--prop)" : it._stale ? "var(--warn)" : "var(--accent)";
-  return `<button class="srow" data-tgo="item:${it.id}"><span class="sq" style="--c:${c}"></span><span class="sx"><span class="st1">${it._me ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="st2">${when} · ${esc(it.owner || "Chris")}${it.state === "Proposed" ? " · not confirmed" : ""}</span></span>${ic("chev")}</button>`;
+  return `<button class="srow" data-tgo="item:${it.id}"><span class="sq" style="--c:${c}"></span><span class="sx"><span class="st1">${it._me ? "" : esc(it.waiting_on) + ": "}${esc(it.waiting_for)}</span><span class="st2">${when} · ${esc(it.owner || "Chris")}</span></span>${ic("chev")}</button>`;
 }
 function todayHtml(items) {
   const target = who === "All" ? "All" : (who || me || "Chris");
@@ -77,8 +76,8 @@ function todayHtml(items) {
     <div class="hd">${SA().toLocaleDateString("en-ZA", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" })} · ${chase.length} to chase · ${ours.length} of our own</div></section>`;
   h += `<div class="chips whochips">${["Chris", "Annemarie", "All"].map(c => `<button data-who="${c}" class="${target === c ? "on" : ""}">${c === "All" ? "Both of us" : c}</button>`).join("")}</div>`;
   // brief
-  h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}</button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
-    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap the refresh icon for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap the refresh icon."}</div></div>`;
+  h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}" title="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
+    <div class="tsum${br && br.summary ? "" : " none"}">${br && br.summary ? esc(br.summary) : br && br.legacy ? "Older brief – tap Refresh for the new version." : botBusy ? "Writing today's brief…" : "No brief yet today – tap Refresh."}</div></div>`;
   // focus
   const focus = [...chase, ...ours.filter(i => !chase.includes(i))].slice(0, 10);
   h += `<div class="sech"><h3>Focus</h3><span class="sc">${focus.length ? "swipe →" : ""}</span></div><div class="carousel">${focus.map((it, i) => fcard(it, i === 0)).join("") || `<div class="fempty">Nothing to chase – well done.</div>`}</div>`;
@@ -97,8 +96,8 @@ function todayHtml(items) {
   const now = SA(), dow = (now.getUTCDay() + 6) % 7, mon = new Date(now.getTime() - dow * 864e5);
   const days = [...Array(7)].map((_, i) => new Date(mon.getTime() + i * 864e5));
   const byDay = {}; for (const it of mine) { const k = it._stale ? td : saKey(dueOf(it)); (byDay[k] ||= []).push(it); }
-  h += `<div class="sech"><h3>Schedule</h3><span class="sc">chase dates</span></div><div class="card week"><div class="wk-m">${now.toLocaleDateString("en-ZA", { timeZone: "UTC", month: "long", year: "numeric" }).toUpperCase()}</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), arr = byDay[k] || [];
-    return `<div><div class="wd">${"MTWTFSS"[(d.getUTCDay() + 6) % 7]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="dots">${arr.slice(0, 3).map(i => `<i style="background:${i.priority === 1 ? "var(--bad)" : i._stale ? "var(--warn)" : "var(--accent)"}"></i>`).join("")}</div></div>`; }).join("")}</div></div>`;
+  h += `<div class="sech"><h3>Schedule</h3><span class="sc">chase dates</span></div><div class="card week"><div class="wk-m">${now.toLocaleDateString("en-ZA", { timeZone: "UTC", month: "long", year: "numeric" })}</div><div class="wk">${days.map(d => { const k = d.toISOString().slice(0, 10), arr = byDay[k] || [];
+    return `<div><div class="wd">${WDAY[d.getUTCDay()]}</div><div class="dd${k === td ? " today" : ""}">${d.getUTCDate()}</div><div class="dots">${arr.slice(0, 3).map(i => `<i style="background:${i.priority === 1 ? "var(--bad)" : i._stale ? "var(--warn)" : "var(--accent)"}"></i>`).join("")}</div></div>`; }).join("")}</div></div>`;
   const tmr = saKey(Date.now() + 864e5), sun = saKey(days[6]);
   const dueNow = mine.filter(i => i._stale || saKey(dueOf(i)) <= td).sort(byPrioThenAge);
   const dueTmr = mine.filter(i => !dueNow.includes(i) && saKey(dueOf(i)) === tmr).sort(byPrioThenAge);
@@ -110,7 +109,7 @@ function todayHtml(items) {
   if (later.length) { const k = "home:later", o = isOpen(k, false); h += `<button class="sgrp linkb" style="padding:0;margin:16px 4px 8px" data-tog="${k}" data-dflt="0" aria-expanded="${o}">Next week and later · ${later.length} ${o ? "▴" : "▾"}</button>${o ? later.map(srow).join("") : ""}`; }
   // confirm, risks, buyer search
   let n = 0;
-  if (proposed.length) h += `<div style="height:14px"></div>` + tSection(++n, "confirm", "Needs your OK", "Proposed by the bot – keep or drop", proposed.map(it => itemRow(it, "Proposed")));
+  if (proposed.length) h += `<div style="height:14px"></div>` + tSection(++n, "confirm", "Suggested", "Suggested by the bot – accept or drop", proposed.map(it => itemRow(it, "Suggested")));
   const risks = (br && br.risks) || [];
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   if (risks.length) h += tSection(++n, "risks", "Risks to check", "Spotted by the bot – tap to see where", risks.map(r => (r.ref_type && r.ref_id && refName(r))
@@ -118,7 +117,7 @@ function todayHtml(items) {
     : `<div class="tline"><i class="dot" style="background:${DOT.high}"></i><span>${esc(r.text)}</span></div>`), false);
   if (queue.length) h += tSection(++n, "buyers", "Buyer search – next up", "Top of the scored queue; tap to open the lead", queue.map(t => {
     const ls = (t.lead_ids || []).map(id => (window._leads || []).find(l => l.id === id)).filter(Boolean);
-    return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(t.kind) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
+    return tRow({ go: ls.length === 1 ? "lead:" + ls[0].id : "task:" + t.id, dot: DOT.ok, title: esc(t.task), sub: `Score ${t.score}${t.kind ? " · " + esc(kindName(t.kind)) : ""}${ls.length > 1 ? ` · ${ls.length} leads` : ""}`, right: "" });
   }), false);
   if (br && br.legacy) h += tSection(++n, "old", "Older brief (plain text)", "Refresh to get the new version", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   if (!items.length) h += `<div class="empty">Nothing open. Tap + to add a task.</div>`;
@@ -134,7 +133,7 @@ function briefAsText() {
   if (br && br.summary) lines.push(br.summary, "");
   const ord = (br && br.chase_order) || [];
   const chase = items.filter(i => !i._me && (ord.includes(i.id) || (i._stale && i.state !== "Proposed"))).sort((a, b) => ((ord.indexOf(a.id) + 1) || 999) - ((ord.indexOf(b.id) + 1) || 999) || byPrioThenAge(a, b));
-  if (chase.length) lines.push("CHASE TODAY", ...chase.map((i, n) => `${n + 1}. ${i.waiting_on}: ${i.waiting_for} (${i._days}d)${i.next_action ? " – next: " + i.next_action : ""}`), "");
+  if (chase.length) lines.push("CHASE TODAY", ...chase.map((i, n) => `${n + 1}. ${i.waiting_on}: ${i.waiting_for} (${sinceWords(i)})${i.next_action ? " – next: " + i.next_action : ""}`), "");
   const ours = items.filter(i => i._me).sort(byPrioThenAge);
   if (ours.length) lines.push("OUR OWN TASKS", ...ours.map((i, n) => `${n + 1}. ${i.waiting_for}`), "");
   const prop = items.filter(i => i.state === "Proposed" && !chase.includes(i) && !ours.includes(i));
