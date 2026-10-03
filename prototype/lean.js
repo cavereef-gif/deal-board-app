@@ -383,6 +383,7 @@ async function leanTickFromDoc(d, docKey, label) {
     const { error } = await sb.rpc("set_step", { p_id: st.id, p_status: "done", p_evidence: ev });
     if (!error) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: st.evidence || ev });
   }
+  if (hits.length && window.stepBuzz) stepBuzz();
   return hits.length;
 }
 window.leanTickFromDoc = leanTickFromDoc;
@@ -799,6 +800,7 @@ document.addEventListener("click", async e => {
       const st = (window._steps || []).find(x => x.id === step.id), ev = `Trust check: ${c.done} of ${c.all} ticked`;
       if (DEMO) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev });
       else { const { error } = await sb.rpc("set_step", { p_id: st.id, p_status: "done", p_evidence: ev }); if (!error) Object.assign(st, { status: "done", done_by: me, done_at: new Date().toISOString(), evidence: ev }); }
+      if (window.stepBuzz) stepBuzz();
       toast(`${TRUST[side].step} – ticked.`); render();
     }
   }

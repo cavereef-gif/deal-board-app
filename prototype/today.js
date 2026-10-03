@@ -164,18 +164,22 @@ function taskParts(it, showOwner) {
   const meta = [it._me ? "Our job" : "Waiting on " + it.waiting_on, typeof section !== "undefined" && section === "All" && secs.length === 1 ? secs[0] : "", sinceWords(it), showOwner ? (it.owner || "Chris") : ""].filter(Boolean).join(" · ");
   return { id: it.id, go: "item:" + it.id, who, me: it._me, title: it.waiting_for, meta, secs,
     left: sugg ? [["confirm", "check", "Accept"]] : [["done", "check", "Done"]],
-    right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", nextWorkWord()], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chased", "refresh", "Chased"], ["tomorrow", "clock", nextWorkWord()]] };
+    right: sugg ? [["drop", "drop", "Drop"]] : it._me ? [["tomorrow", "clock", nextWorkWord()], [it.priority === 1 ? "normal" : "urgent", "flag", it.priority === 1 ? "Normal" : "Urgent"]] : [["chase", "chat", "Chase"]],
+    // 3 Oct 2026: a wait on someone else is chased from a short list of WhatsApp messages (flow.js); Chased and Tomorrow are in that list
+    chase: !sugg && !it._me, hero: !sugg && !it._me ? [["done", "check", "Done"], ["chase", "chat", "Chase"], ["tomorrow", "clock", nextWorkWord()]] : null };
 }
 const swBtn = (id, [act, icn, t]) => `<button type="button" class="sw-${act}" data-sw="${act}" data-id="${esc(id)}">${ic(icn)}<span>${t}</span></button>`;
 // one row: swipe right for the left action, swipe left for the right ones; tap the row to open it
 function swRow(it, showOwner) {
   const p = taskParts(it, showOwner), n = dayDiff(dueDate(it)), sugg = it.state === "Proposed";
-  const rc = sugg ? " prop" : it.priority === 1 ? " urgent" : n < 0 ? " late" : "";
+  const rc = (sugg ? " prop" : it.priority === 1 ? " urgent" : n < 0 ? " late" : "") + (p.chase ? " chs" : "");
   // the pill on the right: coral for late, a plain word for a day, an Accept button for a suggestion (the mock's "Accept")
   return `<div class="irow${rc}"><i class="in" aria-hidden="true"></i><div class="hrow swrow" data-row="${esc(p.id)}"><div class="strack"><div class="sact l">${p.left.map(x => swBtn(p.id, x)).join("")}</div>
-    <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}<span class="hr-mt">${esc(p.meta)}</span></span></span>${stChip(it)}</button>${sugg ? `<button type="button" class="tag i acc" data-sw="confirm" data-id="${esc(p.id)}">Accept</button>` : ""}</div>
+    <div class="scont"><button class="hr-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="hr-tx"><span class="hr-t">${esc(p.title)}</span><span class="hr-m">${stChip(it)}${p.chase ? `<span class="chsd">${esc(chaseDue(it))} · </span>` : ""}<span class="hr-mt">${esc(p.meta)}</span></span></span>${stChip(it)}</button>${sugg ? `<button type="button" class="tag i acc" data-sw="confirm" data-id="${esc(p.id)}">Accept</button>` : ""}${p.chase ? `<button type="button" class="chsb" data-sw="chase" data-id="${esc(p.id)}" aria-label="Chase ${esc(p.who)} on WhatsApp"><span class="tag i">Chase</span></button>` : ""}</div>
     <div class="sact r">${p.right.map(x => swBtn(p.id, x)).join("")}</div></div></div></div>`;
 }
+// the due word for a row whose right-hand spot holds the Chase pill ("Urgent · 2d late", "Today", "Mon 5")
+function chaseDue(it) { const n = dayDiff(dueDate(it)), d = dueDate(it), w = n < 0 ? `${-n}d late` : n === 0 ? "Today" : n === 1 ? "Tmrw" : WDAY[new Date(d).getUTCDay()] + " " + new Date(d).getUTCDate(); return it.priority === 1 ? "Urgent · " + w : w; }
 function saClock() { const d = SA(); return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0"); }
 const nowLine = () => `<div class="inow" aria-hidden="true"><i></i><span>${saClock()} now</span></div>`;
 window.saClock = saClock;
@@ -188,7 +192,7 @@ function heroHtml(it, showOwner) {
   const p = taskParts(it, showOwner), c = p.secs.length === 1 ? secColor(p.secs[0]) : "var(--s-all)";
   return `<section class="hero2" style="--ac:${c}" aria-label="Next up"><div class="h2-top"><span class="h2-l">Next up</span>${stChip(it)}</div>
     <button class="h2-main" data-tgo="${esc(p.go)}">${av2(p.who, p.secs, p.me ? "checkbox" : it._ft ? "user" : "")}<span class="h2-tx"><span class="h2-t">${esc(p.title)}</span><span class="h2-m">${esc(p.meta)}</span></span></button>
-    <div class="h2-acts">${[...p.left, ...p.right].slice(0, 3).map(x => swBtn(p.id, x)).join("")}</div></section>`;
+    <div class="h2-acts">${(p.hero || [...p.left, ...p.right]).slice(0, 3).map(x => swBtn(p.id, x)).join("")}</div></section>`;
 }
 // seven days from today: tap one to see only that day
 function weekStripHtml(list) {
@@ -249,6 +253,7 @@ function todayHtml(items) {
   if (!bOpen) h += `<div class="bline"><button class="bl-main" data-tog="home:brief" data-dflt="0" aria-expanded="false"><span class="bl-l">${ic("brief")}Today's brief</span><span class="bl-t">${esc(sum)}</span></button></div>`;
   else h += `<div class="brief"><div class="bt"><span class="l">Today's brief</span><button type="button" class="ib t-me${botBusy ? " spin" : ""}" data-bot="brief-here" aria-label="${br ? "Refresh the brief" : "Get today's brief"}">${ic("refresh")}<span class="ibw">Refresh</span></button>${ib("me", "me", `data-emailbrief="1"`, "Email me today's list")}</div>
     <div class="tsum${br && br.summary ? "" : " none"}">${esc(sum)}</div><button class="linkb more" data-tog="home:brief" data-dflt="0">Close the brief</button></div>`;
+  if (window.dealNextHtml) h += dealNextHtml();   // deals · next step (3 Oct 2026, flow.js)
   // the rail: late above the now line, then today, tomorrow, the week, later; suggestions are rows with an Accept pill
   h += strip("now " + saClock());
   if (g.overdue.length) h += hCard("overdue", "over", "Overdue", R(g.overdue));
@@ -260,7 +265,7 @@ function todayHtml(items) {
   const refName = r => r.ref_type === "item" ? (((window._items || []).find(i => i.id === r.ref_id) || {}).waiting_for || "") : r.ref_type === "deal" ? ((dealById(r.ref_id) || {}).name || "") : r.ref_type === "lead" ? (((window._leads || []).find(l => l.id === r.ref_id) || {}).name || "") : "";
   h += hCard("risks", "bad", "Risks the bot spotted", risks.map(r => icardRow({ cls: "late", go: r.ref_type && r.ref_id && refName(r) ? r.ref_type + ":" + r.ref_id : "", left: `<i class="ck late"></i>`, title: esc(r.text), sub: r.ref_type && refName(r) ? "On: " + esc(refName(r)) : "" })), { fold: true, dflt: false });
   h += railClose();
-  if (list.length) h += rfoot(`swipe right = done · left = chased or tomorrow · tap = everything else`);
+  if (list.length) h += rfoot(`swipe right = done · left = chase or later · tap = everything else`);
   h += sheetClose();
   if (br && br.legacy) h += hGroup("old", "Older brief (plain text)", br.legacy.split(/\n+/).filter(Boolean).map(l => `<div class="tline">${esc(l)}</div>`), false);
   return h;
@@ -282,7 +287,7 @@ async function swAct(act, id) {
   toast(`${m[2]}: ${name}${DEMO ? " (demo)" : ""}`); if (window.buzz) buzz(); if (DEMO) render(); else load();
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest("button[data-sw]"); if (b) { b.disabled = true; swAct(b.dataset.sw, b.dataset.id); return; }
+  const b = e.target.closest("button[data-sw]"); if (b) { if (b.dataset.sw === "chase") { if (window.openChase) openChase(b.dataset.id); return; } b.disabled = true; swAct(b.dataset.sw, b.dataset.id); return; }
   const d = e.target.closest("button[data-hday]"); if (d) { homeDay = homeDay === d.dataset.hday ? null : d.dataset.hday; homeFilter = null; render(); return; }
   const j = e.target.closest("button[data-jump='sugg']"); if (j) { const s = $("hsugg"); if (s) s.scrollIntoView({ block: "start", behavior: "smooth" }); }
 });
@@ -399,7 +404,7 @@ function goTo(ref) {
 window.goTo = goTo;
 
 $("list").addEventListener("click", async e => {
-  const g = e.target.closest("button[data-tgo]"); if (g) { goTo(g.dataset.tgo); return; }
+  const g = e.target.closest("button[data-tgo]"); if (g) { const go = () => goTo(g.dataset.tgo); if (/^deal:/.test(g.dataset.tgo) && window.vtRun) vtRun(go); else go(); return; }
   const w = e.target.closest("button[data-wadraft]");
   if (w) { const d = (window._drafts || []).find(x => String(x.id) === w.dataset.draft); location.href = `https://wa.me/${w.dataset.wadraft}?text=` + encodeURIComponent(d ? d.new_value : ""); return; }
   const c = e.target.closest("button[data-copydraft]");
