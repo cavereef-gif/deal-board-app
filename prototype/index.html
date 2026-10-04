@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Deal Board</title>
-<meta name="theme-color" content="#12152B">
+<meta name="theme-color" content="#0A0806">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<script>(function(){var d=document.documentElement,p="ion";try{p=localStorage.getItem("palette")||"ion";if(!localStorage.getItem("ion1")){p="ion";localStorage.setItem("palette","ion");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"||p==="twilight"||p.indexOf("verve")===0){d.dataset.palette="titanium";d.dataset.ion=p==="ion"?"1":p}else d.dataset.palette=p})()</script>
+<script>(function(){var d=document.documentElement,p="verve-website";try{p=localStorage.getItem("palette")||p;if(!localStorage.getItem("verveWebsite1")){p="verve-website";localStorage.setItem("palette",p);localStorage.setItem("verveWebsite1","1");localStorage.setItem("ion1","1")}}catch(e){}if(p==="ion"||p==="twilight"||p.indexOf("verve")===0){d.dataset.palette="titanium";d.dataset.ion=p==="ion"?"1":p}else d.dataset.palette=p})()</script>
 <link rel="stylesheet" href="app.css?v=17.202610031826">
 <link rel="stylesheet" href="titanium.css?v=17.202610031826">
 <link rel="stylesheet" href="ion.css?v=17.202610031826">
+<link rel="stylesheet" href="verve-website.css?v=18.1.20261004">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
@@ -323,7 +324,7 @@ function curPalette(){ const d = document.documentElement; return d.dataset.ion 
 function applyPalette(k){ const d = document.documentElement; if (k === "ion" || k === "twilight" || k.indexOf("verve") === 0) { d.dataset.palette = "titanium"; d.dataset.ion = k === "ion" ? "1" : k; } else { d.dataset.palette = k; delete d.dataset.ion; } }
 function setTheme(t){ document.documentElement.dataset.theme = t; $("themeBtn").innerHTML = t === "light" ? ic("moon") + "Dark mode" : ic("sun") + "Light mode";
   const ti = document.documentElement.dataset.palette === "titanium";
-  document.querySelector('meta[name="theme-color"]').content = document.documentElement.dataset.ion === "verve-khaki" ? (t === "light" ? "#E6E9EA" : "#141210") : (document.documentElement.dataset.ion || "").indexOf("verve") === 0 ? (t === "light" ? "#E6E9EA" : "#0B0E10") : document.documentElement.dataset.ion === "twilight" ? (t === "light" ? "#F4EDE4" : "#072D3B") : document.documentElement.dataset.ion ? (t === "light" ? "#A2A6AE" : "#26292E") : ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
+  document.querySelector('meta[name="theme-color"]').content = document.documentElement.dataset.ion === "verve-website" ? (t === "light" ? "#F5F0E6" : "#0A0806") : document.documentElement.dataset.ion === "verve-khaki" ? (t === "light" ? "#E6E9EA" : "#141210") : (document.documentElement.dataset.ion || "").indexOf("verve") === 0 ? (t === "light" ? "#E6E9EA" : "#0B0E10") : document.documentElement.dataset.ion === "twilight" ? (t === "light" ? "#F4EDE4" : "#072D3B") : document.documentElement.dataset.ion ? (t === "light" ? "#A2A6AE" : "#26292E") : ti ? (t === "light" ? "#ECEEF1" : "#0D0E10") : (t === "light" ? "#F4F0E6" : "#12152B");
   try{ localStorage.setItem("theme", t) }catch(e){} }
 let saved = "dark"; try{ saved = localStorage.getItem("theme") || "dark" }catch(e){}
 setTheme(saved);
@@ -655,7 +656,7 @@ function savedContactsHtml(q){
 window.waitingPeopleHtml = waitingPeopleHtml; window.savedContactsHtml = savedContactsHtml;
 function settingsHtml(){
   const light = document.documentElement.dataset.theme === "light";
-  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["twilight", "Twilight"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="lbl">Verve looks</div><div class="segbar" role="group" aria-label="Verve looks" style="margin-bottom:8px">${[["verve", "Steel"], ["verve-khaki", "Khaki"], ["verve-slab", "Slab"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
+  return `<div class="card setc"><div class="lbl" style="margin-top:0">Look</div><div class="segbar" role="group" aria-label="Colours" style="margin-bottom:8px">${[["ion", "Ion Rail"], ["twilight", "Twilight"], ["titanium", "Graphite"], ["velvet", "Velvet"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="lbl">Verve looks</div><div class="segbar" role="group" aria-label="Verve looks" style="margin-bottom:8px">${[["verve-website", "Website"], ["verve", "Steel"], ["verve-khaki", "Khaki"], ["verve-slab", "Slab"]].map(([k, t]) => `<button type="button" data-set="palette" data-v="${k}" class="${curPalette() === k ? "on" : ""}">${t}</button>`).join("")}</div><div class="acts0"><button data-set="theme">${ic(light ? "moon" : "sun")}${light ? "Dark mode" : "Light mode"}</button></div>
     <div class="lbl">App</div><div class="acts0"><button data-set="refresh">${ic("refresh")}Refresh</button>${me ? `<button data-set="out">${ic("out")}Sign out</button>` : ""}</div>
     <div class="quiet" style="margin-top:10px">${me ? "Signed in as " + esc(pname(me)) + " · " : ""}app v${APP_VERSION}</div></div>
     <details class="keybox card"${window._keyStatus === "not set" ? " open" : ""}><summary>Bot key: ${esc(window._keyStatus || "…")} – tap to set or change</summary>
@@ -1562,3 +1563,4 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 <script>show(); /* preview copy: no service worker */</script>
 </body>
 </html>
+
