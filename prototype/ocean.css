@@ -1,0 +1,46 @@
+/* Ocean — the seven colours from Chris's reference, 5 October 2026.
+   Optional palette; does not change the stored colour preference. */
+html[data-ion="verve-ocean"][data-palette][data-palette]{
+ --o-navy:#001D39; --o-blue:#0A4174; --o-slate:#49769F; --o-teal:#4E8EA2; --o-sea:#6EA2B3; --o-sky:#7BBDE8; --o-ice:#BDD8E9;
+ --font:'IBM Plex Sans',Arial,sans-serif; --display:var(--font); --mono:'IBM Plex Mono',ui-monospace,monospace;
+ --bg:var(--o-navy); --bg-a:rgba(0,29,57,.96); --g0a:var(--o-blue); --g0b:var(--o-navy);
+ --g1:#0A4174; --g1b:#08365F; --g2:#164C76; --g3:#315F83; --g4:#49769F;
+ --card:var(--g1); --card2:var(--g1b); --row:var(--g2); --raise:var(--g3); --raise-2:var(--g4);
+ --groove:#001D39; --bay:#08365F; --navc:#001D39; --plate:#0A4174; --field:#001D39; --well:#001D39;
+ --text:#E7F1F7; --muted:#BDD8E9; --ivory:#E7F1F7; --on-ink:#E7F1F7; --on-ink-muted:#BDD8E9;
+ --ctext:#001D39; --cmuted:#0A4174; --ccard:#BDD8E9; --ccard2:#A9CDDF; --cfield:#D0E4EE; --craise2:#D0E4EE; --ink:#001D39;
+ --cline:rgba(0,29,57,.17); --cline2:rgba(0,29,57,.35); --line:rgba(189,216,233,.18); --line2:rgba(189,216,233,.32);
+ --edge:rgba(189,216,233,.13); --edge2:rgba(189,216,233,.3); --dots:rgba(189,216,233,.04); --tick:rgba(189,216,233,.18);
+ --ion:#7BBDE8; --ion-deep:#4E8EA2; --ion-a:rgba(123,189,232,.22); --live:#6EA2B3;
+ --ion-glow:rgba(123,189,232,.2); --ion-glow2:rgba(123,189,232,.24); --ion-ring:rgba(123,189,232,.4); --ion-line:rgba(123,189,232,.7); --ion-soft:rgba(123,189,232,.16); --ion-edge:rgba(123,189,232,.55);
+ --primary:#7BBDE8; --primary-2:#BDD8E9; --on-primary:#001D39; --accent:#6EA2B3; --accent2:#7BBDE8;
+ --rail:#6EA2B3; --node-dim:#49769F; --handle:#49769F; --low:#49769F; --prop:#6EA2B3; --rail-normal:#6EA2B3;
+ --g-today:#7BBDE8; --g-tmrw:#BDD8E9; --g-week:#6EA2B3; --g-later:#49769F; --g-prop:#6EA2B3;
+ --chrome:linear-gradient(155deg,#BDD8E9,#7BBDE8);
+ --chrome-dark:linear-gradient(155deg,#0A4174,#001D39);
+ --chrome-seam:linear-gradient(90deg,transparent,rgba(123,189,232,.55),transparent);
+ --grad:linear-gradient(135deg,#7BBDE8,#6EA2B3); --btn-primary:var(--grad);
+ --sw-done:#7BBDE8; --sw-wait:#49769F; --sw-rest:#0A4174; --sw-ink:#001D39;
+ --glass-bg:#001D39; --surface:#0A4174; --btn:#315F83; --seg-on:#49769F;
+}
+html[data-ion="verve-ocean"][data-palette][data-palette][data-theme="light"]{
+ --bg:#BDD8E9; --bg-a:rgba(189,216,233,.96); --g0a:#D0E4EE; --g0b:#BDD8E9;
+ --g1:#A9CDDF; --g1b:#9BC1D6; --g2:#A9CDDF; --g3:#BDD8E9; --g4:#D0E4EE;
+ --card:#D0E4EE; --card2:#BDD8E9; --row:#A9CDDF; --raise:#BDD8E9; --raise-2:#D0E4EE;
+ --navc:#BDD8E9; --plate:#BDD8E9; --bay:#A9CDDF; --groove:#6EA2B3; --field:#D0E4EE; --well:#D0E4EE;
+ --text:#001D39; --muted:#0A4174; --ivory:#001D39; --on-ink:#001D39; --on-ink-muted:#0A4174;
+ --line:rgba(0,29,57,.17); --line2:rgba(0,29,57,.32); --edge:rgba(0,29,57,.12); --edge2:rgba(0,29,57,.28);
+ --dots:rgba(0,29,57,.04); --tick:rgba(0,29,57,.16); --rail:#49769F; --accent:#0A4174; --accent2:#0A4174;
+ --ion:#0A4174; --g-today:#0A4174; --primary:#0A4174; --primary-2:#49769F; --on-primary:#E7F1F7;
+ --btn-primary:linear-gradient(135deg,#0A4174,#315F83); --grad:var(--btn-primary);
+ --chrome-dark:linear-gradient(155deg,#D0E4EE,#BDD8E9); --glass-bg:#BDD8E9; --surface:#A9CDDF; --btn:#BDD8E9; --seg-on:#D0E4EE;
+}
+html[data-ion="verve-ocean"][data-palette][data-palette] body{background-color:var(--bg);background-image:linear-gradient(180deg,var(--g0a),var(--g0b) 480px)}
+html[data-ion="verve-ocean"][data-palette][data-palette] :is(.plate,.tabs){background:var(--chrome-dark);border-color:var(--edge2)}
+html[data-ion="verve-ocean"][data-palette][data-palette] :is(#_,button.primary,.nowtag,.nexttag,.calcacts button.primary){background:var(--btn-primary);color:var(--on-primary);box-shadow:var(--soft-up-sm)}
+html[data-ion="verve-ocean"][data-palette][data-palette] :is(#pageTitle,h2,.plate .pl-t,.tsh .tht,.sech h3){font-family:var(--font);background:none;-webkit-text-fill-color:currentColor;color:var(--text)}
+html[data-ion="verve-ocean"][data-palette][data-palette] .logo{background:var(--chrome);color:#001D39}
+html[data-ion="verve-ocean"][data-palette][data-palette] .inow>span{background:var(--chrome);color:#001D39}
+html[data-ion="verve-ocean"][data-palette][data-palette] .inow:before{background:var(--chrome)}
+html[data-ion="verve-ocean"][data-palette][data-palette] .irow>.in{background:var(--chrome)}
+html[data-ion="verve-ocean"][data-palette][data-palette] .live i{background:var(--live);box-shadow:0 0 0 3px rgba(110,162,179,.25)}
