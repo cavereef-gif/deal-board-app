@@ -60,7 +60,7 @@ function archResHtml() {
   const sec = (title, arr, fn) => arr.length ? `<h3>${title} · ${arr.length}</h3>${arr.slice(0, 25).map(fn).join("")}` : "";
   return `<div class="ahits"><div class="seen" style="margin-top:12px">Found “${esc(archQ)}” ${n} time${n > 1 ? "s" : ""} – it has been used before.</div>` +
     sec("Deals", r.deals, d => aHit(d.kind === "transport" ? "truck" : "gem", "note", "deal:" + d.id, esc(d.name), `${esc(d.status)} · ${esc(d.area)} · updated ${fmtDay(d.updated_at)}`)) +
-    sec("Open tasks", r.open, i => aHit("clock", "warn", "item:" + i.id, `${esc(woName(i))}: ${esc(i.waiting_for)}`, `${esc(i.state)} · ${i._days ? i._days + " day" + (i._days === 1 ? "" : "s") + " old" : "added today"} · ${esc(i.owner || "")}`)) +
+    sec("Open tasks", r.open, i => aHit("clock", "warn", "item:" + i.id, `${esc(woName(i))}: ${esc(i.waiting_for)}`, `${kindWords(i)} · ${agoWords(i.created_at, "Added")} · ${esc(i.owner || "")}`)) +
     sec("Done tasks", r.done, i => aHit("check", "ok", "", `${esc(woName(i))}: ${esc(i.waiting_for)}`, `done ${fmtDay(i.updated_at)} · ${esc(i.owner || "")}`)) +
     sec("Contacts", r.contacts, c => aHit("user", "call", "contact:" + c.id, esc(c.name), [c.company, c.role, c.phone].filter(Boolean).map(esc).join(" · "))) +
     sec("Buyer and supplier list", r.leads, l => aHit("search", "mail", "lead:" + l.id, esc(l.name), [l.person, l.country, ST[l.status] ? ST[l.status][0] : ""].filter(Boolean).map(esc).join(" · "))) +
